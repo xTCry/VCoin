@@ -3,7 +3,7 @@ const url = require('url'),
 	{ VK } = require('vk-io');
 
 const VCoinWS = require('./VCoinWS');
-const { con, formateSCORE, hashPassCoin } = require('./helpers.js');
+const { con, formateSCORE, hashPassCoin } = require('./helpers');
 let { USER_ID, DONEURL, VK_TOKEN } = require('./.config.js');
 
 
