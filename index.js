@@ -1,152 +1,89 @@
 const url = require('url'),
 	ReadLine = require('readline'),
-	colors = require('colors/safe'),
 	{ VK } = require('vk-io');
 
 const VCoinWS = require('./VCoinWS');
-const { USER_ID, DONEURL } = require('./.config.js');
+const { con, formateSCORE, hashPassCoin } = require('./helpers.js');
+let { USER_ID, DONEURL, VK_TOKEN } = require('./.config.js');
 
 
-// https://api.vk.com/method/apps.get?app_id=6915965&v=5.90&access_token=
+let vk = new VK();
+let URLWS = false;
+let boosterTTL = null, tryStartTTL = null, xRestart = true;
 
 
-const GSEARCH = url.parse(DONEURL);
 
-let NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/";
-let URLWS = NADDRWS + (USER_ID % 4) + GSEARCH.search;
-
-
-let boosterTTL = null, updPlaceTTL = null, tryStartTTL = null, xRestart = true;
-
+// Инициализация главного модуля (:
 let vConinWS = new VCoinWS(USER_ID);
 
 
-
-let x = 0, C = null;
+let missCount = 0, missTTL = null;
 vConinWS.onMissClickEvent(function() {
-
-	console.log("onMissClickEvent", (0 === x));
-	
-	if(0 === x) {
-		clearTimeout(C);
-		C = setTimeout(function() {
-			return x = 0
+	if(0 === missCount) {
+		clearTimeout(missTTL);
+		missTTL = setTimeout(function() {
+			missCount = 0;
+			return;
 		}, 6e4)
 	}
 
-	//++x > 10 && l.a.dispatch(Object(v.d)(f.a.t("too_many_miss_click")))
+	if(++missCount > 10)
+		con("Ваши нажатия не засчитываются. Похоже, Вы нажимаете на кнопку слишком часто или у Вас проблемы с подключением.", true);
 });
 
-vConinWS.onReceiveDataEvent(function(e, t) {
+vConinWS.onReceiveDataEvent(function(place, score) {
 	var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2];
 
-	// console.log("onReceiveDataEvent", e, t, n);
-	if(e > 0)
-		con("В ТОПе: " + e + "\tСЧЕТ: "+ formateSCORE(t, true), "yellow");
-		// process.stdout.write("В ТОПе: " + e + "\tСЧЕТ: "+(t/1000)+"\r");
-
-	// l.a.getState().BootstrapModule.loaded || l.a.dispatch(Object(v.e)(false))
-
-	// l.a.dispatch(Object(v.h)(t, n))
-	// l.a.dispatch(Object(v.g)(e))
+	if(place > 0)
+		con("В ТОПе: " + place + "\tСЧЕТ: "+ formateSCORE(score, true), "yellow");
+		// process.stdout.write("В ТОПе: " + place + "\tСЧЕТ: "+(score/1000)+"\r");
 });
 
 vConinWS.onWaitEvent(function(e) {
-	console.log("onWaitEvent", e);
-	// l.a.dispatch(Object(v.f)(e))
+	con("WaitEvent: "+e);
 });
 
-vConinWS.onUserLoaded(function(e, t, n, r, o) {
-	
-	console.log("onUserLoaded", e, t, /*n,*/ /*r,*/ o);
+vConinWS.onUserLoaded(function(place, score, items, top, firstTime) {
+	con("onUserLoaded: \t" + place + "\t" + formateSCORE(score, true) /*+ "\t" + items + "\t" + top + "\t" + firstTime*/);
 
-	// l.a.dispatch(Object(b.d)(r))
-	// l.a.dispatch(Object(g.c)(n))
-	// l.a.dispatch(Object(v.d)(null))
-	// o && l.a.dispatch(Object(d.p)(d.b))
-})
+	boosterTTL && clearInterval(boosterTTL);
+	boosterTTL = setInterval(_=> {
+		vConinWS.click();
+	}, 5e2);
+});
 
 vConinWS.onBrokenEvent(function() {
 	con("onBrokenEvent", true);
-	// l.a.dispatch(Object(v.d)(f.a.t("too_old_app")))
 });
 
 vConinWS.onAlreadyConnected(function() {
-	console.error("ERROR", "onAlreadyConnected!!!!!");
 	con("Открыто две вкладки", true);
 	boosterTTL && clearInterval(boosterTTL);
-	updPlaceTTL && clearInterval(updPlaceTTL);
 	if(xRestart)
 		startBooster(10e3);
-	// l.a.dispatch(Object(v.d)(f.a.t("two_tab")))
 });
 
 vConinWS.onOffline(function() {
 	con("onOffline", true);
 	boosterTTL && clearInterval(boosterTTL);
-	updPlaceTTL && clearInterval(updPlaceTTL);
 	if(xRestart)
 		startBooster(2e4);
-	/*l.a.dispatch(Object(v.c)({
-		connect: true
-	}))*/
 });
 
-/*vConinWS.onOnline(function() {
-	console.log("onOnline");
-	l.a.dispatch(Object(v.c)({
-		connect: false
-	}))
-});*/
-
-// -------------
-/*(async function() {
-	let e = [
-		{
-			id: vConinWS.userId
-		}
-	];
-	var t = e.map(function(e) {
-		return e.id
-	});
-
-	let XXX = await vConinWS.getUserScores(t)
-		.then(function(t) {
-			return e.map(function(e) {
-				e.score = t[e.id] || 0
-				return e;
-			})
-		});
-
-	console.log("Users score: ", XXX);
-})();*/
-// -------------
-
 async function startBooster(tw) {
-
 	tryStartTTL && clearTimeout(tryStartTTL);
 	tryStartTTL = setTimeout(()=> {
 		con("Try start...");
 
 		vConinWS.run(URLWS, _=> {
-			con("Boost start");
-
-			boosterTTL && clearInterval(boosterTTL);
-			updPlaceTTL && clearInterval(updPlaceTTL);
-			boosterTTL = setInterval(_=> {
-				vConinWS.click();
-				vConinWS.click();
-			}, 3e2);
-			updPlaceTTL = setInterval(async _=> {
-				await vConinWS.getMyPlace();
-			}, 1e4);
+			con("Boost started");
 		});
 	}, (tw || 1e3));
 }
-startBooster();
 
 
 
+// Обработка командной строки
 let rl = ReadLine.createInterface(process.stdin, process.stdout);
 rl.setPrompt('_> ');
 rl.prompt();
@@ -155,15 +92,11 @@ rl.questionAsync = (question) => {
 		rl.question(question, resolve);
 	});
 };
-
 rl.on('line', async (line) => {
+	if(!URLWS) return;
+
 	switch(line.trim()) {
 		case '':
-			break;
-
-		case 'place':
-			let myPlace = await vConinWS.getMyPlace();
-			console.log("User place: ", myPlace);
 			break;
 
 		case 'info':
@@ -197,63 +130,50 @@ rl.on('line', async (line) => {
 			break;
 	}
 });
+// END
 
 
-// ******************
 
-function formateSCORE(e) {
-	return arguments.length > 1 && void 0 !== arguments[1] && arguments[1] ? f22(e / 1e3, 3, ",", " ") : s22(e)
+// Попытка запуска
+if(!DONEURL) {
+	if(!VK_TOKEN)
+		return con("FUUC", true);
+
+	(async function inVKProc(token) {
+		vk.token = token;
+		try {
+			let { mobile_iframe_url } = (await vk.api.apps.get({
+				app_id: 6915965
+			})).items[0];
+
+			if(!mobile_iframe_url)
+				throw("Ссылка на приложение не получена");
+			
+			if(!USER_ID) {
+				let { id } = (await vk.api.users.get())[0];
+				if(!id)
+					throw("ID пользователя не получен");
+
+				USER_ID = id;
+			}
+
+			formatWSS(mobile_iframe_url);
+			startBooster();
+
+		} catch(error) {
+			console.error('API Error:', error);
+		}
+	})(VK_TOKEN);
+
 }
-function s22(e) {
-	return (e / 1e3).toFixed(3).toString().replace(".", ",")
+else {
+	formatWSS(DONEURL);
+	startBooster();
 }
-function f22(e, t, n, r) {
-	var o = void 0,
-	i = void 0,
-	a = void 0,
-	u = void 0,
-	l = void 0;
-	return o = parseInt(e = (+e || 0).toFixed(t), 10) + "", (i = o.length) > 3 ? i %= 3 : i = 0, l = i ? o.substr(0, i) + r : "", a = o.substr(i).replace(/(\d{3})(?=\d)/g, "$1" + r), u = t ? n + Math.abs(e - o).toFixed(t).replace(/-/, 0).slice(2) : "", l + a + u
-}
-// ******************
 
-colors.setTheme({
-	dateBG: 'bgMagenta',
-	dataC: 'yellow',
-	warnBG: 'bgBlack',
-	warn: 'yellow',
-	errorBG: 'bgBlack',
-	error: 'red'
-});
-function con(message, color, colorBG) {
-	if(message === undefined) {
-		console.log("\n")
-		return;
-	}
 
-	if(color === true) {
-		color = "red";
-		colorBG = "Blue";
-	}
-
-	colorBG = "bg"+ ((typeof colorBG == "string")?colorBG:"Black");
-	color = (typeof color == "string")?color:"green";
-
-	console.log(colors.dateBG( '[' +dateF()+ ']' )+": "+ colors[colorBG](colors[color](message)) );
-}
-function dateF(date) {
-	if(!isNaN(date) && date < 9900000000)
-		date *= 1000; // UNIXto
-	date = date!==undefined ? new Date(date) : new Date();
-	
-	var dYear = date.getFullYear()
-		, dMonthF = (date.getMonth()+1)
-		, dMonth = dMonthF > 9 ? dMonthF : "0"+dMonthF
-		, dDay = date.getDate() > 9 ? date.getDate() : "0"+date.getDate()
-		, dHour = date.getHours() > 9 ? date.getHours() : "0"+date.getHours()
-		, dMinutes = date.getMinutes() > 9 ? date.getMinutes() : "0"+date.getMinutes()
-		, dSeconds = date.getSeconds() > 9 ? date.getSeconds() : "0"+date.getSeconds()
-		, date_format = dDay +'.' +dMonth +'.' +dYear +' '+ dHour + ':' + dMinutes + ':' + dSeconds;
-	
-	return date_format;
+function formatWSS(LINK) {
+	let GSEARCH = url.parse(LINK),
+		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/";
+	return URLWS = NADDRWS + (USER_ID % 4) + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
 }
