@@ -1,0 +1,29 @@
+{
+  "name": "vcoin",
+  "version": "1.0.0",
+  "description": "VC Coin Miner",
+  "main": "index.js",
+  "dependencies": {
+    "colors": "^1.3.3",
+    "vk-io": "^4.0.0-rc.16",
+    "ws": "^6.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xTCry/VCoin.git"
+  },
+  "keywords": [
+    "vk",
+    "coin"
+  ],
+  "author": "xTCry (Vladislav Khr)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xTCry/VCoin/issues"
+  },
+  "homepage": "https://github.com/xTCry/VCoin#readme"
+}
