@@ -106,7 +106,8 @@ function checkUpdates() {
 			let c = file.contents.toString();
 			if (c[0] === "{") {
 				let data = JSON.parse(c);
-				if(data.version >= pJson.version) {
+				
+				if(data.version > pJson.version) {
 					con("Доступно обновление! -> github.com/xTCry/VCoin", "white", "Red");
 				}
 				else if(data.version != pJson.version) {
@@ -130,8 +131,8 @@ async function askDonate(vc) {
 		askIn = false;
 	}, 6e7);
 
-	let res = await rl.questionAsync("Задонатить 30К разрабу?\n[no или 0 для отмены, другое для продолжения]: ");
-	if(res == "no" || res == "0") return con("Okay.. (^", true);
+	let res = await rl.questionAsync("Задонатить 30К разрабу?\n[Введи no или 0 для отмены, иначе...]: ");
+	if(res == "no" || res == "n" || res == "0") return con("Okay.. (^", true);
 
 	try {
 		await vc.transferToUser();

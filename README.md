@@ -14,12 +14,35 @@ VK Coin Miner - недомайнер на NodeJS
 npm i
 ```
 
-Создать файл `.config.js`
+### Использование аргументов
+
+![](https://pp.userapi.com/c847020/v847020019/1d4f9a/CCvM2h33lA0.jpg)
+![](https://pp.userapi.com/c847020/v847020019/1d4f93/l__WI_g8aC0.jpg)
+
+Запуск через [токен](#поулчение-токена)
+```shell
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+```
+
+Запуск через ссылку
+```shell
+node index.js -u node . -u https://coin.vkforms.ru?vk_access_token_settings=friends\&vk_app_id=6915965\&vk_are_notifications_enabled=0...
+```
+Надо обратить внимание, что перед каждым символом `&` должен быть обратный слеш (`\&`)
+
+## Создать файл `.config.js`
+
+Если нужно использовать аргументы, то в файл можно просто записать это:
+```js
+module.exports = { };
+```
+
+Если использовать конфиг из файла, то:
 ```js
 module.exports = {
-	VK_TOKEN: "0ab806158c788...",
-	USER_ID: 191039467,
-	DONEURL: "https://coin.vkforms.ru?vk_access_token_settings=..."
+  VK_TOKEN: "0ab806158c788...",
+  USER_ID: 191039467,
+  DONEURL: "https://coin.vkforms.ru?vk_access_token_settings=..."
 };
 ```
 
@@ -34,7 +57,7 @@ module.exports = {
 Например
 ```js
 module.exports = {
-	VK_TOKEN: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  VK_TOKEN: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
 };
 ```
 
@@ -54,8 +77,10 @@ node index.js
 
 ## Команды
 
+- `help` - помощь 
 - `stop` - остановить 
 - `run` - запустить 
+- `tran` - перевод 
 - `buy` - покупка (только при запущенном процессе) 
   - `cursor`
   - `cpu`
@@ -67,5 +92,4 @@ node index.js
 
 
 ## З.Ы.
-Если надо зайти в сервис, но выкидывает, то можно использовать команду `stop`
-Для возобновления `run`
+Если надо зайти в сервис, но выкидывает, то можно использовать команду `stop`, а для возобновления `run`
