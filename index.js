@@ -8,7 +8,7 @@ let { USER_ID, DONEURL, VK_TOKEN } = require('./.config.js');
 
 let vk = new VK();
 let URLWS = false;
-let boosterTTL = null, tryStartTTL = null, xRestart = true, flog = false;
+let boosterTTL = null, tryStartTTL = null, xRestart = true, flog = false, tforce = false;
 
 
 
@@ -180,9 +180,9 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 			}
 		}
 
-		// Fast mode
-		if (process.argv[argn] == '-f') {
-
+		// Force token
+		if (process.argv[argn] == '-tforce') {
+			tforce = true;
 			continue;
 		}
 
@@ -201,8 +201,9 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 		// Full log mode
 		if (process.argv[argn] == "-h" || process.argv[argn] == "-help") {
 			ccon("-- VCoins arguments --", "red");
-			ccon("-help			- вывод аргументов");
+			ccon("-help			- ...");
 			ccon("-flog			- подробные логи");
+			ccon("-tforce		- токен принудительно");
 			ccon("-u [URL]		- задать ссылку");
 			ccon("-t [TOKEN]	- задать токен");
 			process.exit();
@@ -212,7 +213,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 }
 
 // Попытка запуска
-if(!DONEURL) {
+if(!DONEURL || tforce) {
 	if(!VK_TOKEN) {
 		con("Получить токен можно тут -> vk.cc/9eSo1E", true);
 		return process.exit();
@@ -249,7 +250,7 @@ else {
 	if(!USER_ID) {
 		let GSEARCH = url.parse(DONEURL, true);
 		if(!GSEARCH.query || !GSEARCH.query.vk_user_id) {
-			con("В ссылке не нашлось vk_user_idid", true);
+			con("В ссылке не нашлось vk_user_id", true);
 			return process.exit();
 		}
 		USER_ID = parseInt(GSEARCH.query.vk_user_id);
