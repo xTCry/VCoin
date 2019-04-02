@@ -32,7 +32,9 @@ node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 ```shell
 node index.js -u https://coin.vkforms.ru?vk_access_token_settings=friends\&vk_app_id=6915965\&vk_are_notifications_enabled=0...
 ```
-Надо обратить внимание, что перед каждым символом `&` должен быть обратный слеш (`\&`)
+> Linux: Надо обратить внимание, что перед каждым символом `&` должен быть обратный слеш (`\&`)
+
+> Windows: ссылку указать в кавычках 
 
 ## Создать файл `.config.js`
 
