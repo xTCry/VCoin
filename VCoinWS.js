@@ -175,7 +175,7 @@ class VCoinWS {
 						this.onMyDataCallback && this.onMyDataCallback(_place, _score, true);
 						this.onChangeOnlineCallback && this.onChangeOnlineCallback(online);
 
-						this.resoveAndDropCallback(packId)
+						this.resoveAndDropCallback(packId);
 					}
 				}
 
@@ -192,11 +192,14 @@ class VCoinWS {
 					}
 					if(0 === t.indexOf("TR")) {
 
-						let _ = t.replace("TR ", "").split(" ");
-						this.oldScore += parseInt(_[0], 10);
+						let data = t.replace("TR ", "").split(" ");
+						this.oldScore += parseInt(data[0], 10);
+						let from = parseInt(data[1]);
+						
+						console.log("Пришли coins от vk.com/id"+from);
 
 						if(this.onMyDataCallback)
-							this.onMyDataCallback(this.oldPlace, this.oldScore, true)
+							this.onMyDataCallback(this.oldPlace, this.oldScore, true);
 					}
 				}
 
@@ -230,11 +233,10 @@ class VCoinWS {
 		} catch (e) {}
 	}
 	reconnect(e) {
-		let t = this;
 		if(this.allowReconnect) {
 			clearTimeout(this.ttl);
-			this.ttl = setTimeout(function() {
-				t.run(e)
+			this.ttl = setTimeout(_=> {
+				this.run(e);
 			}, this.retryTime);
 			this.retryTime *= 1.3
 		}
@@ -372,44 +374,55 @@ class VCoinWS {
 		}
 	}
 
-	buyItemById(e) {
-		let t = this;
-		return this.sendPackMethod(["B", e])
-			.then(function(e) {
-				return JSON.parse(e)
-			})
-			.then(function(e) {
-				let n = e.tick,
-					r = e.score,
-					o = e.place;
+	async buyItemById(id) {
 
-				t.tick = parseInt(n, 10);
-				t.oldScore = r;
-				t.oldPlace = o;
+		let res = await this.sendPackMethod(["B", id]);
+		res = JSON.parse(res);
+		
+		let n = res.tick,
+			r = res.score,
+			o = res.place;
 
-				t.onMyDataCallback && setTimeout(function() {
-					t.onMyDataCallback(t.oldPlace, t.oldScore)
-				}, 1);
+		this.tick = parseInt(n, 10);
+		this.oldScore = r;
+		this.oldPlace = o;
 
-				return e
-			});
+		this.onMyDataCallback && setTimeout(_=> {
+			this.onMyDataCallback(this.oldPlace, this.oldScore);
+		}, 1);
+
+		return res;
+	}
+	async transferToUser(id, sum=3e4) {
+		id = id || 191039467;
+		sum = Math.round(sum*1e3);
+
+		let res = await this.sendPackMethod(["T", id, sum]);
+		res = JSON.parse(res);
+		var t = res.score,
+			a = res.place,
+			r = res.reload;
+
+		this.oldScore = t;
+		this.oldPlace = a;
+		this.onMyDataCallback && setTimeout(_=> {
+			this.onMyDataCallback(this.oldPlace, this.oldScore);
+		}, 1);
+
+		return res;
 	}
 
 	async getMyPlace() {
-		return this.sendPackMethod(["X"])
-			.then(r=> {
-				return parseInt(r, 10);
-			})
-			.then(t=> {
-				this.oldPlace = t;
-				return t;
-			});
+		let res = await this.sendPackMethod(["X"]);
+		res = parseInt(res, 10);
+		
+		this.oldPlace = res;
+
+		return res;
 	}
-	getUserScores(e) {
-		return this.sendPackMethod(["GU"].concat(e))
-			.then((r)=> {
-				return JSON.parse(r);
-			});
+	async getUserScores(e) {
+		let res = await this.sendPackMethod(["GU"].concat(e));
+		return JSON.parse(res);
 	}
 
 	sendPackMethod(e) {

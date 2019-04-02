@@ -1,15 +1,14 @@
 const url = require('url'),
-	ReadLine = require('readline'),
 	{ VK } = require('vk-io');
 
 const VCoinWS = require('./VCoinWS');
-const { con, formateSCORE, hashPassCoin } = require('./helpers');
+const { con, ccon, formateSCORE, hashPassCoin, rl, askDonate } = require('./helpers');
 let { USER_ID, DONEURL, VK_TOKEN } = require('./.config.js');
 
 
 let vk = new VK();
 let URLWS = false;
-let boosterTTL = null, tryStartTTL = null, xRestart = true;
+let boosterTTL = null, tryStartTTL = null, xRestart = true, flog = false;
 
 
 
@@ -28,15 +27,17 @@ vConinWS.onMissClickEvent(function() {
 	}
 
 	if(++missCount > 10)
-		con("Ваши нажатия не засчитываются. Похоже, Вы нажимаете на кнопку слишком часто или у Вас проблемы с подключением.", true);
+		con("Ваши нажатия не засчитываются. Похоже, у Вас проблемы с подключением.", true);
 });
 
-vConinWS.onReceiveDataEvent(function(place, score) {
+vConinWS.onReceiveDataEvent(async function(place, score) {
 	var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2];
 
-	if(place > 0)
+	if(place > 0) {
 		con("В ТОПе: " + place + "\tСЧЕТ: "+ formateSCORE(score, true), "yellow");
+		if(score > 3e7) await askDonate(vConinWS);
 		// process.stdout.write("В ТОПе: " + place + "\tСЧЕТ: "+(score/1000)+"\r");
+	}
 });
 
 vConinWS.onWaitEvent(function(e) {
@@ -84,14 +85,6 @@ async function startBooster(tw) {
 
 
 // Обработка командной строки
-let rl = ReadLine.createInterface(process.stdin, process.stdout);
-rl.setPrompt('_> ');
-rl.prompt();
-rl.questionAsync = (question) => {
-	return new Promise((resolve) => {
-		rl.question(question, resolve);
-	});
-};
 rl.on('line', async (line) => {
 	if(!URLWS) return;
 
@@ -121,12 +114,38 @@ rl.on('line', async (line) => {
 		case 'b':
 		case 'buy':
 			let item = await rl.questionAsync("Enter item name [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc]: ");
-
+			if(!item) return;
 			let result = await vConinWS.buyItemById(item);
 			if(result && result.items)
 				delete result.items;
 			console.log("Result BUY: ", result);
 			
+			break;
+
+		case 'tran':
+		case 'transfer':
+			let count = await rl.questionAsync("Сколько: ");
+			let id = await rl.questionAsync("Кому: ");
+			let conf = await rl.questionAsync("Точно? [yes]: ");
+			if(conf != "yes" || !id || !count) return con("Отменено", true);
+
+			try {
+				await vConinWS.transferToUser(id, count);
+				con("Успешный перевод.", "black", "Green");
+			} catch(e) {
+				con("Hе удалось перевести ):", true);
+				console.error(e);
+			}
+			break;
+
+		case "?":
+		case "help":
+			ccon("-- VCoins --", "red");
+			ccon("info	- обновит текущий уровень");
+			ccon("stop	- остановит майнер");
+			ccon("run		- запустит майнер");
+			ccon("buy		- покупка");
+			ccon("tran	- перевод");
 			break;
 	}
 });
@@ -134,10 +153,70 @@ rl.on('line', async (line) => {
 
 
 
+// Parse arguments
+for (var argn = 2; argn < process.argv.length; argn++) {
+
+	if(["-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u"].includes(process.argv[argn])) {
+
+		// Token
+		if (process.argv[argn] == '-t') {
+			let dTest = process.argv[argn + 1];
+			if(typeof dTest == "string" && dTest.length > 80 && dTest.length < 90) {
+				con("Token set.")
+				VK_TOKEN = dTest;
+				argn++;
+				continue;
+			}
+		}
+
+		// Custom URL
+		if (process.argv[argn] == '-u') {
+			let dTest = process.argv[argn + 1];
+			if(typeof dTest == "string" && dTest.length > 200 && dTest.length < 255) {
+				con("Custom URL set.")
+				DONEURL = dTest;
+				argn++;
+				continue;
+			}
+		}
+
+		// Fast mode
+		if (process.argv[argn] == '-f') {
+
+			continue;
+		}
+
+		// Автоматическая закупка
+		if (process.argv[argn] == '-autobuy') {
+			// Soon
+			continue;
+		}
+
+		// Full log mode
+		if (process.argv[argn] == '-flog') {
+			flog = true;
+			continue;
+		}
+
+		// Full log mode
+		if (process.argv[argn] == "-h" || process.argv[argn] == "-help") {
+			ccon("-- VCoins arguments --", "red");
+			ccon("-help			- вывод аргументов");
+			ccon("-flog			- подробные логи");
+			ccon("-u [URL]		- задать ссылку");
+			ccon("-t [TOKEN]	- задать токен");
+			process.exit();
+			continue;
+		}
+	}
+}
+
 // Попытка запуска
 if(!DONEURL) {
-	if(!VK_TOKEN)
-		return con("FUUC", true);
+	if(!VK_TOKEN) {
+		con("Получить токен можно тут -> vk.cc/9eSo1E", true);
+		return process.exit();
+	}
 
 	(async function inVKProc(token) {
 		vk.token = token;
@@ -162,11 +241,20 @@ if(!DONEURL) {
 
 		} catch(error) {
 			console.error('API Error:', error);
+			process.exit();
 		}
 	})(VK_TOKEN);
-
 }
 else {
+	if(!USER_ID) {
+		let GSEARCH = url.parse(DONEURL, true);
+		if(!GSEARCH.query || !GSEARCH.query.vk_user_id) {
+			con("В ссылке не нашлось vk_user_idid", true);
+			return process.exit();
+		}
+		USER_ID = parseInt(GSEARCH.query.vk_user_id);
+	}
+
 	formatWSS(DONEURL);
 	startBooster();
 }
@@ -175,5 +263,7 @@ else {
 function formatWSS(LINK) {
 	let GSEARCH = url.parse(LINK),
 		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/";
-	return URLWS = NADDRWS + (USER_ID % 4) + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
+	URLWS = NADDRWS + (USER_ID % 8) + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
+	flog && console.log("formatWSS: ", URLWS);
+	return URLWS;
 }

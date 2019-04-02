@@ -1,7 +1,18 @@
-const colors = require('colors/safe');
+const colors = require('colors/safe'),
+	ReadLine = require('readline'),
+	GithubContent = require('github-content');
+const pJson = require('./package.json');
+
+// GitHub data
+let GitCUpdate = new GithubContent({
+	owner: 'xtcry',
+	repo: 'vcoin',
+	branch: 'master'
+});
+
+let checkUpdateTTL = null, askIn = false, askInTTL = null;
 
 // ******************
-
 function formateSCORE(e) {
 	return (arguments.length > 1 && void 0 !== arguments[1] && arguments[1])?
 	function(e, t, n, a) {
@@ -33,16 +44,26 @@ function con(message, color, colorBG) {
 		console.log("\n")
 		return;
 	}
-
 	if(color === true) {
 		color = "red";
 		colorBG = "Blue";
 	}
-
 	colorBG = "bg"+ ((typeof colorBG == "string")?colorBG:"Black");
 	color = (typeof color == "string")?color:"green";
-
 	console.log(colors.dateBG( '[' +dateF()+ ']' )+": "+ colors[colorBG](colors[color](message)) );
+}
+function ccon(message, color, colorBG) {
+    if(message === undefined) {
+		console.log("\n")
+		return;
+	}
+    if(color === true) {
+        color = "red";
+        colorBG = "Blue";
+    }
+    colorBG = "bg"+ ((typeof colorBG == "string")?colorBG:"Black");
+    color = (typeof color == "string")?color:"green";
+    console.log(colors[colorBG](colors[color](message)) );
 }
 function dateF(date) {
 	if(!isNaN(date) && date < 9900000000)
@@ -61,6 +82,14 @@ function dateF(date) {
 	return date_format;
 }
 
+let rl = ReadLine.createInterface(process.stdin, process.stdout);
+rl.setPrompt('_> ');
+rl.prompt();
+rl.questionAsync = (question) => {
+	return new Promise((resolve) => {
+		rl.question(question, resolve);
+	});
+};
 
 
 function hashPassCoin(e, t) {
@@ -70,9 +99,56 @@ function hashPassCoin(e, t) {
 }
 
 
+function checkUpdates() {
+	GitCUpdate.files([ 'package.json' ], (err, results)=> {
+		if (err) return;
+		results.forEach(file=> {
+			let c = file.contents.toString();
+			if (c[0] === "{") {
+				let data = JSON.parse(c);
+				if(data.version >= pJson.version) {
+					con("Доступно обновление! -> github.com/xTCry/VCoin", "white", "Red");
+				}
+				else if(data.version != pJson.version) {
+					con("Версии различаются! -> github.com/xTCry/VCoin", "white", "Red");
+				}
+			}
+		});
+	});
+}
+
+checkUpdateTTL = setInterval(_=> {
+	checkUpdates();
+}, 5e5);
+checkUpdates();
+
+async function askDonate(vc) {
+	if(askIn) return;
+	askIn = true;
+
+	setTimeout(_=> {
+		askIn = false;
+	}, 6e7);
+
+	let res = await rl.questionAsync("Задонатить 30К разрабу?\n[no или 0 для отмены, другое для продолжения]: ");
+	if(res == "no" || res == "0") return con("Okay.. (^", true);
+
+	try {
+		await vc.transferToUser();
+		con("Успешный перевод. Спасибо (:", "black", "Green");
+	} catch(e) {
+		con("Hе удалось перевести ):", true);
+	}
+}
+
+
+
 module.exports = {
-	con,
+	rl,
+	con, ccon,
 	formateSCORE,
 	hashPassCoin,
+	checkUpdates, checkUpdateTTL,
+	askDonate,
 }
 
