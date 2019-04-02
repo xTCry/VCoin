@@ -156,7 +156,7 @@ rl.on('line', async (line) => {
 // Parse arguments
 for (var argn = 2; argn < process.argv.length; argn++) {
 
-	if(["-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u"].includes(process.argv[argn])) {
+	if(["-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce"].includes(process.argv[argn])) {
 
 		// Token
 		if (process.argv[argn] == '-t') {
@@ -173,7 +173,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 		if (process.argv[argn] == '-u') {
 			let dTest = process.argv[argn + 1];
 			if(typeof dTest == "string" && dTest.length > 200 && dTest.length < 255) {
-				con("Custom URL set.")
+				con("Custom URL set.");
 				DONEURL = dTest;
 				argn++;
 				continue;
@@ -182,6 +182,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 
 		// Force token
 		if (process.argv[argn] == '-tforce') {
+			con("Force token set.")
 			tforce = true;
 			continue;
 		}
@@ -198,13 +199,13 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 			continue;
 		}
 
-		// Full log mode
+		// Help info
 		if (process.argv[argn] == "-h" || process.argv[argn] == "-help") {
 			ccon("-- VCoins arguments --", "red");
-			ccon("-help			- ...");
-			ccon("-flog			- подробные логи");
+			ccon("-help		- ...");
+			ccon("-flog		- подробные логи");
 			ccon("-tforce		- токен принудительно");
-			ccon("-u [URL]		- задать ссылку");
+			ccon("-u [URL]	- задать ссылку");
 			ccon("-t [TOKEN]	- задать токен");
 			process.exit();
 			continue;

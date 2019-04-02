@@ -16,8 +16,12 @@ npm i
 
 ### Использование аргументов
 
-![](https://pp.userapi.com/c847020/v847020019/1d4f9a/CCvM2h33lA0.jpg)
-![](https://pp.userapi.com/c847020/v847020019/1d4f93/l__WI_g8aC0.jpg)
+![](https://pp.userapi.com/c847020/v847020485/1d72be/ktfWqwnMjEY.jpg)
+![](https://pp.userapi.com/c847020/v847020485/1d72a7/Fxp2lGDPpLI.jpg)
+
+* -tforce - токен принудительно (например, если он передан в аргумент, а конфиг не пустой)
+* -u [URL]        - задает ссылку
+* -t [TOKEN]      - задает токен
 
 Запуск через [токен](#поулчение-токена)
 ```shell
