@@ -3,6 +3,14 @@ VK Coin Miner - недомайнер на NodeJS
 
 ![](https://pp.userapi.com/c852132/v852132090/f0416/lmQeM-pCAz0.jpg)
 
+<!-- <span class="badge-npmversion">
+  <a href="https://npmjs.org/package/vcoin" title="View this project on NPM"><img src="https://img.shields.io/npm/v/projectz.svg" alt="NPM version" /></a>
+</span> -->
+
+[![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
+[![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
+[![vcoin version](https://img.shields.io/badge/VCoin-1.1.7-yellow.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
+
 ***
 
 ## Для начала
@@ -19,7 +27,7 @@ npm i
 ![](https://pp.userapi.com/c847020/v847020485/1d72be/ktfWqwnMjEY.jpg)
 ![](https://pp.userapi.com/c847020/v847020485/1d72a7/Fxp2lGDPpLI.jpg)
 
-* -tforce - токен принудительно (например, если он передан в аргумент, а конфиг не пустой)
+* -tforce - использовать токен принудительно (если в `.config.js` задана ссылка)
 * -u [URL]        - задает ссылку
 * -t [TOKEN]      - задает токен
 
@@ -98,4 +106,12 @@ node index.js
 
 
 ## З.Ы.
-Если надо зайти в сервис, но выкидывает, то можно использовать команду `stop`, а для возобновления `run`
+> Если надо зайти в сервис, но выкидывает, то можно использовать команду `stop`, а для возобновления `run`
+
+> При переводе берется незначительная комиссия в виде `10%`
+
+> При lineQuestion вывод лога для удобства приостанавливается
+
+
+[![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
+

@@ -11,7 +11,10 @@ let GitCUpdate = new GithubContent({
 	branch: 'master'
 });
 
-let checkUpdateTTL = null, askIn = false, askInTTL = null;
+let checkUpdateTTL = null,
+	askIn = false,
+	askInTTL = null,
+	onUpdatesCB = false;
 
 // ******************
 function formateSCORE(e) {
@@ -54,17 +57,17 @@ function con(message, color, colorBG) {
 	console.log(colors.dateBG( '[' +dateF()+ ']' )+": "+ colors[colorBG](colors[color](message)) );
 }
 function ccon(message, color, colorBG) {
-    if(message === undefined) {
+	if(message === undefined) {
 		console.log("\n")
 		return;
 	}
-    if(color === true) {
-        color = "red";
-        colorBG = "Blue";
-    }
-    colorBG = "bg"+ ((typeof colorBG == "string")?colorBG:"Black");
-    color = (typeof color == "string")?color:"green";
-    console.log(colors[colorBG](colors[color](message)) );
+	if(color === true) {
+		color = "red";
+		colorBG = "Blue";
+	}
+	colorBG = "bg"+ ((typeof colorBG == "string")?colorBG:"Black");
+	color = (typeof color == "string")?color:"green";
+	console.log(colors[colorBG](colors[color](message)) );
 }
 function dateF(date) {
 	if(!isNaN(date) && date < 9900000000)
@@ -86,9 +89,13 @@ function dateF(date) {
 let rl = ReadLine.createInterface(process.stdin, process.stdout);
 rl.setPrompt('_> ');
 rl.prompt();
+rl.isQst = false;
 rl.questionAsync = (question) => {
 	return new Promise((resolve) => {
-		rl.question(question, resolve);
+		rl.isQst = true;
+		rl.question(question, _=> {
+			rl.isQst = false; resolve(_);
+		});
 	});
 };
 
@@ -108,20 +115,19 @@ function checkUpdates() {
 			if (c[0] === "{") {
 				let data = JSON.parse(c);
 				
-				if(data.version > pJson.version) {
-					con("Доступно обновление! -> github.com/xTCry/VCoin", "white", "Red");
-				}
-				else if(data.version != pJson.version) {
-					con("Версии различаются! -> github.com/xTCry/VCoin", "white", "Red");
+				let msg = (data.version > pJson.version)? "Доступно обновление! -> github.com/xTCry/VCoin":
+							(data.version != pJson.version)? "Версии различаются! Проверить -> github.com/xTCry/VCoin":
+							false;
+				if(msg) {
+					if(onUpdatesCB) onUpdatesCB(msg);
+					else con(msg, "white", "Red");
 				}
 			}
 		});
 	});
 }
 
-checkUpdateTTL = setInterval(_=> {
-	checkUpdates();
-}, 5e5);
+checkUpdateTTL = setInterval(checkUpdates, 5e5);
 checkUpdates();
 
 async function askDonate(vc) {
@@ -130,10 +136,10 @@ async function askDonate(vc) {
 
 	setTimeout(_=> {
 		askIn = false;
-	}, 6e7);
+	}, 18e6);
 
-	let res = await rl.questionAsync("Задонатить 30К разрабу?\n[Введи no или 0 для отмены, иначе...]: ");
-	if(res == "no" || res == "n" || res == "0") return con("Okay.. (^", true);
+	let res = await rl.questionAsync("Задонатить 30К разрабу [yes - для подтверждения]: ");
+	if(res != "yes" || res != "y" || res != "1") return con("Okay.. (^", true);
 
 	try {
 		await vc.transferToUser();
@@ -141,6 +147,13 @@ async function askDonate(vc) {
 	} catch(e) {
 		con("Hе удалось перевести ):", true);
 	}
+}
+
+function rand(min, max) {
+	if(max===undefined) {
+		max=min; min=0;
+	}
+	return Math.floor(min + Math.random() * (max + 1 - min));
 }
 
 let cFile = "./log.txt";
@@ -172,11 +185,13 @@ module.exports = {
 	formateSCORE,
 	hashPassCoin,
 	checkUpdates, checkUpdateTTL,
+	onUpdates: cb=> (onUpdatesCB=cb, true),
 	askDonate,
 
 	existsAsync,
 	writeFileAsync,
 	appendFileAsync,
 	infLog,
+	rand,
 }
 

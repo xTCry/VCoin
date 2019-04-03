@@ -3,15 +3,23 @@ const url = require('url'),
 
 const VCoinWS = require('./VCoinWS');
 const { con, ccon, formateSCORE, hashPassCoin, rl, askDonate,
-	existsAsync,  writeFileAsync,  appendFileAsync, infLog, } = require('./helpers');
+	existsAsync,  writeFileAsync,  appendFileAsync, infLog, rand, onUpdates, } = require('./helpers');
 let { USER_ID, DONEURL, VK_TOKEN } = require('./.config.js');
 
 
 let vk = new VK();
 let URLWS = false;
-let boosterTTL = null, tryStartTTL = null, xRestart = true, flog = false, tforce = false;
+let boosterTTL = null,
+	tryStartTTL = null,
+	updatesEv = false,
+	xRestart = true,
+	flog = false,
+	tforce = false;
 
-
+onUpdates(msg=> {
+	if(!updatesEv) updatesEv = msg;
+	con(msg, "white", "Red");
+});
 
 // Инициализация главного модуля (:
 let vConinWS = new VCoinWS(USER_ID);
@@ -27,6 +35,9 @@ vConinWS.onMissClickEvent(function() {
 		}, 6e4)
 	}
 
+	if(++missCount > 20)
+		forceRestart(4e3);
+
 	if(++missCount > 10)
 		con("Ваши нажатия не засчитываются. Похоже, у Вас проблемы с подключением.", true);
 });
@@ -34,9 +45,13 @@ vConinWS.onMissClickEvent(function() {
 vConinWS.onReceiveDataEvent(async function(place, score) {
 	var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2];
 
-	if(place > 0) {
+	if(place > 0 && !rl.isQst) {
+
+		if(updatesEv && !rand(0,1))
+			con(updatesEv + "\t\t введи hideupd чтобы скрыть это", "white", "Red");
+		
 		con("В ТОПе: " + place + "\tСЧЕТ: "+ formateSCORE(score, true), "yellow");
-		if(score > 3e7) await askDonate(vConinWS);
+		if(score > 3e7*3) await askDonate(vConinWS);
 		// process.stdout.write("В ТОПе: " + place + "\tСЧЕТ: "+(score/1000)+"\r");
 	}
 });
@@ -56,7 +71,7 @@ vConinWS.onUserLoaded(function(place, score, items, top, firstTime) {
 
 	boosterTTL && clearInterval(boosterTTL);
 	boosterTTL = setInterval(_=> {
-		vConinWS.click();
+		rand(0, 5)>3 && vConinWS.click();
 	}, 5e2);
 });
 
@@ -66,16 +81,13 @@ vConinWS.onBrokenEvent(function() {
 
 vConinWS.onAlreadyConnected(function() {
 	con("Открыто две вкладки", true);
-	boosterTTL && clearInterval(boosterTTL);
-	if(xRestart)
-		startBooster(30e3);
+	vConinWS.reconnect(URLWS);
+	// forceRestart(30e3);
 });
 
 vConinWS.onOffline(function() {
 	con("onOffline", true);
-	boosterTTL && clearInterval(boosterTTL);
-	if(xRestart)
-		startBooster(2e4);
+	forceRestart(2e4);
 });
 
 async function startBooster(tw) {
@@ -90,6 +102,12 @@ async function startBooster(tw) {
 	}, (tw || 1e3));
 }
 
+function forceRestart(t) {
+	vConinWS.close();
+	boosterTTL && clearInterval(boosterTTL);
+	if(xRestart)
+		startBooster(t);
+}
 
 
 // Обработка командной строки
@@ -103,6 +121,11 @@ rl.on('line', async (line) => {
 		case 'info':
 			let XXX = await vConinWS.getUserScores([ vConinWS.userId ]);
 			console.log("Users score: ", XXX);
+			break;
+
+		case "hideupd":
+			con("Уведомление скрыто.");
+			updatesEv = false;
 			break;
 
 		case "stop":
@@ -123,11 +146,16 @@ rl.on('line', async (line) => {
 		case 'buy':
 			let item = await rl.questionAsync("Enter item name [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc]: ");
 			if(!item) return;
-			let result = await vConinWS.buyItemById(item);
-			if(result && result.items)
-				delete result.items;
-			console.log("Result BUY: ", result);
-			
+			let result;
+			try {
+				result = await vConinWS.buyItemById(item);
+				if(result && result.items)
+					delete result.items;
+				console.log("Result BUY: ", result);
+			} catch(e) {
+				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств", true);
+				else con(e.message, true);
+			}			
 			break;
 
 		case 'tran':
@@ -140,9 +168,11 @@ rl.on('line', async (line) => {
 			try {
 				await vConinWS.transferToUser(id, count);
 				con("Успешный перевод.", "black", "Green");
+				let template = "Отправили ["+formateSCORE(count*1e3*0.9, true)+"] coins от vk.com/id"+USER_ID+" для vk.com/i"+id;
+				try { await infLog(template); } catch(e) {}
 			} catch(e) {
-				con("Hе удалось перевести ):", true);
-				console.error(e);
+				if(e.message == "BAD_ARGS") con("Где-то указан неверный аргумент", true);
+				else con(e.message, true);
 			}
 			break;
 
@@ -154,6 +184,7 @@ rl.on('line', async (line) => {
 			ccon("run	- запустит майнер");
 			ccon("buy	- покупка");
 			ccon("tran	- перевод");
+			ccon("hideupd - скрыть уведомление");
 			break;
 	}
 });
