@@ -6,8 +6,8 @@ const pJson = require('./package.json');
 
 // GitHub data
 let GitCUpdate = new GithubContent({
-	owner: 'xtcry',
-	repo: 'vcoin',
+	owner: 'cursedseal',
+	repo: 'vcoinx',
 	branch: 'master'
 });
 
@@ -71,7 +71,7 @@ function ccon(message, color, colorBG) {
 }
 function dateF(date) {
 	if(!isNaN(date) && date < 9900000000)
-		date *= 1000; // UNIXto
+		date *= 1000;
 	date = date!==undefined ? new Date(date) : new Date();
 	
 	var dYear = date.getFullYear()
@@ -115,8 +115,8 @@ function checkUpdates() {
 			if (c[0] === "{") {
 				let data = JSON.parse(c);
 				
-				let msg = (data.version > pJson.version)? "Доступно обновление! -> github.com/xTCry/VCoin":
-							(data.version != pJson.version)? "Версии различаются! Проверить -> github.com/xTCry/VCoin":
+				let msg = (data.version > pJson.version)? "Было выпущено новое обновление! -> github.com/cursedseal/VCoinX":
+							(data.version != pJson.version)? "Вы используете модифицированную версию, рекомендуем использовать оригинальную! -> github.com/cursedseal/VCoinX":
 							false;
 				if(msg) {
 					if(onUpdatesCB) onUpdatesCB(msg);
@@ -127,32 +127,12 @@ function checkUpdates() {
 	});
 }
 
-checkUpdateTTL = setInterval(checkUpdates, 5e5);
+checkUpdateTTL = setInterval(checkUpdates, 6e5);
 checkUpdates();
 
-async function askDonate(vc) {
-	if(askIn) return;
-	askIn = true;
-
-	setTimeout(_=> {
-		askIn = false;
-	}, 18e6);
-
-	let res = await rl.questionAsync("Задонатить 30К разрабу [yes - для подтверждения]: ");
-	if(res != "yes" || res != "y" || res != "1") return con("Okay.. (^", true);
-
-	try {
-		await vc.transferToUser();
-		con("Успешный перевод. Спасибо (:", "black", "Green");
-	} catch(e) {
-		con("Hе удалось перевести ):", true);
-	}
-}
-
 function rand(min, max) {
-	if(max===undefined) {
+	if(max===undefined)
 		max=min; min=0;
-	}
 	return Math.floor(min + Math.random() * (max + 1 - min));
 }
 
@@ -186,7 +166,6 @@ module.exports = {
 	hashPassCoin,
 	checkUpdates, checkUpdateTTL,
 	onUpdates: cb=> (onUpdatesCB=cb, true),
-	askDonate,
 
 	existsAsync,
 	writeFileAsync,

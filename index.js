@@ -2,9 +2,9 @@ const url = require('url'),
 	{ VK } = require('vk-io');
 
 const VCoinWS = require('./VCoinWS');
-const { con, ccon, formateSCORE, hashPassCoin, rl, askDonate,
+const { con, ccon, formateSCORE, hashPassCoin, rl,
 	existsAsync,  writeFileAsync,  appendFileAsync, infLog, rand, onUpdates, } = require('./helpers');
-let { USER_ID, DONEURL, VK_TOKEN } = require('./.config.js');
+let { USER_ID, DONEURL, VK_TOKEN } = require('./config.js');
 
 
 let vk = new VK();
@@ -21,7 +21,6 @@ onUpdates(msg=> {
 	con(msg, "white", "Red");
 });
 
-// Инициализация главного модуля (:
 let vConinWS = new VCoinWS(USER_ID);
 
 
@@ -48,11 +47,9 @@ vConinWS.onReceiveDataEvent(async function(place, score) {
 	if(place > 0 && !rl.isQst) {
 
 		if(updatesEv && !rand(0,1))
-			con(updatesEv + "\t\t введи hideupd чтобы скрыть это", "white", "Red");
+			con(updatesEv + "\n\t\t\t Введите \'hideupd\' для скрытия уведомления.", "white", "Red");
 		
-		con("В ТОПе: " + place + "\tСЧЕТ: "+ formateSCORE(score, true), "yellow");
-		if(score > 3e7*3) await askDonate(vConinWS);
-		// process.stdout.write("В ТОПе: " + place + "\tСЧЕТ: "+(score/1000)+"\r");
+		con("Позиция в топе: " + place + "\tКоличество коинов: "+ formateSCORE(score, true), "yellow");
 	}
 });
 
@@ -80,9 +77,8 @@ vConinWS.onBrokenEvent(function() {
 });
 
 vConinWS.onAlreadyConnected(function() {
-	con("Открыто две вкладки", true);
+	con("Обнаружено открытие приложения с другого устройства.", true);
 	vConinWS.reconnect(URLWS);
-	// forceRestart(30e3);
 });
 
 vConinWS.onOffline(function() {
@@ -93,11 +89,11 @@ vConinWS.onOffline(function() {
 async function startBooster(tw) {
 	tryStartTTL && clearTimeout(tryStartTTL);
 	tryStartTTL = setTimeout(()=> {
-		con("Try start...");
+		con("Запускается VCoinX.");
 
 		vConinWS.userId = USER_ID;
 		vConinWS.run(URLWS, _=> {
-			con("Boost started");
+			con("Успешно запущен.");
 		});
 	}, (tw || 1e3));
 }
@@ -110,7 +106,6 @@ function forceRestart(t) {
 }
 
 
-// Обработка командной строки
 rl.on('line', async (line) => {
 	if(!URLWS) return;
 
@@ -120,7 +115,7 @@ rl.on('line', async (line) => {
 
 		case 'info':
 			let XXX = await vConinWS.getUserScores([ vConinWS.userId ]);
-			console.log("Users score: ", XXX);
+			console.log("Количество коинов: ", XXX);
 			break;
 
 		case "hideupd":
@@ -137,38 +132,38 @@ rl.on('line', async (line) => {
 		case "start":
 		case "run":
 			if(vConinWS.connected)
-				return con("Уже запущено");
+				return con("Приложение уже запущено");
 			xRestart = true;
 			startBooster();
 			break;
 
 		case 'b':
 		case 'buy':
-			let item = await rl.questionAsync("Enter item name [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc]: ");
+			let item = await rl.questionAsync("Введите название предмета [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc]: ");
 			if(!item) return;
 			let result;
 			try {
 				result = await vConinWS.buyItemById(item);
 				if(result && result.items)
 					delete result.items;
-				console.log("Result BUY: ", result);
+				console.log("Результат покупки: ", result);
 			} catch(e) {
-				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств", true);
+				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств.", true);
 				else con(e.message, true);
 			}			
 			break;
 
 		case 'tran':
 		case 'transfer':
-			let count = await rl.questionAsync("Сколько: ");
-			let id = await rl.questionAsync("Кому: ");
-			let conf = await rl.questionAsync("Точно? [yes]: ");
-			if(conf != "yes" || !id || !count) return con("Отменено", true);
+			let count = await rl.questionAsync("Количество: ");
+			let id = await rl.questionAsync("ID получателя: ");
+			let conf = await rl.questionAsync("Вы уверены? [yes]: ");
+			if(conf != "yes" || !id || !count) return con("Отправка неудачная, вероятно, один из параметров не был указан.", true);
 
 			try {
 				await vConinWS.transferToUser(id, count);
-				con("Успешный перевод.", "black", "Green");
-				let template = "Отправили ["+formateSCORE(count*1e3*0.9, true)+"] coins от vk.com/id"+USER_ID+" для vk.com/i"+id;
+				con("Перевод был выполнен успешно.", "black", "Green");
+				let template = "Отправили ["+formateSCORE(count*1e3, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/id"+id;
 				try { await infLog(template); } catch(e) {}
 			} catch(e) {
 				if(e.message == "BAD_ARGS") con("Где-то указан неверный аргумент", true);
@@ -178,7 +173,7 @@ rl.on('line', async (line) => {
 
 		case "?":
 		case "help":
-			ccon("-- VCoins --", "red");
+			ccon("-- VCoinX --", "red");
 			ccon("info	- обновит текущий уровень");
 			ccon("stop	- остановит майнер");
 			ccon("run	- запустит майнер");
@@ -188,7 +183,6 @@ rl.on('line', async (line) => {
 			break;
 	}
 });
-// END
 
 
 
@@ -196,12 +190,10 @@ rl.on('line', async (line) => {
 for (var argn = 2; argn < process.argv.length; argn++) {
 
 	if(["-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce"].includes(process.argv[argn])) {
-
-		// Token
 		if (process.argv[argn] == '-t') {
 			let dTest = process.argv[argn + 1];
 			if(typeof dTest == "string" && dTest.length > 80 && dTest.length < 90) {
-				con("Token set.")
+				con("Токен установлен.")
 				VK_TOKEN = dTest;
 				argn++;
 				continue;
@@ -212,7 +204,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 		if (process.argv[argn] == '-u') {
 			let dTest = process.argv[argn + 1];
 			if(typeof dTest == "string" && dTest.length > 200 && dTest.length < 255) {
-				con("Custom URL set.");
+				con("Пользовательский URL включен.");
 				DONEURL = dTest;
 				argn++;
 				continue;
@@ -221,7 +213,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 
 		// Force token
 		if (process.argv[argn] == '-tforce') {
-			con("Force token set.")
+			con("Принудительное использование токена включено.")
 			tforce = true;
 			continue;
 		}

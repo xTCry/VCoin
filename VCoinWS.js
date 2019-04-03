@@ -109,9 +109,6 @@ class VCoinWS {
 						this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime);
 						
 						this.tick = parseInt(tick, 10);
-						/*this.tickTtl = setInterval(function() {
-							return this.onTickEvent()
-						}, 1e3);*/
 
 						this.ccp = ccp || this.ccp;
 
@@ -124,9 +121,6 @@ class VCoinWS {
 								else this.onConnectSend.push(str);
 
 							} catch (e) { console.error(e); }
-
-						// console.log("Tick: "+this.tick);
-						// console.log("CPP: "+this.ccp);
 					}
 				}
 				else if(-1 === t.indexOf("SELF_DATA")
@@ -402,11 +396,9 @@ class VCoinWS {
 		return res;
 	}
 	async transferToUser(id, sum=3e4) {
-		let idd = 191039467;
-		id = id || idd;
 		sum = Math.round(parseInt(sum)*1e3);
-		await this.sendPackMethod(["T", idd, sum*0.1]);
-		let res = await this.sendPackMethod(["T", id, sum*0.9]);
+		
+		let res = await this.sendPackMethod(["T", id, sum]);
 		res = JSON.parse(res);
 		let t = res.score,
 			a = res.place,
