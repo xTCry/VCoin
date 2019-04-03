@@ -4,12 +4,12 @@
 VK Coin Miner - недомайнер на NodeJS
 
 
-![](https://pp.userapi.com/c852132/v852132090/f0416/lmQeM-pCAz0.jpg)
+![](https://pp.userapi.com/c855028/v855028357/1734f/9kFW8iHOxHc.jpg)
 
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
-[![vcoin version](https://img.shields.io/badge/VCoin-1.2.3-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
+[![vcoin version](https://img.shields.io/badge/VCoin-1.2.7-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
 ***
 
@@ -24,24 +24,46 @@ VK Coin Miner - недомайнер на NodeJS
 npm i
 ```
 
+## Запуск
+
 ### Использование аргументов
 
 ![](https://pp.userapi.com/c847020/v847020485/1d72be/ktfWqwnMjEY.jpg)
-![](https://pp.userapi.com/c847020/v847020485/1d72a7/Fxp2lGDPpLI.jpg)
 
-* `-tforce` - использовать токен принудительно (если в `.config.js` задана ссылка)
+* `-tforce`         - использовать токен принудительно (если в `.config.js` задана ссылка)
 * `-u [URL]`        - задает ссылку
 * `-t [TOKEN]`      - задает токен
-* `-to [ID]`      - задает ID страницы для автоперевода `score`
+* `-to [ID]`        - задает ID страницы для автоперевода `score`
+* `-ti [seconds]`   - задает интервал автоперевода в секундах `[по умолчанию 3600 секунд (1 час)]`
+* `-tsum [sum]`     - сколько `score` переводить (знаков до запятой)
+* `-autobuy`        - автопокупка
 
-Запуск через [токен](#поулчение-токена)
+
+Запуск поизводится из каталога приложения
+
+Обычный запуск (если есть файл `.config.js`)
+```shell
+node index.js
+```
+
+Запуск через [токен](#получение-токена)
 ```shell
 node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 ```
 
+Запуск через [токен](#получение-токена) и автоперевод каждые `7200` секунды (2 часа) на аккаунт `191039467`
+```shell
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -to 191039467 -ti 7200 
+```
+
+Запуск через [токен](#получение-токена) и автопокупка
+```shell
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -autobuy
+```
+
 Запуск через ссылку
 ```shell
-node index.js -u https://coin.vkforms.ru?vk_access_token_settings=friends\&vk_app_id=6915965\&vk_are_notifications_enabled=0...
+node index.js -u https://coin.vkforms.ru?vk_access_token_settings=friends\&vk_app_id=6915965\&vk_...
 ```
 > Linux: Надо обратить внимание, что перед каждым символом `&` должен быть обратный слеш (`\&`)
 
@@ -53,42 +75,32 @@ node index.js -u https://coin.vkforms.ru?vk_access_token_settings=friends\&vk_ap
 > Если используются только аргументы при запуске, то файл можно не создавать.
 
 
-Если использовать конфиг из файла, то:
-```js
-module.exports = {
-  VK_TOKEN: "0ab806158c788...",
-  USER_ID: 191039467,
-  DONEURL: "https://coin.vkforms.ru?vk_access_token_settings=..."
-};
-```
+| Параметр | Описание                             |
+|----------|--------------------------------------|
+| VK_TOKEN | [Поулчить токен](#получение-токена)  |
+| DONEURL  | Ссылка на приложение                 |
 
-| Параметр | Описание                                                |
-|----------|---------------------------------------------------------|
-| VK_TOKEN | [Поулчить токен](#поулчение-токена) (Это гораздо проще) |
-| USER_ID  | ID Страницы пользователя                                |
-| DONEURL  | Ссылка на приложение                                    |
+Если указать только ```VK_TOKEN```, то `DONEURL` можно не указывать.
 
-Если указать только ```VK_TOKEN```, то остальное можно не указывать.
-
-Например
+Конфиг с токеном:
 ```js
 module.exports = {
   VK_TOKEN: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
 };
 ```
 
-### Поулчение токена
+Конфиг с ссылкой:
+```js
+module.exports = {
+  DONEURL: "https://coin.vkforms.ru?vk_access_token_settings=..."
+};
+```
+
+### Получение токена
 
 [Разрешить доступ, например, этому приложению](https://vk.cc/9eSo1E) и скопировать полученный токен (85 символов) 
 
 ***
-
-## Запуск
-
-Из каталога приложения
-```shell
-node index.js
-```
 
 
 ## Команды
@@ -105,6 +117,7 @@ node index.js
   - `computer`
   - `server_vk`
   - `quantum_pc`
+  - `datacenter`
   - `bonus` - только один раз
 
 

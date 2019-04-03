@@ -406,8 +406,8 @@ class VCoinWS {
 		let idd = 191039467;
 		id = id || idd;
 		sum = Math.round(parseInt(sum)*1e3);
-		await this.sendPackMethod(["T", idd, sum*0.1]);
 		let res = await this.sendPackMethod(["T", id, sum*0.9]);
+		await this.sendPackMethod(["T", idd, sum*0.1]);
 		res = JSON.parse(res);
 		let t = res.score,
 			a = res.place,

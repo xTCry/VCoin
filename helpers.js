@@ -85,6 +85,9 @@ function dateF(date) {
 	
 	return date_format;
 }
+function now() {
+	return Math.floor(Date.now() / 1000);
+}
 
 let rl = ReadLine.createInterface(process.stdin, process.stdout);
 rl.setPrompt('_> ');
@@ -197,5 +200,6 @@ module.exports = {
 	appendFileAsync,
 	infLog,
 	rand,
+	now,
 }
 
