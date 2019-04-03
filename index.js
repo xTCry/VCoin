@@ -244,10 +244,9 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 	}
 }
 
-// Попытка запуска
 if(!DONEURL || tforce) {
 	if(!VK_TOKEN) {
-		con("Получить токен можно тут -> vk.cc/9eSo1E", true);
+		con("Отсутствует токен, о том, как его получить рассказано на -> github.com/cursedseal/VCoinX", true);
 		return process.exit();
 	}
 
@@ -259,12 +258,12 @@ if(!DONEURL || tforce) {
 			})).items[0];
 
 			if(!mobile_iframe_url)
-				throw("Ссылка на приложение не получена");
+				throw("Не удалось получить ссылку на приложение.");
 			
 			if(!USER_ID) {
 				let { id } = (await vk.api.users.get())[0];
 				if(!id)
-					throw("ID пользователя не получен");
+					throw("Не удалось получить ID пользователя.");
 
 				USER_ID = id;
 			}
@@ -282,7 +281,7 @@ else {
 	if(!USER_ID) {
 		let GSEARCH = url.parse(DONEURL, true);
 		if(!GSEARCH.query || !GSEARCH.query.vk_user_id) {
-			con("В ссылке не нашлось vk_user_id", true);
+			con("При анализе ссылки не был найден vk_user_id.", true);
 			return process.exit();
 		}
 		USER_ID = parseInt(GSEARCH.query.vk_user_id);
