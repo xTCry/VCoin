@@ -1,5 +1,5 @@
 # VCoin
-VCoin patched - ремейк 
+VCoinX - обычный VCoin, но с вырезанной рекламой. 
 
 ![](https://pp.userapi.com/c852132/v852132090/f0416/lmQeM-pCAz0.jpg)
 
