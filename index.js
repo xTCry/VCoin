@@ -38,7 +38,7 @@ vConinWS.onMissClickEvent(function() {
 		forceRestart(4e3);
 
 	if(++missCount > 10)
-		con("Ваши нажатия не засчитываются. Похоже, у Вас проблемы с подключением.", true);
+		con("Нажатия не засчитываются сервером, возможно, у Вас проблемы с соединением.", true);
 });
 
 vConinWS.onReceiveDataEvent(async function(place, score) {
@@ -47,24 +47,21 @@ vConinWS.onReceiveDataEvent(async function(place, score) {
 	if(place > 0 && !rl.isQst) {
 
 		if(updatesEv && !rand(0,1))
-			con(updatesEv + "\n\t\t\t Введите \'hideupd\' для скрытия уведомления.", "white", "Red");
+			con(updatesEv + "\n\t\t\t Введите \'hideupd(ate)\' для скрытия уведомления.", "white", "Red");
 		
 		con("Позиция в топе: " + place + "\tКоличество коинов: "+ formateSCORE(score, true), "yellow");
 	}
 });
 
 vConinWS.onTransfer(async function(id, score) {
-	let template = "Для id"+USER_ID+" Пришли coins ["+formateSCORE(score, true)+"] от vk.com/id"+id;
+	let template = "Пользватель с id"+USER_ID+" получил ["+formateSCORE(score, true)+"] коинов от id"+id;
 	con(template, "black", "Green");
 	try { await infLog(template); }
 	catch(e) { console.error(e); }
 });
-vConinWS.onWaitEvent(function(e) {
-	con("WaitEvent: "+e);
-});
 
 vConinWS.onUserLoaded(function(place, score, items, top, firstTime) {
-	con("onUserLoaded: \t" + place + "\t" + formateSCORE(score, true) /*+ "\t" + items + "\t" + top + "\t" + firstTime*/);
+	con("Пользователь успешно загружен. \n\t\t\tПозиция в топе - "  + place + " | \tКоличество коинов - " + formateSCORE(score, true));
 
 	boosterTTL && clearInterval(boosterTTL);
 	boosterTTL = setInterval(_=> {
@@ -89,11 +86,11 @@ vConinWS.onOffline(function() {
 async function startBooster(tw) {
 	tryStartTTL && clearTimeout(tryStartTTL);
 	tryStartTTL = setTimeout(()=> {
-		con("Запускается VCoinX.");
+		con("Производится запуск VCoinX.");
 
 		vConinWS.userId = USER_ID;
 		vConinWS.run(URLWS, _=> {
-			con("Успешно запущен.");
+			con("VCoinX был успешно запущен.");
 		});
 	}, (tw || 1e3));
 }
@@ -119,7 +116,8 @@ rl.on('line', async (line) => {
 			break;
 
 		case "hideupd":
-			con("Уведомление скрыто.");
+		case "hideupdate":
+			con("Уведомление об обновлении скрыто.");
 			updatesEv = false;
 			break;
 
@@ -132,7 +130,7 @@ rl.on('line', async (line) => {
 		case "start":
 		case "run":
 			if(vConinWS.connected)
-				return con("Приложение уже запущено");
+				return con("VCoinX уже запущен и работает!");
 			xRestart = true;
 			startBooster();
 			break;
@@ -163,10 +161,10 @@ rl.on('line', async (line) => {
 			try {
 				await vConinWS.transferToUser(id, count);
 				con("Перевод был выполнен успешно.", "black", "Green");
-				let template = "Отправили ["+formateSCORE(count*1e3, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/id"+id;
+				let template = "Произведена отпрвка ["+formateSCORE(count*1e3, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/id"+id;
 				try { await infLog(template); } catch(e) {}
 			} catch(e) {
-				if(e.message == "BAD_ARGS") con("Где-то указан неверный аргумент", true);
+				if(e.message == "BAD_ARGS") con("Вероятно, вы где-то указали неверный аргумент.", true);
 				else con(e.message, true);
 			}
 			break;
@@ -174,19 +172,16 @@ rl.on('line', async (line) => {
 		case "?":
 		case "help":
 			ccon("-- VCoinX --", "red");
-			ccon("info	- обновит текущий уровень");
-			ccon("stop	- остановит майнер");
-			ccon("run	- запустит майнер");
-			ccon("buy	- покупка");
-			ccon("tran	- перевод");
-			ccon("hideupd - скрыть уведомление");
+			ccon("info	- обновление текущенго уровня.");
+			ccon("stop(pause)	- остановка майнера.");
+			ccon("start(run)	- запуск майнера.");
+			ccon("(b)uy	- покупка улучшений.");
+			ccon("tran(sfer)	- перевод игроку.");
+			ccon("hideupd(ate) - скрыть уведомление об обновлении.");
 			break;
 	}
 });
 
-
-
-// Parse arguments
 for (var argn = 2; argn < process.argv.length; argn++) {
 
 	if(["-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce"].includes(process.argv[argn])) {
@@ -200,7 +195,6 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 			}
 		}
 
-		// Custom URL
 		if (process.argv[argn] == '-u') {
 			let dTest = process.argv[argn + 1];
 			if(typeof dTest == "string" && dTest.length > 200 && dTest.length < 255) {
@@ -211,33 +205,29 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 			}
 		}
 
-		// Force token
 		if (process.argv[argn] == '-tforce') {
 			con("Принудительное использование токена включено.")
 			tforce = true;
 			continue;
 		}
 
-		// Автоматическая закупка
 		if (process.argv[argn] == '-autobuy') {
-			// Soon
+			// TODO
 			continue;
 		}
 
-		// Full log mode
 		if (process.argv[argn] == '-flog') {
 			flog = true;
 			continue;
 		}
 
-		// Help info
 		if (process.argv[argn] == "-h" || process.argv[argn] == "-help") {
-			ccon("-- VCoins arguments --", "red");
-			ccon("-help		- ...");
-			ccon("-flog		- подробные логи");
-			ccon("-tforce		- токен принудительно");
-			ccon("-u [URL]	- задать ссылку");
-			ccon("-t [TOKEN]	- задать токен");
+			ccon("-- VCoinX arguments --", "red");
+			ccon("-help		- помощь.");
+			ccon("-flog		- подробные логи.");
+			ccon("-tforce		- принудительно использовать токен.");
+			ccon("-u [URL]	- задать ссылку.");
+			ccon("-t [TOKEN]	- задать токен.");
 			process.exit();
 			continue;
 		}

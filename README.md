@@ -1,4 +1,4 @@
-# VCoin
+# VCoinX
 VCoinX - обычный VCoin, но с вырезанной рекламой и донатом, а так-же прочими плюшками.
 В VCoinX присутствуют не только все обновления из оригинального VCoin, а так-же исправление фиксов и текста.
 Вы можете отправить свои предложения по улучшению в Issues. 
@@ -12,7 +12,7 @@ VCoinX - обычный VCoin, но с вырезанной рекламой и 
 [![Донат разработчику оригинальной версии](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![Донат разработчику VCoinX](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/vcoinx)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
-[![vcoin version](https://img.shields.io/badge/VCoin-1.1.7-yellow.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
+[![vcoin version](https://img.shields.io/badge/VCoinX-1.0.0-yellow.svg?style=flat-square)](https://github.com/cursedseal/VCoinX/)
 
 ***
 
@@ -30,7 +30,7 @@ npm i
 ![](https://pp.userapi.com/c847020/v847020485/1d72be/ktfWqwnMjEY.jpg)
 ![](https://pp.userapi.com/c847020/v847020485/1d72a7/Fxp2lGDPpLI.jpg)
 
-* -tforce - использовать токен принудительно (если в `.config.js` задана ссылка)
+* -tforce - использовать токен принудительно (если в `config.js` задана ссылка)
 * -u [URL]        - задает ссылку
 * -t [TOKEN]      - задает токен
 
@@ -47,7 +47,7 @@ node index.js -u https://coin.vkforms.ru?vk_access_token_settings=friends\&vk_ap
 
 > Windows: ссылку указать в кавычках 
 
-## Создать файл `.config.js`
+## Создать файл `config.js`
 
 Если нужно использовать аргументы, то в файл можно просто записать это:
 ```js
