@@ -158,7 +158,7 @@ rl.on('line', async (line) => {
 
         case 'b':
         case 'buy':
-            let item = await rl.questionAsync("Введите название предмета [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc]: ");
+            let item = await rl.questionAsync("Введите название предмета [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
             if (!item) return;
             let result;
             try {
@@ -168,6 +168,7 @@ rl.on('line', async (line) => {
                 console.log("Результат покупки: ", result);
             } catch (e) {
                 if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств.", true);
+				else if (e.message == "ITEM NOT FOUND") con("Предмет не найден.", true);
                 else con(e.message, true);
             }
             break;
