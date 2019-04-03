@@ -1,4 +1,5 @@
-const colors = require('colors/safe'),
+const fs = require('fs'),
+	colors = require('colors/safe'),
 	ReadLine = require('readline'),
 	GithubContent = require('github-content');
 const pJson = require('./package.json');
@@ -142,7 +143,28 @@ async function askDonate(vc) {
 	}
 }
 
+let cFile = "./log.txt";
+async function infLog(data) {
+	data = "\n["+dateF()+"] \t"+data;
 
+	let exists = await existsAsync(cFile);
+	if(!exists) {
+		let errWrite = await writeFileAsync(cFile, "Log."+data);
+		if (errWrite) throw errWrite;
+	}
+	else		
+		await appendFileAsync(cFile, data);
+}
+
+function existsAsync(path) {
+	return new Promise( (resolve, reject)=> fs.exists(path, exists=> resolve(exists)) );
+}
+function writeFileAsync(path, data) {
+	return new Promise( (resolve, reject)=> fs.writeFile(path, data, err=> resolve(err)) );
+}
+function appendFileAsync(path, data) {
+	return new Promise( (resolve, reject)=> fs.appendFile(path, data, err=> resolve(err)) );
+}
 
 module.exports = {
 	rl,
@@ -151,5 +173,10 @@ module.exports = {
 	hashPassCoin,
 	checkUpdates, checkUpdateTTL,
 	askDonate,
+
+	existsAsync,
+	writeFileAsync,
+	appendFileAsync,
+	infLog,
 }
 

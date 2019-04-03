@@ -193,11 +193,12 @@ class VCoinWS {
 					if(0 === t.indexOf("TR")) {
 
 						let data = t.replace("TR ", "").split(" ");
-						this.oldScore += parseInt(data[0], 10);
-						let from = parseInt(data[1]);
+						let nscore = parseInt(data[0], 10),
+							from = parseInt(data[1]);
+						this.oldScore += nscore;
 						
-						console.log("Пришли coins от vk.com/id"+from);
-
+						if(this.onTransferCallback)
+							this.onTransferCallback(from, nscore);
 						if(this.onMyDataCallback)
 							this.onMyDataCallback(this.oldPlace, this.oldScore, true);
 					}
@@ -243,6 +244,9 @@ class VCoinWS {
 	}
 
 
+	onTransfer(e) {
+		this.onTransferCallback = e
+	}
 	onChangeOnline(e) {
 		this.onChangeOnlineCallback = e
 	}

@@ -2,7 +2,8 @@ const url = require('url'),
 	{ VK } = require('vk-io');
 
 const VCoinWS = require('./VCoinWS');
-const { con, ccon, formateSCORE, hashPassCoin, rl, askDonate } = require('./helpers');
+const { con, ccon, formateSCORE, hashPassCoin, rl, askDonate,
+	existsAsync,  writeFileAsync,  appendFileAsync, infLog, } = require('./helpers');
 let { USER_ID, DONEURL, VK_TOKEN } = require('./.config.js');
 
 
@@ -40,6 +41,12 @@ vConinWS.onReceiveDataEvent(async function(place, score) {
 	}
 });
 
+vConinWS.onTransfer(async function(id, score) {
+	let template = "Для id"+USER_ID+" Пришли coins ["+formateSCORE(score, true)+"] от vk.com/id"+id;
+	con(template, "black", "Green");
+	try { await infLog(template); }
+	catch(e) { console.error(e); }
+});
 vConinWS.onWaitEvent(function(e) {
 	con("WaitEvent: "+e);
 });
@@ -61,7 +68,7 @@ vConinWS.onAlreadyConnected(function() {
 	con("Открыто две вкладки", true);
 	boosterTTL && clearInterval(boosterTTL);
 	if(xRestart)
-		startBooster(10e3);
+		startBooster(30e3);
 });
 
 vConinWS.onOffline(function() {
@@ -76,6 +83,7 @@ async function startBooster(tw) {
 	tryStartTTL = setTimeout(()=> {
 		con("Try start...");
 
+		vConinWS.userId = USER_ID;
 		vConinWS.run(URLWS, _=> {
 			con("Boost started");
 		});
@@ -143,8 +151,8 @@ rl.on('line', async (line) => {
 			ccon("-- VCoins --", "red");
 			ccon("info	- обновит текущий уровень");
 			ccon("stop	- остановит майнер");
-			ccon("run		- запустит майнер");
-			ccon("buy		- покупка");
+			ccon("run	- запустит майнер");
+			ccon("buy	- покупка");
 			ccon("tran	- перевод");
 			break;
 	}
