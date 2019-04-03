@@ -1,5 +1,7 @@
 # VCoin
-VCoinX - обычный VCoin, но с вырезанной рекламой. 
+VCoinX - обычный VCoin, но с вырезанной рекламой и донатом, а так-же прочими плюшками.
+В VCoinX присутствуют не только все обновления из оригинального VCoin, а так-же исправление фиксов и текста.
+Вы можете отправить свои предложения по улучшению в Issues. 
 
 ![](https://pp.userapi.com/c852132/v852132090/f0416/lmQeM-pCAz0.jpg)
 
@@ -14,8 +16,8 @@ VCoinX - обычный VCoin, но с вырезанной рекламой.
 
 ***
 
-## Для начала
-> **[Node.js](https://nodejs.org/) 8.0.0 или новее**
+## Для начала Вам потребуется
+> **[Node.js](https://nodejs.org/) версии 8.0.0 или новее**
 
 Установить зависимости
 ### NPM
@@ -34,7 +36,7 @@ npm i
 
 Запуск через [токен](#получение-токена)
 ```shell
-node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+node index.js -t j00Rt0k3Ny0urT0k3ny0urt0k3nY0urt0k3nY0uRT0k3nY0URT0K3nY0uRt0K3Ny0uRT0K3Ny0URT0k3Ny0Ur
 ```
 
 Запуск через ссылку
@@ -55,8 +57,8 @@ module.exports = { };
 Если использовать конфиг из файла, то:
 ```js
 module.exports = {
-  VK_TOKEN: "185427в153fа2fш6то86ке82d88н8a72489cВАШ9ТОКЕН191a14606d865d5fcf6307b6e20f2b064ca7412cf",
-  USER_ID: 191039467,
+  VK_TOKEN: "j00Rt0k3Ny0urT0k3ny0urt0k3nY0urt0k3nY0uRT0k3nY0URT0K3nY0uRt0K3Ny0uRT0K3Ny0URT0k3Ny0Ur",
+  USER_ID: 513159780,
   DONEURL: "https://coin.vkforms.ru?vk_access_token_settings=..."
 };
 ```
@@ -72,7 +74,7 @@ module.exports = {
 Например
 ```js
 module.exports = {
-  VK_TOKEN: "185427в153fа2fш6то86ке82d88н8a72489cВАШ9ТОКЕН191a14606d865d5fcf6307b6e20f2b064ca7412cf"
+  VK_TOKEN: "j00Rt0k3Ny0urT0k3ny0urt0k3nY0urt0k3nY0uRT0k3nY0URT0K3nY0uRt0K3Ny0uRT0K3Ny0URT0k3Ny0Ur"
 };
 ```
 
@@ -101,13 +103,11 @@ node index.js
   - `computer`
   - `server_vk`
   - `quantum_pc`
-  - `bonus` - только один раз
+  - `bonus` - выдает случайное количество монет, можно использовать только один раз.
 
 
-## P.S.
-> Если надо зайти в сервис, но выкидывает, то можно использовать команду `stop`, а для возобновления `run`
-
-> При переводе берется незначительная комиссия в виде `10%`
+## P.S. — Интересные факты и подсказки.
+> Если Вам необходимо зайти в сервис, но Вы не можете, из-за того, что бот автоматически переподключается, то используйте команду `stop`, а для возобновления `run`.
 
 > При lineQuestion вывод лога для удобства приостанавливается
 
