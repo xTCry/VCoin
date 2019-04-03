@@ -345,10 +345,11 @@ else {
 function formatWSS(LINK) {
 	let GSEARCH = url.parse(LINK),
 		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/",
-		CHANNEL = (USER_ID%16 === 1)? USER_ID%16: USER_ID%8;
+		CHANNEL = /*(USER_ID%16 === 1)?*/ USER_ID%16/*: USER_ID%8*/;
 	URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
-	if(CHANNEL>7)
-		URLWS.replace("coin.vkforms.ru", "bagosi-go-go.vkforms.ru");
+	
+	URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL>7)? "bagosi-go-go.vkforms.ru": "coin.w5.vkforms.ru");
+	
 	flog && console.log("formatWSS: ", URLWS);
 	return URLWS;
 }

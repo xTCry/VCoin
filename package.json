@@ -1,6 +1,6 @@
 {
   "name": "vcoin",
-  "version": "1.2.3",
+  "version": "1.2.5",
   "description": "VC Coin Miner",
   "main": "index.js",
   "dependencies": {
