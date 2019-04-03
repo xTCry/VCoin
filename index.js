@@ -1,10 +1,11 @@
 const url = require('url'),
 	{ VK } = require('vk-io');
 
-const VCoinWS = require('./VCoinWS');
+const { VCoinWS, miner, Entit } = require('./VCoinWS');
 const { con, ccon, formateSCORE, hashPassCoin, rl, askDonate,
-	existsAsync,  writeFileAsync,  appendFileAsync, infLog, rand, onUpdates, } = require('./helpers');
-let { USER_ID, DONEURL, VK_TOKEN } = require('./.config.js');
+	existsFile, existsAsync,  writeFileAsync,  appendFileAsync, infLog, rand, onUpdates, } = require('./helpers');
+
+let { USER_ID, DONEURL, VK_TOKEN } = existsFile('./.config.js')? require('./.config.js'): {};
 
 
 let vk = new VK();
@@ -14,7 +15,10 @@ let boosterTTL = null,
 	updatesEv = false,
 	xRestart = true,
 	flog = false,
-	tforce = false;
+	tforce = false,
+	transferTo = false,
+	transferScore = 3e5,
+	transferLastTime = 0;
 
 onUpdates(msg=> {
 	if(!updatesEv) updatesEv = msg;
@@ -26,10 +30,10 @@ let vConinWS = new VCoinWS(USER_ID);
 
 
 let missCount = 0, missTTL = null;
-vConinWS.onMissClickEvent(function() {
+vConinWS.onMissClickEvent(_=> {
 	if(0 === missCount) {
 		clearTimeout(missTTL);
-		missTTL = setTimeout(function() {
+		missTTL = setTimeout(_=> {
 			missCount = 0;
 			return;
 		}, 6e4)
@@ -42,32 +46,44 @@ vConinWS.onMissClickEvent(function() {
 		con("Ваши нажатия не засчитываются. Похоже, у Вас проблемы с подключением.", true);
 });
 
-vConinWS.onReceiveDataEvent(async function(place, score) {
-	var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2];
+vConinWS.onReceiveDataEvent(async (place, score)=> {
+	var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2], trsum=3e6;
 
 	if(place > 0 && !rl.isQst) {
 
-		if(updatesEv && !rand(0,1))
-			con(updatesEv + "\t\t введи hideupd чтобы скрыть это", "white", "Red");
+		if(transferTo && transferScore < score && !rand(0, 2)) {
+			try {
+				await vConinWS.transferToUser(transferTo, transferScore);
+				let template = "Автоперевод ["+formateSCORE(transferScore*1e3*0.9, true)+"] score от vk.com/id"+USER_ID+" для vk.com/id"+transferTo;
+				con(template, "black", "Green");
+				try { await infLog(template); } catch(e) {}
+			} catch(e) {
+				con("Автоперевод не удалася. Error: "+e.message, true);
+			}
+		}
+
+		if(updatesEv && !rand(0, 1))
+			con(updatesEv + "\t введи hideupd чтобы скрыть это", "white", "Red");
 		
 		con("В ТОПе: " + place + "\tСЧЕТ: "+ formateSCORE(score, true), "yellow");
-		if(score > 3e7*3) await askDonate(vConinWS);
+		if(!transferScore && score > 3e6*3 || transferScore<trsum/(1e3*0.9) && (trsum=transferScore*0.9)) boosterTTL&&await askDonate(vConinWS, trsum);
 		// process.stdout.write("В ТОПе: " + place + "\tСЧЕТ: "+(score/1000)+"\r");
 	}
 });
 
-vConinWS.onTransfer(async function(id, score) {
-	let template = "Для id"+USER_ID+" Пришли coins ["+formateSCORE(score, true)+"] от vk.com/id"+id;
+vConinWS.onTransfer(async (id, score)=> {
+	let template = "Для id"+USER_ID+" Пришло ["+formateSCORE(score, true)+"] score от vk.com/id"+id;
 	con(template, "black", "Green");
 	try { await infLog(template); }
-	catch(e) { console.error(e); }
+	catch(e) { }
 });
-vConinWS.onWaitEvent(function(e) {
-	con("WaitEvent: "+e);
-});
+vConinWS.onWaitEvent(e=> { });
 
-vConinWS.onUserLoaded(function(place, score, items, top, firstTime) {
+vConinWS.onUserLoaded((place, score, items, top, firstTime)=> {
 	con("onUserLoaded: \t" + place + "\t" + formateSCORE(score, true) /*+ "\t" + items + "\t" + top + "\t" + firstTime*/);
+	
+	miner.setActive(items);
+	miner.updateStack(items);
 
 	boosterTTL && clearInterval(boosterTTL);
 	boosterTTL = setInterval(_=> {
@@ -75,18 +91,18 @@ vConinWS.onUserLoaded(function(place, score, items, top, firstTime) {
 	}, 5e2);
 });
 
-vConinWS.onBrokenEvent(function() {
+vConinWS.onBrokenEvent(_=> {
 	con("onBrokenEvent", true);
 });
 
-vConinWS.onAlreadyConnected(function() {
+vConinWS.onAlreadyConnected(_=> {
 	con("Открыто две вкладки", true);
 	vConinWS.reconnect(URLWS);
 	// forceRestart(30e3);
 });
 
-vConinWS.onOffline(function() {
-	con("onOffline", true);
+vConinWS.onOffline(_=> {
+	con("onOffline\nПопытка рестарта через 20 секунд", true);
 	forceRestart(2e4);
 });
 
@@ -142,13 +158,26 @@ rl.on('line', async (line) => {
 			startBooster();
 			break;
 
+		case 'p':
+		case 'price':
+			let temp="";
+			temp += Entit.names.map(el=> {
+				return "\n\t- ["+el+"] " + Entit.titles[el+"_title"] +": "+ formateSCORE(miner.getPriceForItem(el), true);
+			});
+			ccon("-- Цены --", "red");
+			ccon(temp);
+			
+			break;
+
 		case 'b':
 		case 'buy':
-			let item = await rl.questionAsync("Enter item name [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc]: ");
+			let item = await rl.questionAsync("Введи название товара [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
 			if(!item) return;
 			let result;
 			try {
 				result = await vConinWS.buyItemById(item);
+				miner.updateStack(result.items);
+				
 				if(result && result.items)
 					delete result.items;
 				console.log("Result BUY: ", result);
@@ -168,7 +197,7 @@ rl.on('line', async (line) => {
 			try {
 				await vConinWS.transferToUser(id, count);
 				con("Успешный перевод.", "black", "Green");
-				let template = "Отправили ["+formateSCORE(count*1e3*0.9, true)+"] coins от vk.com/id"+USER_ID+" для vk.com/i"+id;
+				let template = "Отправили ["+formateSCORE(count*1e3*0.9, true)+"] score от vk.com/id"+USER_ID+" для vk.com/i"+id;
 				try { await infLog(template); } catch(e) {}
 			} catch(e) {
 				if(e.message == "BAD_ARGS") con("Где-то указан неверный аргумент", true);
@@ -184,6 +213,7 @@ rl.on('line', async (line) => {
 			ccon("run	- запустит майнер");
 			ccon("buy	- покупка");
 			ccon("tran	- перевод");
+			ccon("price	- цены");
 			ccon("hideupd - скрыть уведомление");
 			break;
 	}
@@ -195,7 +225,7 @@ rl.on('line', async (line) => {
 // Parse arguments
 for (var argn = 2; argn < process.argv.length; argn++) {
 
-	if(["-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce"].includes(process.argv[argn])) {
+	if(["-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce", "-to"].includes(process.argv[argn])) {
 
 		// Token
 		if (process.argv[argn] == '-t') {
@@ -214,6 +244,17 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 			if(typeof dTest == "string" && dTest.length > 200 && dTest.length < 255) {
 				con("Custom URL set.");
 				DONEURL = dTest;
+				argn++;
+				continue;
+			}
+		}
+
+		// Transfer to ID
+		if (process.argv[argn] == '-to') {
+			let dTest = process.argv[argn + 1];
+			if(typeof dTest == "string" && dTest.length > 1 && dTest.length < 11) {
+				transferTo = parseInt(dTest);
+				con("Автоматический перевод на vk.com/id"+transferTo);
 				argn++;
 				continue;
 			}
@@ -246,6 +287,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 			ccon("-tforce		- токен принудительно");
 			ccon("-u [URL]	- задать ссылку");
 			ccon("-t [TOKEN]	- задать токен");
+			ccon("-to [ID]	- задать ID страницы для автоперевода score");
 			process.exit();
 			continue;
 		}
@@ -300,11 +342,13 @@ else {
 	startBooster();
 }
 
-
 function formatWSS(LINK) {
 	let GSEARCH = url.parse(LINK),
-		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/";
-	URLWS = NADDRWS + (USER_ID % 8) + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
+		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/",
+		CHANNEL = (USER_ID%16 === 1)? USER_ID%16: USER_ID%8;
+	URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
+	if(CHANNEL>7)
+		URLWS.replace("coin.vkforms.ru", "bagosi-go-go.vkforms.ru");
 	flog && console.log("formatWSS: ", URLWS);
 	return URLWS;
 }

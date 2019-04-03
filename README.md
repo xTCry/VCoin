@@ -1,17 +1,19 @@
 # VCoin
+> Фиксим фиксы
+
 VK Coin Miner - недомайнер на NodeJS
+
 
 ![](https://pp.userapi.com/c852132/v852132090/f0416/lmQeM-pCAz0.jpg)
 
-<!-- <span class="badge-npmversion">
-  <a href="https://npmjs.org/package/vcoin" title="View this project on NPM"><img src="https://img.shields.io/npm/v/projectz.svg" alt="NPM version" /></a>
-</span> -->
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
-[![vcoin version](https://img.shields.io/badge/VCoin-1.1.7-yellow.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
+[![vcoin version](https://img.shields.io/badge/VCoin-1.2.3-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
 ***
+
+[Список команд в приложении](#команды)
 
 ## Для начала
 > **[Node.js](https://nodejs.org/) 8.0.0 или новее**
@@ -27,9 +29,10 @@ npm i
 ![](https://pp.userapi.com/c847020/v847020485/1d72be/ktfWqwnMjEY.jpg)
 ![](https://pp.userapi.com/c847020/v847020485/1d72a7/Fxp2lGDPpLI.jpg)
 
-* -tforce - использовать токен принудительно (если в `.config.js` задана ссылка)
-* -u [URL]        - задает ссылку
-* -t [TOKEN]      - задает токен
+* `-tforce` - использовать токен принудительно (если в `.config.js` задана ссылка)
+* `-u [URL]`        - задает ссылку
+* `-t [TOKEN]`      - задает токен
+* `-to [ID]`      - задает ID страницы для автоперевода `score`
 
 Запуск через [токен](#поулчение-токена)
 ```shell
@@ -44,12 +47,11 @@ node index.js -u https://coin.vkforms.ru?vk_access_token_settings=friends\&vk_ap
 
 > Windows: ссылку указать в кавычках 
 
-## Создать файл `.config.js`
 
-Если нужно использовать аргументы, то в файл можно просто записать это:
-```js
-module.exports = { };
-```
+## Конфигурация из файла `.config.js`
+
+> Если используются только аргументы при запуске, то файл можно не создавать.
+
 
 Если использовать конфиг из файла, то:
 ```js
@@ -95,6 +97,7 @@ node index.js
 - `stop` - остановить 
 - `run` - запустить 
 - `tran` - перевод 
+- `price` - выведет текущие цены 
 - `buy` - покупка (только при запущенном процессе) 
   - `cursor`
   - `cpu`

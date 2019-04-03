@@ -133,6 +133,7 @@ class VCoinWS {
 					&& -1 === t.indexOf("WAIT_FOR_LOAD")
 					&& -1 === t.indexOf("MISS")
 					&& -1 === t.indexOf("TR")
+					&& -1 === t.indexOf("BROKEN")
 					&& "C" !== t[0] && "R" !== t[0])
 					console.log("on Message:\n", t);
 
@@ -473,6 +474,147 @@ class VCoinWS {
 		}
 	}
 
+
 }
 
-module.exports = VCoinWS;
+
+
+class Miner {
+
+	constructor() {
+		this.score = 0;
+		this.total = 0;
+		this.stack = [];
+		this.active = [];
+	}
+
+	setScore(q) {
+		this.score = q;
+	}
+	setActive(q) {
+		this.active = q;
+	}
+
+	hasMoney(e) {
+		return this.score >= this.getPriceForItem(e);
+	}
+	getPriceForItem(e) {
+		let price = Entit.items[e].price,
+			count = 0;
+			
+		this.stack.forEach(el=> {
+			if(el.value === e)
+				count = el.count;
+		});
+		return Entit.calcPrice(price, count + 1);
+	}
+
+	updateStack(items) {
+		this.stack = Entit.generateStack( items.filter(e=> ("bonus" !== e)) );
+
+		let total = 0;
+		this.stack.forEach(function(e) {
+			let n = e.value,
+				a = e.count;
+			total += Entit.items[n].amount * a;
+		});
+
+		this.total = total;
+	}
+}
+
+class EntitiesClass {
+
+	constructor() {
+		this.titles = {
+			cursor_title: "Курсор",
+			cpu_title: "Видеокарта",
+			cpu_stack_title: "Стойка видеокарт",
+			computer_title: "Суперкомпьютер",
+			server_vk_title: "Сервер ВКонтакте",
+			quantum_pc_title: "Квантовый компьютер",
+			datacenter_title: "Датацентр",
+		};
+		this.items = {
+			cursor: {
+				price: 30,
+				amount: 1
+			},
+			cpu: {
+				price: 100,
+				amount: 3
+			},
+			cpu_stack: {
+				price: 1e3,
+				amount: 10
+			},
+			computer: {
+				price: 1e4,
+				amount: 30
+			},
+			server_vk: {
+				price: 5e4,
+				amount: 100
+			},
+			quantum_pc: {
+				price: 2e5,
+				amount: 500
+			},
+			datacenter: {
+				price: 5e6,
+				amount: 1e3
+			}
+		};
+		this.names = [
+		"cursor",
+		"cpu",
+		"cpu_stack",
+		"computer",
+		"server_vk",
+		"quantum_pc",
+		"datacenter",
+		];
+	}
+
+	generateStack(e) {
+		let t = arguments.length > 1 && void 0 !== arguments[1]? arguments[1]: (e, t)=> (e === t),
+			n = [];
+
+		e.forEach(function(e) {
+			if (0 === n.length)
+				n.push({
+					count: 1,
+					value: e
+				});
+			else {
+				let a = false;
+				n.map(function(n) {
+					if(t(n.value, e)) {
+						n.count++;
+						a = true;
+					}
+					return n;
+				});
+				a || n.push({
+					count: 1,
+					value: e
+				});
+			}
+		});
+
+		return n;
+	}
+
+	calcPrice(price, count) {
+		return (count <= 1)? price: Math.ceil(1.3 * this.calcPrice(price, count - 1));
+	}
+
+	/*hashPassCoin(e, t) {
+		return e % 2 === 0 ? e + t - 15 : e + t - 109;
+	}*/
+}
+
+const Entit = new EntitiesClass(),
+	miner = new Miner();
+
+module.exports = { Entit, VCoinWS, miner };

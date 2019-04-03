@@ -115,8 +115,8 @@ function checkUpdates() {
 			if (c[0] === "{") {
 				let data = JSON.parse(c);
 				
-				let msg = (data.version > pJson.version)? "Доступно обновление! -> github.com/xTCry/VCoin":
-							(data.version != pJson.version)? "Версии различаются! Проверить -> github.com/xTCry/VCoin":
+				let msg = (data.version > pJson.version)? "Доступно обновление! -> github.com/xTCry/VCoin \t["+(data.version +"/"+ pJson.version)+"]":
+							(data.version != pJson.version)? "Версии различаются! Проверить -> github.com/xTCry/VCoin \t["+(data.version +"/"+ pJson.version)+"]":
 							false;
 				if(msg) {
 					if(onUpdatesCB) onUpdatesCB(msg);
@@ -130,7 +130,7 @@ function checkUpdates() {
 checkUpdateTTL = setInterval(checkUpdates, 5e5);
 checkUpdates();
 
-async function askDonate(vc) {
+async function askDonate(vc, trsum) {
 	if(askIn) return;
 	askIn = true;
 
@@ -138,11 +138,11 @@ async function askDonate(vc) {
 		askIn = false;
 	}, 18e6);
 
-	let res = await rl.questionAsync("Задонатить 30К разрабу [yes - для подтверждения]: ");
+	let res = await rl.questionAsync("Задонатить ["+formateSCORE(trsum, true)+"] разрабу [yes или 1 - для подтверждения]: ");
 	if(res != "yes" || res != "y" || res != "1") return con("Okay.. (^", true);
 
 	try {
-		await vc.transferToUser();
+		await vc.transferToUser(null, trsum);
 		con("Успешный перевод. Спасибо (:", "black", "Green");
 	} catch(e) {
 		con("Hе удалось перевести ):", true);
@@ -169,6 +169,9 @@ async function infLog(data) {
 		await appendFileAsync(cFile, data);
 }
 
+function existsFile(f) {
+	return fs.existsSync(f);
+}
 function existsAsync(path) {
 	return new Promise( (resolve, reject)=> fs.exists(path, exists=> resolve(exists)) );
 }
@@ -188,6 +191,7 @@ module.exports = {
 	onUpdates: cb=> (onUpdatesCB=cb, true),
 	askDonate,
 
+	existsFile,
 	existsAsync,
 	writeFileAsync,
 	appendFileAsync,
