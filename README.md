@@ -9,10 +9,10 @@ VCoinX - обычный VCoin, но с вырезанной рекламой и 
   <a href="https://npmjs.org/package/vcoin" title="View this project on NPM"><img src="https://img.shields.io/npm/v/projectz.svg" alt="NPM version" /></a>
 </span> -->
 
-[![Донат разработчику оригинальной версии](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
-[![Донат разработчику VCoinX](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/vcoinx)
+[![Донат разработчику оригинальной версии](https://img.shields.io/badge/Донат-VCoin-orange.svg)](https://qiwi.me/xtcry)
+[![Донат разработчику VCoinX](https://img.shields.io/badge/Донат-VCoinX-orange.svg)](https://qiwi.me/vcoinx)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
-[![vcoin version](https://img.shields.io/badge/VCoinX-1.0.0-yellow.svg?style=flat-square)](https://github.com/cursedseal/VCoinX/)
+[![vcoin version](https://img.shields.io/badge/VCoinX-1.0.1-yellow.svg?style=flat-square)](https://github.com/cursedseal/VCoinX/)
 
 ***
 
