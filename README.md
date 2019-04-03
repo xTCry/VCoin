@@ -7,7 +7,8 @@ VCoinX - обычный VCoin, но с вырезанной рекламой.
   <a href="https://npmjs.org/package/vcoin" title="View this project on NPM"><img src="https://img.shields.io/npm/v/projectz.svg" alt="NPM version" /></a>
 </span> -->
 
-[![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
+[![Донат разработчику оригинальной версии](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
+[![Донат разработчику VCoinX](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/vcoinx)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
 [![vcoin version](https://img.shields.io/badge/VCoin-1.1.7-yellow.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
@@ -31,7 +32,7 @@ npm i
 * -u [URL]        - задает ссылку
 * -t [TOKEN]      - задает токен
 
-Запуск через [токен](#поулчение-токена)
+Запуск через [токен](#получение-токена)
 ```shell
 node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 ```
