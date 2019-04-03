@@ -102,6 +102,7 @@ node index.js
   - `computer`
   - `server_vk`
   - `quantum_pc`
+  - `datacenter`
   - `bonus` - только один раз
 
 
