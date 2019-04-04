@@ -524,7 +524,7 @@ function formatWSS(LINK) {
             break;
 
         default:
-            URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
+            URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
             break;
     }
 
