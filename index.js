@@ -168,7 +168,7 @@ function forceRestart(t, force) {
 function lPrices(d) {
 	let temp="";
 	temp += Entit.names.map(el=> {
-		return !miner.hasMoney(el)&&d? "": "\n\t- ["+el+"] " + Entit.titles[el] +": "+ formateSCORE(miner.getPriceForItem(el), true);
+		return !miner.hasMoney(el)&&d? "": "\n  - ["+el+"]\t" + Entit.titles[el] +": "+ formateSCORE(miner.getPriceForItem(el), true);
 	});
 	return temp;
 }
