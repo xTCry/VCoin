@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 
 class VCoinWS {
 
-    constructor(userId) {
+    constructor() {
         this.ws = null;
         this.ttl = null;
         this.retryTime = 1e3;
@@ -24,7 +24,6 @@ class VCoinWS {
         this.connecting = false;
         this.onConnectSend = [];
         this.tickCount = 0;
-        this.userId = userId;
     }
 
     run(wsServer, cb) {

@@ -52,7 +52,7 @@ onUpdates(msg => {
     con(msg, "white", "Red");
 });
 
-let vConinWS = new VCoinWS(USER_ID);
+let vConinWS = new VCoinWS();
 
 
 let missCount = 0,
