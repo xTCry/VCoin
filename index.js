@@ -17,7 +17,6 @@ const {
     infLog,
     rand,
     onUpdates,
-	now,
 } = require('./helpers');
 
 let { USER_ID: depUSER_ID, DONEURL, VK_TOKEN } = existsFile('./config.js')? require('./config.js'): {};
@@ -70,24 +69,24 @@ vConinWS.onReceiveDataEvent(async function(place, score) {
 	
     if (place > 0 && !rl.isQst) {
 
-		if(transferTo && transferScore*1e3 < score && !rand(0, 2) && ((now() - transferLastTime) > transferInterval)) {
+		if(transferTo && transferScore*1e3 < score && !rand(0, 2) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
 			try {
 				await vConinWS.transferToUser(transferTo, transferScore);
 				let template = "Автоматически переведено ["+formateSCORE(transferScore*1e3, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/id"+transferTo;
 				con(template, "black", "Green");
 				try { await infLog(template); } catch(e) {}
-				transferLastTime = now();
+				transferLastTime = Math.floor(Date.now() / 1000);
 			} catch(e) {
 				con("Автоматический перевод не удалася. Ошибка: "+e.message, true);
 			}
 		}
 		
-			/* if(autobuy == true) {
-				if(miner.hasMoney("datacenter")) {
+			if(autoBuy) {
+				if(miner.hasMoney(autoBuyItem)) {
 					try {
-						result = await vConinWS.buyItemById("datacenter");
+						result = await vConinWS.buyItemById(autoBuyItem);
 						miner.updateStack(result.items);
-						let template = "[AutoBuy] Был приобретен ДатаЦентр";
+						let template = "[AutoBuy] Был приобретен "+Entit.titles[autoBuyItem];;
 						con(template, "black", "Green");
 						try { await infLog(template); } catch(e) {}
 					} catch(e) {
@@ -95,12 +94,12 @@ vConinWS.onReceiveDataEvent(async function(place, score) {
 						else con(e.message, true);
 					}
 				}
-			} */
+			}
 	
-        if(updatesEv && !rand(0, 1) && (now() - updatesLastTime > updatesInterval))
+        if(updatesEv && !rand(0, 1) && (Math.floor(Date.now() / 1000) - updatesLastTime > updatesInterval))
 		{
             con(updatesEv + "\n\t\t\t Введите \'hideupd(ate)\' для скрытия уведомления.", "white", "Red");
-			updatesLastTime = now();
+			updatesLastTime = Math.floor(Date.now() / 1000);
 		}
 
         con("Позиция в топе: " + place + "\tКоличество коинов: " + formateSCORE(score, true), "yellow");
@@ -163,10 +162,19 @@ function forceRestart(t) {
         startBooster(t);
 }
 
+function lPrices(d) {
+	let temp="";
+	temp += Entit.names.map(el=> {
+		return !miner.hasMoney(el)&&!d? "": "\n\t- ["+el+"] " + Entit.titles[el] +": "+ formateSCORE(miner.getPriceForItem(el), true);
+	});
+	return temp;
+}
 
 rl.on('line', async (line) => {
     if (!URLWS) return;
 
+	let temp, item;
+	
     switch (line.trim()) {
         case '':
             break;
@@ -178,7 +186,7 @@ rl.on('line', async (line) => {
 			console.log("updatesInterval", updatesInterval);
 			console.log("updatesLastTime", updatesLastTime);
 			console.log("xRestart", xRestart);
-			console.log("autobuy", autobuy);
+			console.log("autobuy", autoBuy);
 			console.log("transferTo", transferTo);
 			console.log("transferScore", transferScore);
 			console.log("transferInterval", transferInterval);
@@ -207,7 +215,10 @@ rl.on('line', async (line) => {
 
         case 'b':
         case 'buy':
-            let item = await rl.questionAsync("Введите название предмета [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
+			temp=lPrices(true);
+			ccon("-- Доступные ускорения и их цены --", "red");
+			ccon(temp);
+            item = await rl.questionAsync("Введи название ускорения [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
             if (!item) return;
             let result;
             try {
@@ -223,12 +234,22 @@ rl.on('line', async (line) => {
             }
             break;
 
+		case 'autoBuyItem':
+			item = await rl.questionAsync("Введи название ускорения для автоматической покупки [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
+			if(!item || !Entit.titles[item]) return;
+			con("Для автоматической покупки установлено ускорение: "+Entit.titles[item]);
+			autoBuyItem = item;
+			autoBuy = true;
+			break;
+
+ 		case 'autoBuy':
+			autoBuy = !autoBuy;
+			con("Автопокупка: "+(autoBuy ? "Включена": "Отключена"));
+			break;
+			
 		case 'p':
 		case 'price':
-			let temp="";
-			temp += Entit.names.map(el=> {
-				return "\n\t- ["+el+"] " + Entit.titles[el+"_title"] +": "+ formateSCORE(miner.getPriceForItem(el), true);
-			});
+			temp = lPrices();
 			ccon("-- Цены --", "red");
 			ccon(temp);
 
@@ -271,7 +292,18 @@ rl.on('line', async (line) => {
 
 for (var argn = 2; argn < process.argv.length; argn++) {
 
-    if([ "-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce", "-to", "-ti", "-tsum" ].includes(process.argv[argn])) {
+    if([ "-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce", "-to", "-ti", "-tsum", "-autobuyItem" ].includes(process.argv[argn])) {
+
+		if (process.argv[argn] == '-autobuyItem') {
+			let dTest = process.argv[argn + 1];
+			if(typeof dTest == "string" && dTest.length > 1 && dTest.length < 20) {
+				if(!Entit.titles[dTest]) return;
+				con("Для автопокупки выбрано: "+Entit.titles[dTest]);
+				autoBuyItem = dTest;
+				argn++;
+				continue;
+			}
+		}
 		
         if (process.argv[argn] == '-t') {
             let dTest = process.argv[argn + 1];

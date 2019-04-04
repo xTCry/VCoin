@@ -111,6 +111,9 @@ class VCoinWS {
                         this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime);
 
                         this.tick = parseInt(tick, 10);
+						this.tickTtl = setInterval(_=> {
+							this.onTickEvent();
+						}, 1e3);
 
                         this.ccp = ccp || this.ccp;
 
@@ -302,12 +305,7 @@ class VCoinWS {
     async onTickEvent() {
         if (null !== this.oldScore && this.onMyDataCallback) {
 
-            if (0 !== this.tick)
-                this.onMyDataCallback(this.oldPlace, this.oldScore, true);
-
             this.tickCount++;
-
-            this.oldScore += this.tick;
 
             if (this.tickCount % 30 === 0) {
                 try {

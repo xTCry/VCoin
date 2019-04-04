@@ -1,6 +1,6 @@
 {
   "name": "vcoinx",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "VK Coin Miner",
   "main": "index.js",
   "dependencies": {
