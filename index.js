@@ -43,6 +43,7 @@ let boosterTTL = null,
     updatesLastTime = 0,
     xRestart = true,
     flog = false,
+    offColors = false,
     autoBuy = false,
     autoBuyItems = ["quantum_pc", "datacenter"],
     tforce = false,
@@ -50,7 +51,7 @@ let boosterTTL = null,
     transferScore = 3e4,
     transferInterval = 36e2,
     transferLastTime = 0,
-	conserver = 3;
+    conserver = 3;
 
 onUpdates(msg => {
     if (!updatesEv) updatesEv = msg;
@@ -152,6 +153,7 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
 
 vConinWS.onBrokenEvent(_ => {
     con("onBrokenEvent", true);
+    xRestart = false;
     forceRestart(30e3);
 });
 
@@ -175,14 +177,15 @@ async function startBooster(tw) {
         vConinWS.userId = USER_ID;
         vConinWS.run(URLWS, _ => {
             con("VCoinX был успешно запущен.");
+            xRestart = true;
         });
     }, (tw || 1e3));
 }
 
-function forceRestart(t) {
+function forceRestart(t, force) {
     vConinWS.close();
     boosterTTL && clearInterval(boosterTTL);
-    if (xRestart)
+    if (xRestart || force)
         startBooster(t);
 }
 
@@ -214,6 +217,11 @@ rl.on('line', async (line) => {
             console.log("transferScore", transferScore);
             console.log("transferInterval", transferInterval);
             console.log("transferLastTime", transferLastTime);
+            break;
+
+        case 'color':
+            setColorsM(offColors = !offColors);
+            con("Цвета " + (offColors ? "от" : "в") + "ключены (*^.^*)", "blue");
             break;
 
         case "hideupd":
@@ -333,104 +341,120 @@ rl.on('line', async (line) => {
             ccon("to - указать ID и включить авто-перевод средств на него.");
             ccon("ti - указать интервал для авто-перевода (в секундах).");
             ccon("tsum - указать сумму для авто-перевода (без запятой).");
+            ccon("color - изменить цветовую схему консоли.");
             break;
     }
 });
-
 for (var argn = 2; argn < process.argv.length; argn++) {
+    let cTest = process.argv[argn],
+        dTest = process.argv[argn + 1];
 
-    if (["-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce", "-to", "-ti", "-tsum", "-autobuyItem"].includes(process.argv[argn])) {
+    switch (cTest.trim().toLowerCase()) {
 
-        if (process.argv[argn] == '-autobuyItem') {
-            let dTest = process.argv[argn + 1];
-            if (typeof dTest == "string" && dTest.length > 1 && dTest.length < 20) {
-                if (!Entit.titles[dTest]) return;
-                con("Для автопокупки выбрано: " + Entit.titles[dTest]);
-                autoBuyItem = dTest;
+        case '-black':
+            {
+                flog && con("Цвета отключены (*^.^*)", "blue");
+                setColorsM(offColors = !offColors);
                 argn++;
-                continue;
+                break;
             }
-        }
 
-        if (process.argv[argn] == '-t') {
-            let dTest = process.argv[argn + 1];
-            if (typeof dTest == "string" && dTest.length > 80 && dTest.length < 90) {
-                con("Токен установлен.")
-                VK_TOKEN = dTest;
-                argn++;
-                continue;
+        case '-t':
+            {
+                if (dTest.length > 80 && dTest.length < 90) {
+                    con("Успешно установлен токен.", "blue");
+                    VK_TOKEN = dTest;
+                    argn++;
+                }
+                break;
             }
-        }
-
-        if (process.argv[argn] == '-u') {
-            let dTest = process.argv[argn + 1];
-            if (typeof dTest == "string" && dTest.length > 200 && dTest.length < 255) {
-                con("Пользовательский URL включен.");
-                DONEURL = dTest;
-                argn++;
-                continue;
+            // Custom URL
+        case '-u':
+            {
+                if (dTest.length > 200 && dTest.length < 255) {
+                    con("Пользовательский URL включен", "blue");
+                    DONEURL = dTest;
+                }
+                break;
             }
-        }
 
-        if (process.argv[argn] == '-tforce') {
-            con("Принудительное использование токена включено.")
-            tforce = true;
+            // Transfer to ID
+        case '-to':
+            {
+                if (dTest.length > 1 && dTest.length < 11) {
+                    transferTo = parseInt(dTest.replace(/\D+/g, ""));
+                    con("Включен автоматический перевод коинов на @id" + transferTo);
+                }
+                break;
+            }
+
+        default:
+            break;
+    }
+    if (["-t", "-u", "-to", "-ti", "-tsum", "-autobuyItem"].includes(process.argv[argn])) {
+        argn++;
+    }
+
+    if (process.argv[argn] == '-autobuyitem') {
+        let dTest = process.argv[argn + 1];
+        if (typeof dTest == "string" && dTest.length > 1 && dTest.length < 20) {
+            if (!Entit.titles[dTest]) return;
+            con("Для автопокупки выбрано: " + Entit.titles[dTest]);
+            autoBuyItem = dTest;
+            argn++;
             continue;
         }
+    }
 
-        if (process.argv[argn] == '-to') {
-            let dTest = process.argv[argn + 1];
-            if (typeof dTest == "string" && dTest.length >= 1 && dTest.length < 11) {
-                transferTo = parseInt(dTest.replace(/\D+/g, ""));
-                con("Автоматический перевод коинов на vk.com/id" + transferTo);
-                argn++;
-                continue;
-            }
-        }
+    if (process.argv[argn] == '-tforce') {
+        con("Принудительное использование токена включено.")
+        tforce = true;
+        continue;
+    }
 
-        if (process.argv[argn] == '-tsum') {
-            let dTest = process.argv[argn + 1];
-            if (typeof dTest == "string" && dTest.length >= 1 && dTest.length < 10) {
-                transferScore = parseInt(dTest);
-                con("Количество коинов для автматического перевода " + transferScore + "");
-                argn++;
-                continue;
-            }
-        }
-
-        if (process.argv[argn] == '-ti') {
-            let dTest = process.argv[argn + 1];
-            if (typeof dTest == "string" && dTest.length >= 1 && dTest.length < 10) {
-                transferInterval = parseInt(dTest);
-                con("Интервал для автоматического перевода " + transferInterval + " секунд");
-                argn++;
-                continue;
-            }
-        }
-
-        if (process.argv[argn] == '-autobuy') {
-            autoBuy = true;
+    if (process.argv[argn] == '-tsum') {
+        let dTest = process.argv[argn + 1];
+        if (typeof dTest == "string" && dTest.length >= 1 && dTest.length < 10) {
+            transferScore = parseInt(dTest);
+            con("Установлено количество коинов для автоматического перевода: " + transferScore + " коинов.");
+            argn++;
             continue;
         }
+    }
 
-        if (process.argv[argn] == '-flog') {
-            flog = true;
+    if (process.argv[argn] == '-ti') {
+        let dTest = process.argv[argn + 1];
+        if (typeof dTest == "string" && dTest.length >= 1 && dTest.length < 10) {
+            transferInterval = parseInt(dTest);
+            con("Установлен интервал для автоматического перевода: " + transferInterval + " секунд.");
+            argn++;
             continue;
         }
+    }
 
-        if (process.argv[argn] == "-h" || process.argv[argn] == "-help") {
-            ccon("-- VCoinX arguments --", "red");
-            ccon("-help			- помощь.");
-            ccon("-flog			- подробные логи.");
-            ccon("-tforce		- принудительно использовать токен.");
-            ccon("-tsum [sum]	- включить функцию для авто-перевода.");
-            ccon("-to [id]		- указать ID для авто-перевода.");
-            ccon("-ti [seconds]	- установить инетрвал для автоматического перевода.");
-            ccon("-u [URL]		- задать ссылку.");
-            ccon("-t [TOKEN]	- задать токен.");
-            process.exit();
-            continue;
-        }
+    if (process.argv[argn] == '-autobuy') {
+        autoBuy = true;
+        continue;
+    }
+
+    if (process.argv[argn] == '-flog') {
+        flog = true;
+        continue;
+    }
+
+    if (process.argv[argn] == "-h" || process.argv[argn] == "-help") {
+        ccon("-- VCoinX arguments --", "red");
+        ccon("-help			- помощь.");
+        ccon("-flog			- подробные логи.");
+        ccon("-tforce		- принудительно использовать токен.");
+        ccon("-tsum [sum]	- включить функцию для авто-перевода.");
+        ccon("-to [id]		- указать ID для авто-перевода.");
+        ccon("-ti [seconds]	- установить инетрвал для автоматического перевода.");
+        ccon("-u [URL]		- задать ссылку.");
+        ccon("-t [TOKEN]	- задать токен.");
+        ccon("-black      - отключить цвета консоли.")
+        process.exit();
+        continue;
     }
 }
 
@@ -486,23 +510,23 @@ function formatWSS(LINK) {
         CHANNEL = USER_ID % 16;
     // URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&ver=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
     URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
-	switch(conserver) {
-		case 1:
-			URLWS.replace("coin.vkforms.ru", "coin.w5.vkforms.ru");
-			break;
+    switch (conserver) {
+        case 1:
+            URLWS.replace("coin.vkforms.ru", "coin.w5.vkforms.ru");
+            break;
 
-		case 2:
-			URLWS.replace("coin.vkforms.ru", "bagosi-go-go.vkforms.ru");
-			break;
+        case 2:
+            URLWS.replace("coin.vkforms.ru", "bagosi-go-go.vkforms.ru");
+            break;
 
-    case 3:
-      URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL > 7) ? "bagosi-go-go.vkforms.ru" : "coin.w5.vkforms.ru");
-      break;
+        case 3:
+            URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL > 7) ? "bagosi-go-go.vkforms.ru" : "coin.w5.vkforms.ru");
+            break;
 
-		default:
-			URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
-			break;
-	}
+        default:
+            URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
+            break;
+    }
 
     flog && console.log("formatWSS: ", URLWS);
     return URLWS;

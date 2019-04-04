@@ -1,3 +1,4 @@
 module.exports = {
-	VK_TOKEN: ""
+    VK_TOKEN: "",
+    DONEURL: ""
 };
