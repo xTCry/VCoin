@@ -77,6 +77,8 @@ vConinWS.onReceiveDataEvent(async function(place, score) {
     var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2],
         trsum = 3e6;
 
+	miner.setScore(score);	
+	
     if (place > 0 && !rl.isQst) {
 
         if (transferTo && transferScore * 1e3 < score && !rand(0, 2) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
@@ -252,7 +254,6 @@ rl.on('line', async (line) => {
             if (!item || !Entit.titles[item]) return;
             con("Для автоматической покупки установлено ускорение: " + Entit.titles[item]);
             autoBuyItem = item;
-            autoBuy = true;
             break;
 
         case 'autobuy':

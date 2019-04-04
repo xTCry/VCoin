@@ -4,7 +4,6 @@ const fs = require('fs'),
     GithubContent = require('github-content');
 const pJson = require('./package.json');
 
-// GitHub data
 let GitCUpdate = new GithubContent({
     owner: 'cursedseal',
     repo: 'vcoinx',
@@ -15,8 +14,7 @@ let checkUpdateTTL = null,
     askIn = false,
     askInTTL = null,
     onUpdatesCB = false;
-
-// ******************
+	
 function formateSCORE(e) {
     return (arguments.length > 1 && void 0 !== arguments[1] && arguments[1]) ?
         function(e, t, n, a) {

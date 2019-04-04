@@ -132,6 +132,7 @@ class VCoinWS {
                     -1 === t.indexOf("WAIT_FOR_LOAD") &&
                     -1 === t.indexOf("MISS") &&
                     -1 === t.indexOf("TR") &&
+					-1 === t.indexOf("BROKEN") &&
                     "C" !== t[0] && "R" !== t[0])
                     console.log("on Message:\n", t);
 
@@ -476,7 +477,7 @@ class Miner {
         this.stack = [];
         this.active = [];
     }
-
+	
     setScore(q) {
         this.score = q;
     }
@@ -487,6 +488,7 @@ class Miner {
     hasMoney(e) {
         return this.score >= this.getPriceForItem(e);
     }
+
     getPriceForItem(e) {
         let price = Entit.items[e].price,
             count = 0;
