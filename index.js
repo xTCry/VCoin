@@ -49,7 +49,7 @@ onUpdates(msg => {
 let vConinWS = new VCoinWS(USER_ID);
 
 
-let missCount = 0,
+let missCount = 0, missTTL = null;
 vConinWS.onMissClickEvent(_=> {
     if (0 === missCount) {
         clearTimeout(missTTL);
@@ -336,7 +336,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
             ccon("-flog			- подробные логи.");
             ccon("-tforce		- принудительно использовать токен.");
 			ccon("-tsum [sum]	- включить функцию для авто-перевода.");
-			ccon("-to [id]		- указать ID для авто-перевода."
+			ccon("-to [id]		- указать ID для авто-перевода.");
 			ccon("-ti [seconds]	- установить инетрвал для автоматического перевода.");
             ccon("-u [URL]		- задать ссылку.");
             ccon("-t [TOKEN]	- задать токен.");

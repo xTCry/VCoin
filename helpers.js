@@ -44,9 +44,6 @@ colors.setTheme({
     error: 'red'
 });
 
-function now()
-	return Math.floor(Date.now() / 1000);
-
 function con(message, color, colorBG) {
     if (message === undefined) {
         console.log("\n")
@@ -90,6 +87,10 @@ function dateF(date) {
         date_format = dDay + '.' + dMonth + '.' + dYear + ' ' + dHour + ':' + dMinutes + ':' + dSeconds;
 
     return date_format;
+}
+
+function now() {
+	return Math.floor(Date.now() / 1000);
 }
 
 let rl = ReadLine.createInterface(process.stdin, process.stdout);
@@ -156,17 +157,18 @@ async function infLog(data) {
         await appendFileAsync(cFile, data);
 }
 
-function existsFile(f)
+function existsFile(f) {
 	return fs.existsSync(f);
-
-function existsAsync(path)
-    return new Promise((resolve, reject) => fs.exists(path, exists => resolve(exists)));
-
-function writeFileAsync(path, data)
-    return new Promise((resolve, reject) => fs.writeFile(path, data, err => resolve(err)));
-
-function appendFileAsync(path, data)
-    return new Promise((resolve, reject) => fs.appendFile(path, data, err => resolve(err)));
+}
+function existsAsync(path) {
+	return new Promise( (resolve, reject)=> fs.exists(path, exists=> resolve(exists)) );
+}
+function writeFileAsync(path, data) {
+	return new Promise( (resolve, reject)=> fs.writeFile(path, data, err=> resolve(err)) );
+}
+function appendFileAsync(path, data) {
+	return new Promise( (resolve, reject)=> fs.appendFile(path, data, err=> resolve(err)) );
+}
 
 module.exports = {
     rl,
