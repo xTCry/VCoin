@@ -501,7 +501,7 @@ class Miner {
     }
 
     updateStack(items) {
-        this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e)));
+        this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e && "vkp1"!== e&&"vkp2"!== e)) );
 
         let total = 0;
 		this.stack.forEach(function(e) {
