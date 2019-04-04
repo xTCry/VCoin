@@ -8,6 +8,7 @@ const {
     miner,
     Entit
 } = require('./VCoinWS');
+
 const {
     con,
     ccon,

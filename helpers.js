@@ -31,7 +31,6 @@ function formateSCORE(e) {
         }(e / 1e3, 3, ",", " ") :
         (e / 1e3).toFixed(3).toString().replace(".", ",")
 }
-// ******************
 
 colors.setTheme({
     dateBG: 'bgMagenta',
