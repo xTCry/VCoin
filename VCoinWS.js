@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 
 class VCoinWS {
 
-	constructor(userId) {
+	constructor() {
 		this.ws = null;
 		this.ttl = null;
 		this.retryTime = 1e3;
@@ -24,7 +24,6 @@ class VCoinWS {
 		this.connecting = false;
 		this.onConnectSend = [];
 		this.tickCount = 0;
-		this.userId = userId;
 	}
 
 	run(wsServer, cb) {
@@ -109,9 +108,9 @@ class VCoinWS {
 						this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime);
 						
 						this.tick = parseInt(tick, 10);
-						/*this.tickTtl = setInterval(function() {
-							return this.onTickEvent()
-						}, 1e3);*/
+						this.tickTtl = setInterval(_=> {
+							this.onTickEvent();
+						}, 1e3);
 
 						this.ccp = ccp || this.ccp;
 
@@ -305,12 +304,9 @@ class VCoinWS {
 	async onTickEvent() {
 		if (null !== this.oldScore && this.onMyDataCallback) {
 			
-			if(0 !== this.tick)
-				this.onMyDataCallback(this.oldPlace, this.oldScore, true);
-
+			// if(0 !== this.tick) this.onMyDataCallback(this.oldPlace, this.oldScore, true);
+			// this.oldScore += this.tick;
 			this.tickCount++;
-
-			this.oldScore += this.tick;
 
 			if(this.tickCount % 30 === 0) {
 				try {
@@ -527,13 +523,13 @@ class EntitiesClass {
 
 	constructor() {
 		this.titles = {
-			cursor_title: "Курсор",
-			cpu_title: "Видеокарта",
-			cpu_stack_title: "Стойка видеокарт",
-			computer_title: "Суперкомпьютер",
-			server_vk_title: "Сервер ВКонтакте",
-			quantum_pc_title: "Квантовый компьютер",
-			datacenter_title: "Датацентр",
+			cursor: "Курсор",
+			cpu: "Видеокарта",
+			cpu_stack: "Стойка видеокарт",
+			computer: "Суперкомпьютер",
+			server_vk: "Сервер ВКонтакте",
+			quantum_pc: "Квантовый компьютер",
+			datacenter: "Датацентр",
 		};
 		this.items = {
 			cursor: {

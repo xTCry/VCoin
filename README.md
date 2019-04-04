@@ -9,7 +9,7 @@ VK Coin Miner - недомайнер на NodeJS
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
-[![vcoin version](https://img.shields.io/badge/VCoin-1.2.7-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
+[![vcoin version](https://img.shields.io/badge/VCoin-1.2.8-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
 ***
 
@@ -35,8 +35,9 @@ npm i
 * `-t [TOKEN]`      - задает токен
 * `-to [ID]`        - задает ID страницы для автоперевода `score`
 * `-ti [seconds]`   - задает интервал автоперевода в секундах `[по умолчанию 3600 секунд (1 час)]`
-* `-tsum [sum]`     - сколько `score` переводить (знаков до запятой)
+* `-tsum [sum]`     - сколько `score` переводить (знаки до запятой)
 * `-autobuy`        - автопокупка
+* `-autobuyItem`    - какое покупать [ускорение](#названия-ускорений)
 
 
 Запуск поизводится из каталога приложения
@@ -110,15 +111,17 @@ module.exports = {
 - `run` - запустить 
 - `tran` - перевод 
 - `price` - выведет текущие цены 
-- `buy` - покупка (только при запущенном процессе) 
-  - `cursor`
-  - `cpu`
-  - `cpu_stack`
-  - `computer`
-  - `server_vk`
-  - `quantum_pc`
-  - `datacenter`
-  - `bonus` - только один раз
+- `buy` - покупка ускорения
+
+## Названия ускорений
+- `cursor`
+- `cpu`
+- `cpu_stack`
+- `computer`
+- `server_vk`
+- `quantum_pc`
+- `datacenter`
+- `bonus` - только один раз
 
 
 ## З.Ы.

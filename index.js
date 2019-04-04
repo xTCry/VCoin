@@ -17,7 +17,8 @@ let boosterTTL = null,
 	updatesLastTime = 0,
 	xRestart = true,
 	flog = false,
-	autobuy = false,
+	autoBuy = false,
+	autoBuyItem = "datacenter",
 	tforce = false,
 	transferTo = false,
 	transferScore = 3e4,
@@ -30,7 +31,7 @@ onUpdates(msg=> {
 });
 
 // Инициализация главного модуля (:
-let vConinWS = new VCoinWS(USER_ID);
+let vConinWS = new VCoinWS();
 
 
 let missCount = 0, missTTL = null;
@@ -69,12 +70,12 @@ vConinWS.onReceiveDataEvent(async (place, score)=> {
 			}
 		}
 
-		if(autobuy) {
-			if(miner.hasMoney("datacenter")) {
+		if(autoBuy) {
+			if(miner.hasMoney(autoBuyItem)) {
 				try {
-					result = await vConinWS.buyItemById("datacenter");
+					result = await vConinWS.buyItemById(autoBuyItem);
 					miner.updateStack(result.items);
-					let template = "[AutoBuy] Был куплен Датацентр";
+					let template = "[AutoBuy] Был куплен "+Entit.titles[autoBuyItem];
 					con(template, "black", "Green");
 					try { await infLog(template); } catch(e) {}
 				} catch(e) {
@@ -101,7 +102,7 @@ vConinWS.onTransfer(async (id, score)=> {
 	try { await infLog(template); }
 	catch(e) { }
 });
-vConinWS.onWaitEvent(e=> { });
+vConinWS.onWaitEvent(e=> { e && con("onWaitEvent: "+e); });
 
 vConinWS.onUserLoaded((place, score, items, top, firstTime)=> {
 	con("onUserLoaded: \t" + place + "\t" + formateSCORE(score, true) /*+ "\t" + items + "\t" + top + "\t" + firstTime*/);
@@ -150,10 +151,17 @@ function forceRestart(t) {
 		startBooster(t);
 }
 
-
+function lPrices(d) {
+	let temp="";
+	temp += Entit.names.map(el=> {
+		return !miner.hasMoney(el)&&!d? "": "\n\t- ["+el+"] " + Entit.titles[el] +": "+ formateSCORE(miner.getPriceForItem(el), true);
+	});
+	return temp;
+}
 // Обработка командной строки
 rl.on('line', async (line) => {
 	if(!URLWS) return;
+	let temp, item;
 
 	switch(line.trim()) {
 		case '':
@@ -163,7 +171,7 @@ rl.on('line', async (line) => {
 			console.log("updatesInterval", updatesInterval);
 			console.log("updatesLastTime", updatesLastTime);
 			console.log("xRestart", xRestart);
-			console.log("autobuy", autobuy);
+			console.log("autobuy", autoBuy);
 			console.log("transferTo", transferTo);
 			console.log("transferScore", transferScore);
 			console.log("transferInterval", transferInterval);
@@ -196,18 +204,17 @@ rl.on('line', async (line) => {
 
 		case 'p':
 		case 'price':
-			let temp="";
-			temp += Entit.names.map(el=> {
-				return "\n\t- ["+el+"] " + Entit.titles[el+"_title"] +": "+ formateSCORE(miner.getPriceForItem(el), true);
-			});
+			temp = lPrices();
 			ccon("-- Цены --", "red");
 			ccon(temp);
-			
 			break;
 
 		case 'b':
 		case 'buy':
-			let item = await rl.questionAsync("Введи название товара [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
+			temp=lPrices(true);
+			ccon("-- Доступные ускорения и их цены --", "red");
+			ccon(temp);
+			item = await rl.questionAsync("Введи название ускорения [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
 			if(!item) return;
 			let result;
 			try {
@@ -221,6 +228,19 @@ rl.on('line', async (line) => {
 				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств", true);
 				else con(e.message, true);
 			}			
+			break;
+
+		case 'autoBuyItem':
+			item = await rl.questionAsync("Введи название ускорения для автопокупки [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
+			if(!item || !Entit.titles[item]) return;
+			con("Для автопокупки выбрано: "+Entit.titles[item]);
+			autoBuyItem = item;
+			autoBuy = true;
+			break;
+
+		case 'autoBuy':
+			autoBuy = !autoBuy;
+			con("Автопокупка: "+(autoBuy? "Включена": "Отключена"));
 			break;
 
 		case 'tran':
@@ -252,6 +272,8 @@ rl.on('line', async (line) => {
 			ccon("tran	- перевод");
 			ccon("price	- цены");
 			ccon("hideupd - скрыть уведомление");
+			ccon("autoBuy - вкл/откл автопокупки");
+			ccon("autoBuyItem - какое ускорение покупать");
 			break;
 	}
 });
@@ -262,7 +284,7 @@ rl.on('line', async (line) => {
 // Parse arguments
 for (var argn = 2; argn < process.argv.length; argn++) {
 
-	if([ "-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce", "-to", "-ti", "-tsum" ].includes(process.argv[argn])) {
+	if([ "-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce", "-to", "-ti", "-tsum", "-autobuyItem" ].includes(process.argv[argn])) {
 
 		// Token
 		if (process.argv[argn] == '-t') {
@@ -319,6 +341,18 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 			}
 		}
 
+		// Set autoBuy Item
+		if (process.argv[argn] == '-autobuyItem') {
+			let dTest = process.argv[argn + 1];
+			if(typeof dTest == "string" && dTest.length > 1 && dTest.length < 20) {
+				if(!Entit.titles[dTest]) return;
+				con("Для автопокупки выбрано: "+Entit.titles[dTest]);
+				autoBuyItem = dTest;
+				argn++;
+				continue;
+			}
+		}
+
 		// Force token
 		if (process.argv[argn] == '-tforce') {
 			con("Force token set.")
@@ -348,7 +382,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 			ccon("-t [TOKEN]	- задать токен");
 			ccon("-to [ID]	- задать ID страницы для автоперевода score");
 			ccon("-ti [seconds]	- задать интервал автоперевода в секундах");
-			ccon("-tsum [sum]	- сколько score переводить (знаков до запятой)");
+			ccon("-tsum [sum]	- сколько score переводить (знаки до запятой)");
 			ccon("-autobuy		- автопокупка");
 			process.exit();
 			continue;
