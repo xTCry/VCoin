@@ -9,7 +9,7 @@ VK Coin Miner - недомайнер на NodeJS
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
-[![vcoin version](https://img.shields.io/badge/VCoin-1.2.8-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
+[![vcoin version](https://img.shields.io/badge/VCoin-1.3.2-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
 ***
 
@@ -127,7 +127,7 @@ module.exports = {
 ## З.Ы.
 > Если надо зайти в сервис, но выкидывает, то можно использовать команду `stop`, а для возобновления `run`
 
-> При переводе берется незначительная комиссия в виде `10%`
+> При переводе берется незначительная комиссия в виде `0,1%` для статистики
 
 > При lineQuestion вывод лога для удобства приостанавливается
 
