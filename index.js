@@ -40,7 +40,6 @@ let boosterTTL = null,
 	transferScore = 3e4,
 	transferInterval = 36e2,
 	transferLastTime = 0;
-
 onUpdates(msg => {
     if (!updatesEv) updatesEv = msg;
     con(msg, "white", "Red");
@@ -83,20 +82,20 @@ vConinWS.onReceiveDataEvent(async function(place, score) {
 			}
 		}
 		
-			if(autobuy) {
-			if(miner.hasMoney("datacenter")) {
-				try {
-					result = await vConinWS.buyItemById("datacenter");
-					miner.updateStack(result.items);
-					let template = "[AutoBuy] Был приобретен ДатаЦентр";
-					con(template, "black", "Green");
-					try { await infLog(template); } catch(e) {}
-				} catch(e) {
-					if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки", true);
-					else con(e.message, true);
+			/* if(autobuy == true) {
+				if(miner.hasMoney("datacenter")) {
+					try {
+						result = await vConinWS.buyItemById("datacenter");
+						miner.updateStack(result.items);
+						let template = "[AutoBuy] Был приобретен ДатаЦентр";
+						con(template, "black", "Green");
+						try { await infLog(template); } catch(e) {}
+					} catch(e) {
+						if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки", true);
+						else con(e.message, true);
+					}
 				}
-			}
-		}
+			} */
 	
         if(updatesEv && !rand(0, 1) && (now() - updatesLastTime > updatesInterval))
 		{
