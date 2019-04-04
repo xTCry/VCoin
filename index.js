@@ -444,7 +444,7 @@ function formatWSS(LINK) {
 		CHANNEL = /*(USER_ID%16 === 1)?*/ USER_ID%16/*: USER_ID%8*/;
 	URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
 	
-	URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL>7)? "bagosi-go-go.vkforms.ru": "coin.w5.vkforms.ru");
+	URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
 	
 	flog && console.log("formatWSS: ", URLWS);
 	return URLWS;
