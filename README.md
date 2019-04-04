@@ -28,6 +28,9 @@ VCoinX - модификация для [VCoin](https://github.com/xTCry/VCoin), 
 
 > При указании токена, ссылку указывать не надо.
 
+### Использование свитчера серверов
+Откройте файл `index.js`, на **53** строке измените значение для `conserver`, работают значения от нуля до двух, т.е всего три сервера.
+
 ### Использование аргументов
 Можно избежать всей этой возни с настройками, если Вы разбираетесь в запуске файлов с аргументами, сейчас я перечислю все аргументы.
 * -tforce		- принудительно использовать токен. (если в `config.js` указана ссылка)
@@ -54,9 +57,7 @@ VCoinX - модификация для [VCoin](https://github.com/xTCry/VCoin), 
 
 Для получения расширенного токена, скопируйте ссылку ниже, замените выделенные жирным шрифотом отметки на ваш логин и пароль, после чего перейдите по ссылке и скопируйте часть адресной строки от access_token= до &expires_in (85 символов).
 
-```
-https://oauth.vk.com/token?grant_type=password&client_id=2274003&client_secret=hHbZxrka2uZ6jB1inYsH&username=**login**&password=**password**
-```
+`https://oauth.vk.com/token?grant_type=password&client_id=2274003&client_secret=hHbZxrka2uZ6jB1inYsH&username=**login**&password=**password**`
 
 ## Список доступных команд для использования
 
@@ -81,8 +82,8 @@ https://oauth.vk.com/token?grant_type=password&client_id=2274003&client_secret=h
   - `bonus` 		- выдает случайное количество монет, можно использовать только один раз.
 
 # Автор(ы) бота
-* [xTCry](https://github.com/xTCry) - разработчик оригинального VCoin. *считаю его таким-себе человеком из-за впихивания доната везде, где только можно.*
-* [cursedseal](https://github.com/cursedseal) - разработчик VCoinX, вырезал донаты, переписал ReadMe.
+* [xTCry](https://github.com/xTCry) - разработчик оригинального VCoin. *считаю его таким-себе человеком из-за впихивания доната везде, где только можно, хотя в целом, довольно классный.*
+* [cursedseal](https://github.com/cursedseal) - разработчик модификации VCoinX.
 
 ## Поддержать разработчиков
 [![Донат разработчику оригинальной версии](https://img.shields.io/badge/Донат-VCoin-orange.svg)](https://qiwi.me/xtcry)

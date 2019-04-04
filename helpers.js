@@ -13,20 +13,21 @@ let GitCUpdate = new GithubContent({
 let checkUpdateTTL = null,
     askIn = false,
     askInTTL = null,
-    onUpdatesCB = false;
-	
+    onUpdatesCB = false,
+    offColors = false;
+
 function formateSCORE(e) {
     return (arguments.length > 1 && void 0 !== arguments[1] && arguments[1]) ?
         function(e, t, n, a) {
             var r, o, c, s, i;
-
+            
             r = parseInt(e = (+e || 0).toFixed(t), 10) + "";
             (o = r.length) > 3 ? o %= 3 : o = 0;
-
+            
             i = o ? (r.substr(0, o) + a) : "";
             c = r.substr(o).replace(/(\d{3})(?=\d)/g, "$1" + a);
             s = t ? n + Math.abs(e - r).toFixed(t).replace(/-/, 0).slice(2) : "";
-
+            
             return i + c + s;
         }(e / 1e3, 3, ",", " ") :
         (e / 1e3).toFixed(3).toString().replace(".", ",")
@@ -46,34 +47,37 @@ function con(message, color, colorBG) {
         console.log("\n")
         return;
     }
-    if (color === true) {
-        color = "red";
-        colorBG = "Blue";
-    }
-    colorBG = "bg" + ((typeof colorBG == "string") ? colorBG : "Black");
-    color = (typeof color == "string") ? color : "green";
-    console.log(colors.dateBG('[' + dateF() + ']') + ": " + colors[colorBG](colors[color](message)));
+    let temp = (!offColors ? colors.dateBG('[' + dateF() + ']') : dateF()) + ": " + ccon(message, color, colorBG, 1);
+    console.log(temp);
 }
 
-function ccon(message, color, colorBG) {
+function ccon(message, color, colorBG, ret) {
+    let temp = "";
     if (message === undefined) {
         console.log("\n")
         return;
     }
     if (color === true) {
-        color = "red";
-        colorBG = "Blue";
+        color = "white";
+        colorBG = "Red";
+        temp = !offColors ? colors.yellow.bgRed("[ОШИБКА]: ") : "[ОШИБКА]: ";
     }
     colorBG = "bg" + ((typeof colorBG == "string") ? colorBG : "Black");
     color = (typeof color == "string") ? color : "green";
-    console.log(colors[colorBG](colors[color](message)));
+    temp += !offColors ? colors[colorBG](colors[color](message)) : message;
+    !ret && console.log(temp);
+    return temp;
+}
+
+function setColorsM(e) {
+    offColors = !!e;
 }
 
 function dateF(date) {
     if (!isNaN(date) && date < 9900000000)
         date *= 1000;
     date = date !== undefined ? new Date(date) : new Date();
-
+    
     var dYear = date.getFullYear(),
         dMonthF = (date.getMonth() + 1),
         dMonth = dMonthF > 9 ? dMonthF : "0" + dMonthF,
@@ -82,7 +86,7 @@ function dateF(date) {
         dMinutes = date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
         dSeconds = date.getSeconds() > 9 ? date.getSeconds() : "0" + date.getSeconds(),
         date_format = dDay + '.' + dMonth + '.' + dYear + ' ' + dHour + ':' + dMinutes + ':' + dSeconds;
-
+    
     return date_format;
 }
 
@@ -115,7 +119,7 @@ function checkUpdates() {
             let c = file.contents.toString();
             if (c[0] === "{") {
                 let data = JSON.parse(c);
-
+                
                 let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/cursedseal/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
                     (data.version != pJson.version) ? "Вы используете модифицированную версию, рекомендуем использовать оригинальную! -> github.com/cursedseal/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
                     false;
@@ -128,7 +132,7 @@ function checkUpdates() {
     });
 }
 
-checkUpdateTTL = setInterval(checkUpdates, 6e5);
+checkUpdateTTL = setInterval(checkUpdates, 1e7);
 checkUpdates();
 
 function rand(min, max) {
@@ -141,7 +145,7 @@ function rand(min, max) {
 let cFile = "./log.txt";
 async function infLog(data) {
     data = "\n[" + dateF() + "] \t" + data;
-
+    
     let exists = await existsAsync(cFile);
     if (!exists) {
         let errWrite = await writeFileAsync(cFile, "Log." + data);
@@ -170,6 +174,7 @@ module.exports = {
     rl,
     con,
     ccon,
+    setColorsM,
     formateSCORE,
     hashPassCoin,
     checkUpdates,

@@ -132,7 +132,7 @@ class VCoinWS {
                     -1 === t.indexOf("WAIT_FOR_LOAD") &&
                     -1 === t.indexOf("MISS") &&
                     -1 === t.indexOf("TR") &&
-					-1 === t.indexOf("BROKEN") &&
+                    -1 === t.indexOf("BROKEN") &&
                     "C" !== t[0] && "R" !== t[0])
                     console.log("on Message:\n", t);
 
@@ -477,7 +477,7 @@ class Miner {
         this.stack = [];
         this.active = [];
     }
-	
+
     setScore(q) {
         this.score = q;
     }
@@ -501,14 +501,14 @@ class Miner {
     }
 
     updateStack(items) {
-        this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e && "vkp1"!== e&&"vkp2"!== e)) );
+        this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e && "vkp1" !== e && "vkp2" !== e)));
 
         let total = 0;
-		this.stack.forEach(function(e) {
-			let n = e.value,
-				a = e.count;
-			total += Entit.items[n].amount * a;
-		});
+        this.stack.forEach(function(e) {
+            let n = e.value,
+                a = e.count;
+            total += Entit.items[n].amount * a;
+        });
 
         this.total = total;
     }
@@ -554,17 +554,27 @@ class EntitiesClass {
             datacenter: {
                 price: 5e6,
                 amount: 1e3
+            },
+            vkp1: {
+                price: 0,
+                amount: 2e3
+            },
+            vkp2: {
+                price: 0,
+                amount: 1e4
             }
         };
         this.names = [
-            "cursor",
-            "cpu",
-            "cpu_stack",
-            "computer",
-            "server_vk",
-            "quantum_pc",
-            "datacenter",
-        ];
+			"cursor",
+			"cpu",
+			"cpu_stack",
+			"computer",
+			"server_vk",
+			"quantum_pc",
+			"datacenter",
+			// "vkp1",
+			// "vkp2",
+		];
     }
 
     generateStack(e) {
@@ -598,6 +608,10 @@ class EntitiesClass {
 
     calcPrice(price, count) {
         return (count <= 1) ? price : Math.ceil(1.3 * this.calcPrice(price, count - 1));
+    }
+
+    hashPassCoin(e, t) {
+        return e % 2 === 0 ? e + t - 15 : e + t - 109;
     }
 }
 

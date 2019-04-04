@@ -12,6 +12,7 @@ const {
 const {
     con,
     ccon,
+    setColorsM,
     formateSCORE,
     hashPassCoin,
     rl,
@@ -29,6 +30,7 @@ let {
     DONEURL,
     VK_TOKEN
 } = existsFile('./config.js') ? require('./config.js') : {};
+
 let USER_ID = false;
 
 
@@ -47,7 +49,9 @@ let boosterTTL = null,
     transferTo = false,
     transferScore = 3e4,
     transferInterval = 36e2,
-    transferLastTime = 0;
+    transferLastTime = 0,
+	conserver = 0;
+
 onUpdates(msg => {
     if (!updatesEv) updatesEv = msg;
     con(msg, "white", "Red");
@@ -58,6 +62,7 @@ let vConinWS = new VCoinWS();
 
 let missCount = 0,
     missTTL = null;
+
 vConinWS.onMissClickEvent(_ => {
     if (0 === missCount) {
         clearTimeout(missTTL);
@@ -182,7 +187,7 @@ function forceRestart(t) {
 function lPrices(d) {
     let temp = "";
     temp += Entit.names.map(el => {
-        return !miner.hasMoney(el) && !d ? "" : "\n- [" + el + "] " + Entit.titles[el] + ": " + formateSCORE(miner.getPriceForItem(el), true);
+        return !miner.hasMoney(el) && d ? "" : "\n\t- [" + el + "] " + Entit.titles[el] + ": " + formateSCORE(miner.getPriceForItem(el), true);
     });
     return temp;
 }
@@ -196,8 +201,9 @@ rl.on('line', async (line) => {
         case '':
             break;
             
-        case 'info':
-        case 'information':
+        case 'debuginformation':
+        case 'debuginfo':
+        case 'debug':
             XXX = await vConinWS.getUserScores([vConinWS.userId]);
             console.log("Количество коинов: ", XXX);
             console.log("updatesInterval", updatesInterval);
@@ -478,9 +484,19 @@ function formatWSS(LINK) {
     let GSEARCH = url.parse(LINK),
         NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/",
         CHANNEL = USER_ID % 16;
-    URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
+    URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&ver=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
     
-    URLWS = URLWS.replace("coin.vkforms.ru", "coin.w5.vkforms.ru");
+	switch(conserver) {
+		case 1:
+			URLWS.replace("coin.vkforms.ru", "coin.w5.vkforms.ru");
+			break;
+		case 2: 
+			URLWS.replace("coin.vkforms.ru", "bagosi-go-go.vkforms.ru");
+			break;
+		default:
+			URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
+			break;
+	}
     
     flog && console.log("formatWSS: ", URLWS);
     return URLWS;
