@@ -24,6 +24,7 @@ let boosterTTL = null,
 	updatesLastTime = 0,
 	xRestart = true,
 	flog = false,
+	offColors = false,
 	autoBuy = false,
 	autoBuyItem = "datacenter",
 	tforce = false,
@@ -128,7 +129,8 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime, tick)=> {
 vConinWS.onBrokenEvent(_=> {
 	con("onBrokenEvent", true);
 	// vConinWS.reconnect(URLWS, true);
-	forceRestart(30e3);
+	xRestart = false;
+	forceRestart(10e3, true);
 });
 
 vConinWS.onAlreadyConnected(_=> {
@@ -151,14 +153,15 @@ async function startBooster(tw) {
 		vConinWS.userId = USER_ID;
 		vConinWS.run(URLWS, _=> {
 			con("Boost started");
+			xRestart = true;
 		});
 	}, (tw || 1e3));
 }
 
-function forceRestart(t) {
+function forceRestart(t, force) {
 	vConinWS.close();
 	boosterTTL && clearInterval(boosterTTL);
-	if(xRestart)
+	if(xRestart || force)
 		startBooster(t);
 }
 
@@ -276,6 +279,11 @@ rl.on('line', async (line) => {
 			}
 			break;
 
+		case 'color':
+			setColorsM(offColors=!offColors);
+			con("Цвета " + (offColors? "от": "в") + "ключены (*^.^*)", "blue");
+			break;
+
 		case "?":
 		case "help":
 			ccon("-- VCoins --", "red");
@@ -288,6 +296,7 @@ rl.on('line', async (line) => {
 			ccon("hideupd - скрыть уведомление");
 			ccon("autoBuy - вкл/откл автопокупки");
 			ccon("autoBuyItem - какое ускорение покупать");
+			ccon("color - вкл/выкл режима цветной консоли");
 			break;
 	}
 });
@@ -303,8 +312,8 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 	switch(cTest.trim().toLowerCase()) {
 
 		case '-black': {
-			flog && con("Цвета отключены", "blue");
-			// setColorsM...
+			flog && con("Цвета отключены (*^.^*)", "blue");
+			setColorsM(offColors=!offColors);
 			argn++;
 			break;
 		}

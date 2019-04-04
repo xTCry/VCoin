@@ -184,7 +184,7 @@ function appendFileAsync(path, data) {
 module.exports = {
 	rl,
 	con, ccon,
-	setColorsM,
+	setColorsM, offColors,
 	formateSCORE,
 	checkUpdates, checkUpdateTTL,
 	onUpdates: cb=> (onUpdatesCB=cb, true),
