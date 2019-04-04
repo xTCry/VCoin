@@ -50,7 +50,7 @@ let boosterTTL = null,
     transferScore = 3e4,
     transferInterval = 36e2,
     transferLastTime = 0,
-	   conserver = 0;
+	conserver = 3;
 
 onUpdates(msg => {
     if (!updatesEv) updatesEv = msg;
@@ -140,7 +140,7 @@ vConinWS.onTransfer(async (id, score) => {
 
 vConinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
     con("Пользователь успешно загружен.");
-    con("Скорость кликов: " + formateSCORE(tick, true) + " кликов / сек.");
+    con("Скорость коинов: " + formateSCORE(tick, true) + " коинов / тик.");
     miner.setActive(items);
     miner.updateStack(items);
 
@@ -249,7 +249,7 @@ rl.on('line', async (line) => {
                 miner.updateStack(result.items);
                 if (result && result.items)
                     delete result.items;
-                con("Новая скорость: " + formateSCORE(result.tick, true) + " кликов / сек.");
+                con("Новая скорость: " + formateSCORE(result.tick, true) + " коинов / тик.");
             } catch (e) {
                 if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств.", true);
                 else if (e.message == "ITEM NOT FOUND") con("Предмет не найден.", true);
@@ -490,9 +490,15 @@ function formatWSS(LINK) {
 		case 1:
 			URLWS.replace("coin.vkforms.ru", "coin.w5.vkforms.ru");
 			break;
+
 		case 2:
 			URLWS.replace("coin.vkforms.ru", "bagosi-go-go.vkforms.ru");
 			break;
+
+    case 3:
+      URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL > 7) ? "bagosi-go-go.vkforms.ru" : "coin.w5.vkforms.ru");
+      break;
+
 		default:
 			URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
 			break;
