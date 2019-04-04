@@ -20,7 +20,7 @@ const {
 	now,
 } = require('./helpers');
 
-let { USER_ID: depUSER_ID, DONEURL, VK_TOKEN } = existsFile('./.config.js')? require('./config.js'): {};
+let { USER_ID: depUSER_ID, DONEURL, VK_TOKEN } = existsFile('./config.js')? require('./config.js'): {};
 let USER_ID = false;
 
 
