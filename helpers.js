@@ -44,6 +44,9 @@ colors.setTheme({
     error: 'red'
 });
 
+function now()
+	return Math.floor(Date.now() / 1000);
+
 function con(message, color, colorBG) {
     if (message === undefined) {
         console.log("\n")
@@ -119,8 +122,8 @@ function checkUpdates() {
             if (c[0] === "{") {
                 let data = JSON.parse(c);
 
-                let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/cursedseal/VCoinX" :
-                    (data.version != pJson.version) ? "Вы используете модифицированную версию, рекомендуем использовать оригинальную! -> github.com/cursedseal/VCoinX" :
+                let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/cursedseal/VCoinX \t["+(data.version +"/"+ pJson.version)+"]" :
+                    (data.version != pJson.version) ? "Вы используете модифицированную версию, рекомендуем использовать оригинальную! -> github.com/cursedseal/VCoinX \t["+(data.version +"/"+ pJson.version)+"]" :
                     false;
                 if (msg) {
                     if (onUpdatesCB) onUpdatesCB(msg);
@@ -153,17 +156,17 @@ async function infLog(data) {
         await appendFileAsync(cFile, data);
 }
 
-function existsAsync(path) {
+function existsFile(f)
+	return fs.existsSync(f);
+
+function existsAsync(path)
     return new Promise((resolve, reject) => fs.exists(path, exists => resolve(exists)));
-}
 
-function writeFileAsync(path, data) {
+function writeFileAsync(path, data)
     return new Promise((resolve, reject) => fs.writeFile(path, data, err => resolve(err)));
-}
 
-function appendFileAsync(path, data) {
+function appendFileAsync(path, data)
     return new Promise((resolve, reject) => fs.appendFile(path, data, err => resolve(err)));
-}
 
 module.exports = {
     rl,
@@ -174,7 +177,7 @@ module.exports = {
     checkUpdates,
     checkUpdateTTL,
     onUpdates: cb => (onUpdatesCB = cb, true),
-
+	existsFile,
     existsAsync,
     writeFileAsync,
     appendFileAsync,

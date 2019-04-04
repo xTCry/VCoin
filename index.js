@@ -3,35 +3,43 @@ const url = require('url'),
         VK
     } = require('vk-io');
 
-const VCoinWS = require('./VCoinWS');
+const { VCoinWS, miner, Entit } = require('./VCoinWS');
 const {
     con,
     ccon,
     formateSCORE,
     hashPassCoin,
     rl,
+	existsFile,
     existsAsync,
     writeFileAsync,
     appendFileAsync,
     infLog,
     rand,
     onUpdates,
+	now,
 } = require('./helpers');
-let {
-    USER_ID,
-    DONEURL,
-    VK_TOKEN
-} = require('./config.js');
+
+let { USER_ID: depUSER_ID, DONEURL, VK_TOKEN } = existsFile('./.config.js')? require('./config.js'): {};
+let USER_ID = false;
 
 
 let vk = new VK();
 let URLWS = false;
 let boosterTTL = null,
-    tryStartTTL = null,
-    updatesEv = false,
-    xRestart = true,
-    flog = false,
-    tforce = false;
+	tryStartTTL = null,
+	updatesEv = false,
+	updatesInterval = 60,
+	updatesLastTime = 0,
+	xRestart = true,
+	flog = false,
+	autoBuy = false,
+	autoBuyItem = "datacenter",
+	tforce = false,
+	transferTo = false,
+	transferScore = 3e4,
+	transferInterval = 36e2,
+	transferLastTime = 0;
 
 onUpdates(msg => {
     if (!updatesEv) updatesEv = msg;
@@ -42,11 +50,10 @@ let vConinWS = new VCoinWS(USER_ID);
 
 
 let missCount = 0,
-    missTTL = null;
-vConinWS.onMissClickEvent(function() {
+vConinWS.onMissClickEvent(_=> {
     if (0 === missCount) {
         clearTimeout(missTTL);
-        missTTL = setTimeout(function() {
+        missTTL = setTimeout(_=> {
             missCount = 0;
             return;
         }, 6e4)
@@ -60,18 +67,48 @@ vConinWS.onMissClickEvent(function() {
 });
 
 vConinWS.onReceiveDataEvent(async function(place, score) {
-    var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2];
-
+    var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2], trsum=3e6;
+	
     if (place > 0 && !rl.isQst) {
 
-        if (updatesEv && !rand(0, 1))
+		if(transferTo && transferScore*1e3 < score && !rand(0, 2) && ((now() - transferLastTime) > transferInterval)) {
+			try {
+				await vConinWS.transferToUser(transferTo, transferScore);
+				let template = "Автоматически переведено ["+formateSCORE(transferScore*1e3, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/id"+transferTo;
+				con(template, "black", "Green");
+				try { await infLog(template); } catch(e) {}
+				transferLastTime = now();
+			} catch(e) {
+				con("Автоматический перевод не удалася. Ошибка: "+e.message, true);
+			}
+		}
+		
+			if(autobuy) {
+			if(miner.hasMoney("datacenter")) {
+				try {
+					result = await vConinWS.buyItemById("datacenter");
+					miner.updateStack(result.items);
+					let template = "[AutoBuy] Был приобретен ДатаЦентр";
+					con(template, "black", "Green");
+					try { await infLog(template); } catch(e) {}
+				} catch(e) {
+					if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки", true);
+					else con(e.message, true);
+				}
+			}
+		}
+	
+        if(updatesEv && !rand(0, 1) && (now() - updatesLastTime > updatesInterval))
+		{
             con(updatesEv + "\n\t\t\t Введите \'hideupd(ate)\' для скрытия уведомления.", "white", "Red");
+			updatesLastTime = now();
+		}
 
         con("Позиция в топе: " + place + "\tКоличество коинов: " + formateSCORE(score, true), "yellow");
     }
 });
 
-vConinWS.onTransfer(async function(id, score) {
+vConinWS.onTransfer(async (id, score)=> {
     let template = "Пользватель с id" + USER_ID + " получил [" + formateSCORE(score, true) + "] коинов от id" + id;
     con(template, "black", "Green");
     try {
@@ -81,25 +118,29 @@ vConinWS.onTransfer(async function(id, score) {
     }
 });
 
-vConinWS.onUserLoaded(function(place, score, items, top, firstTime) {
+vConinWS.onUserLoaded((place, score, items, top, firstTime)=> {
     con("Пользователь успешно загружен. \n\t\t\tПозиция в топе - " + place + " | \tКоличество коинов - " + formateSCORE(score, true));
 
+	miner.setActive(items);
+	miner.updateStack(items);
+	
     boosterTTL && clearInterval(boosterTTL);
     boosterTTL = setInterval(_ => {
         rand(0, 5) > 3 && vConinWS.click();
     }, 5e2);
 });
 
-vConinWS.onBrokenEvent(function() {
+vConinWS.onBrokenEvent(_=> {
     con("onBrokenEvent", true);
 });
 
-vConinWS.onAlreadyConnected(function() {
+vConinWS.onAlreadyConnected(_=> {
     con("Обнаружено открытие приложения с другого устройства.", true);
     vConinWS.reconnect(URLWS);
 });
 
-vConinWS.onOffline(function() {
+vConinWS.onOffline(_=> {
+	if(!xRestart) return;
     con("onOffline", true);
     forceRestart(2e4);
 });
@@ -131,10 +172,19 @@ rl.on('line', async (line) => {
         case '':
             break;
 
-        case 'info':
-            let XXX = await vConinWS.getUserScores([vConinWS.userId]);
+		case 'info':
+		case 'information':
+			XXX = await vConinWS.getUserScores([vConinWS.userId]);
             console.log("Количество коинов: ", XXX);
-            break;
+			console.log("updatesInterval", updatesInterval);
+			console.log("updatesLastTime", updatesLastTime);
+			console.log("xRestart", xRestart);
+			console.log("autobuy", autobuy);
+			console.log("transferTo", transferTo);
+			console.log("transferScore", transferScore);
+			console.log("transferInterval", transferInterval);
+			console.log("transferLastTime", transferLastTime);
+			break;
 
         case "hideupd":
         case "hideupdate":
@@ -163,6 +213,7 @@ rl.on('line', async (line) => {
             let result;
             try {
                 result = await vConinWS.buyItemById(item);
+				miner.updateStack(result.items);
                 if (result && result.items)
                     delete result.items;
                 console.log("Результат покупки: ", result);
@@ -173,11 +224,23 @@ rl.on('line', async (line) => {
             }
             break;
 
+		case 'p':
+		case 'price':
+			let temp="";
+			temp += Entit.names.map(el=> {
+				return "\n\t- ["+el+"] " + Entit.titles[el+"_title"] +": "+ formateSCORE(miner.getPriceForItem(el), true);
+			});
+			ccon("-- Цены --", "red");
+			ccon(temp);
+
+ 			break;
+			
         case 'tran':
         case 'transfer':
             let count = await rl.questionAsync("Количество: ");
             let id = await rl.questionAsync("ID получателя: ");
             let conf = await rl.questionAsync("Вы уверены? [yes]: ");
+			id = parseInt(id.replace(/\D+/g,""));
             if (conf != "yes" || !id || !count) return con("Отправка неудачная, вероятно, один из параметров не был указан.", true);
 
             try {
@@ -200,6 +263,7 @@ rl.on('line', async (line) => {
             ccon("stop(pause)	- остановка майнера.");
             ccon("start(run)	- запуск майнера.");
             ccon("(b)uy	- покупка улучшений.");
+			ccon("(p)rice - отображение цен на товары.");
             ccon("tran(sfer)	- перевод игроку.");
             ccon("hideupd(ate) - скрыть уведомление об обновлении.");
             break;
@@ -208,7 +272,8 @@ rl.on('line', async (line) => {
 
 for (var argn = 2; argn < process.argv.length; argn++) {
 
-    if (["-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce"].includes(process.argv[argn])) {
+    if([ "-h", "-help", "-f", "-t", "-flog", "-autobuy", "-u", "-tforce", "-to", "-ti", "-tsum" ].includes(process.argv[argn])) {
+		
         if (process.argv[argn] == '-t') {
             let dTest = process.argv[argn + 1];
             if (typeof dTest == "string" && dTest.length > 80 && dTest.length < 90) {
@@ -235,8 +300,28 @@ for (var argn = 2; argn < process.argv.length; argn++) {
             continue;
         }
 
+		if (process.argv[argn] == '-to') {
+			let dTest = process.argv[argn + 1];
+			if(typeof dTest == "string" && dTest.length > 1 && dTest.length < 11) {
+				transferTo = parseInt(dTest.replace(/\D+/g,""));
+				con("Автоматический перевод коинов на vk.com/id"+transferTo);
+				argn++;
+				continue;
+			}
+		}
+		
+				if (process.argv[argn] == '-ti') {
+			let dTest = process.argv[argn + 1];
+			if(typeof dTest == "string" && dTest.length > 1 && dTest.length < 10) {
+				transferInterval = parseInt(dTest);
+				con("Интервал для автоматического перевода "+transferInterval+" секунд");
+				argn++;
+				continue;
+			}
+		}
+		
         if (process.argv[argn] == '-autobuy') {
-            // TODO
+            autoBuy = true;
             continue;
         }
 
@@ -247,10 +332,13 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 
         if (process.argv[argn] == "-h" || process.argv[argn] == "-help") {
             ccon("-- VCoinX arguments --", "red");
-            ccon("-help		- помощь.");
-            ccon("-flog		- подробные логи.");
+            ccon("-help			- помощь.");
+            ccon("-flog			- подробные логи.");
             ccon("-tforce		- принудительно использовать токен.");
-            ccon("-u [URL]	- задать ссылку.");
+			ccon("-tsum [sum]	- включить функцию для авто-перевода.");
+			ccon("-to [id]		- указать ID для авто-перевода."
+			ccon("-ti [seconds]	- установить инетрвал для автоматического перевода.");
+            ccon("-u [URL]		- задать ссылку.");
             ccon("-t [TOKEN]	- задать токен.");
             process.exit();
             continue;
@@ -276,7 +364,6 @@ if (!DONEURL || tforce) {
             if (!mobile_iframe_url)
                 throw ("Не удалось получить ссылку на приложение.");
 
-            if (!USER_ID) {
                 let {
                     id
                 } = (await vk.api.users.get())[0];
@@ -284,7 +371,6 @@ if (!DONEURL || tforce) {
                     throw ("Не удалось получить ID пользователя.");
 
                 USER_ID = id;
-            }
 
             formatWSS(mobile_iframe_url);
             startBooster();
@@ -295,24 +381,25 @@ if (!DONEURL || tforce) {
         }
     })(VK_TOKEN);
 } else {
-    if (!USER_ID) {
         let GSEARCH = url.parse(DONEURL, true);
         if (!GSEARCH.query || !GSEARCH.query.vk_user_id) {
             con("При анализе ссылки не был найден vk_user_id.", true);
             return process.exit();
         }
         USER_ID = parseInt(GSEARCH.query.vk_user_id);
-    }
 
     formatWSS(DONEURL);
     startBooster();
 }
 
-
 function formatWSS(LINK) {
-    let GSEARCH = url.parse(LINK),
-        NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/";
-    URLWS = NADDRWS + (USER_ID % 8) + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
-    flog && console.log("formatWSS: ", URLWS);
-    return URLWS;
+	let GSEARCH = url.parse(LINK),
+		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/",
+		CHANNEL = USER_ID%16;
+	URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(hashPassCoin(USER_ID, 0));
+	
+	URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL>7)? "bagosi-go-go.vkforms.ru": "coin.w5.vkforms.ru");
+	
+	flog && console.log("formatWSS: ", URLWS);
+	return URLWS;
 }
