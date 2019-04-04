@@ -178,17 +178,17 @@ function forceRestart(t) {
 function lPrices(d) {
     let temp = "";
     temp += Entit.names.map(el => {
-        return !miner.hasMoney(el) && !d ? "" : "\n\t- [" + el + "] " + Entit.titles[el] + ": " + formateSCORE(miner.getPriceForItem(el), true);
+        return !miner.hasMoney(el) && !d ? "" : "\n- [" + el + "] " + Entit.titles[el] + ": " + formateSCORE(miner.getPriceForItem(el), true);
     });
     return temp;
 }
 
 rl.on('line', async (line) => {
+	
     if (!URLWS) return;
-
     let temp, item;
 
-    switch (line.trim()) {
+    switch (line.trim().toLowerCase()) {
         case '':
             break;
 
@@ -247,7 +247,7 @@ rl.on('line', async (line) => {
             }
             break;
 
-        case 'autoBuyItem':
+        case 'autobuyitem':
             item = await rl.questionAsync("Введи название ускорения для автоматической покупки [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
             if (!item || !Entit.titles[item]) return;
             con("Для автоматической покупки установлено ускорение: " + Entit.titles[item]);
@@ -255,14 +255,15 @@ rl.on('line', async (line) => {
             autoBuy = true;
             break;
 
-        case 'autoBuy':
+        case 'autobuy':
             autoBuy = !autoBuy;
             con("Автопокупка: " + (autoBuy ? "Включена" : "Отключена"));
             break;
 
         case 'p':
         case 'price':
-            temp = lPrices();
+		case 'prices':
+            temp = lPrices(true);
             ccon("-- Цены --", "red");
             ccon(temp);
 
