@@ -133,7 +133,7 @@ vConinWS.onTransfer(async (id, score) => {
 });
 
 vConinWS.onUserLoaded((place, score, items, top, firstTime) => {
-    con("Пользователь успешно загружен. \n\t\t\tПозиция в топе - " + place + " | \tКоличество коинов - " + formateSCORE(score, true));
+    con("Пользователь успешно загружен.");
 
     miner.setActive(items);
     miner.updateStack(items);
@@ -264,6 +264,24 @@ rl.on('line', async (line) => {
             autoBuy = !autoBuy;
             con("Автопокупка: " + (autoBuy ? "Включена" : "Отключена"));
             break;
+		
+		case 'to':
+			item = await rl.questionAsync("Введите ID пользователя: ");
+			transferTo = parseInt(item.replace(/\D+/g, ""));
+			con("Автоматический перевод коинов на vk.com/id" + transferTo);
+			break;
+			
+		case 'ti':
+			item = await rl.questionAsync("Введите интервал: ");
+			transferInterval = parseInt(item);
+            con("Интервал для автоматического перевода " + transferInterval + " секунд");
+			break;
+		
+		case 'tsum':
+			item = await rl.questionAsync("Введите сумму: ");
+			transferScore = parseInt(item);
+			con("Количество коинов для автматического перевода "+transferScore+"");
+			break;
 
         case 'p':
         case 'price':
@@ -305,6 +323,9 @@ rl.on('line', async (line) => {
             ccon("(p)rice - отображение цен на товары.");
             ccon("tran(sfer)	- перевод игроку.");
             ccon("hideupd(ate) - скрыть уведомление об обновлении.");
+			ccon("to - указать ID и включить авто-перевод средств на него.");
+			ccon("ti - указать интервал для авто-перевода (в секундах).");
+			ccon("tsum - указать сумму для авто-перевода (без запятой).");
             break;
     }
 });
