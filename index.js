@@ -38,7 +38,7 @@ let vk = new VK();
 let URLWS = false;
 let boosterTTL = null,
     tryStartTTL = null,
-    updatesEv = false,
+    updatesEv = true,
     updatesInterval = 60,
     updatesLastTime = 0,
     xRestart = true,
@@ -54,7 +54,8 @@ let boosterTTL = null,
     conserver = 3;
 
 onUpdates(msg => {
-    if (!updatesEv) updatesEv = msg;
+    if (!updatesEv)
+        return;
     con(msg, "white", "Red");
 });
 
@@ -154,19 +155,19 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
 vConinWS.onBrokenEvent(_ => {
     con("onBrokenEvent", true);
     xRestart = false;
-    forceRestart(30e3);
+    forceRestart(10e3, true);
 });
 
 vConinWS.onAlreadyConnected(_ => {
     con("Обнаружено открытие приложения с другого устройства.", true);
     // vConinWS.reconnect(URLWS);
-    forceRestart(30e3);
+    forceRestart(30e3, true);
 });
 
 vConinWS.onOffline(_ => {
     if (!xRestart) return;
     con("onOffline", true);
-    forceRestart(2e4);
+    forceRestart(2e4, true);
 });
 
 async function startBooster(tw) {
@@ -368,7 +369,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 }
                 break;
             }
-            // Custom URL
+
         case '-u':
             {
                 if (dTest.length > 200 && dTest.length < 255) {
@@ -378,7 +379,6 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 break;
             }
 
-            // Transfer to ID
         case '-to':
             {
                 if (dTest.length > 1 && dTest.length < 11) {
@@ -387,11 +387,17 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 }
                 break;
             }
+        case '-noupdates':
+            {
+                updatesEv = false;
+                con("Уведомление об обновлении скрыто.");
+                break;
+            }
 
         default:
             break;
     }
-    if (["-t", "-u", "-to", "-ti", "-tsum", "-autobuyItem"].includes(process.argv[argn])) {
+    if (["-t", "-u", "-to", "-ti", "-tsum", "-autobuyItem", "-noupdates"].includes(process.argv[argn])) {
         argn++;
     }
 

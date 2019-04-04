@@ -11,8 +11,6 @@ let GitCUpdate = new GithubContent({
 });
 
 let checkUpdateTTL = null,
-    askIn = false,
-    askInTTL = null,
     onUpdatesCB = false,
     offColors = false;
 
