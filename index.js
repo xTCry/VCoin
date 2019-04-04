@@ -50,7 +50,7 @@ let boosterTTL = null,
     transferScore = 3e4,
     transferInterval = 36e2,
     transferLastTime = 0,
-	conserver = 0;
+	   conserver = 0;
 
 onUpdates(msg => {
     if (!updatesEv) updatesEv = msg;

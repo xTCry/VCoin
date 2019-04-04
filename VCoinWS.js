@@ -23,7 +23,8 @@ class VCoinWS {
         this.connected = false;
         this.connecting = false;
         this.onConnectSend = [];
-        this.tickCount = 0;
+        this.tickCount = 0,
+        this.wsServer = "";
     }
 
     run(wsServer, cb) {
