@@ -55,7 +55,7 @@ vConinWS.onMissClickEvent(_=> {
 		forceRestart(4e3);
 
 	if(++missCount > 10)
-		con("Ваши нажатия не засчитываются. Похоже, у Вас проблемы с подключением.", true);
+		con("Майнинг бота не считается...", true);
 });
 
 vConinWS.onReceiveDataEvent(async (place, score)=> {
@@ -77,7 +77,7 @@ vConinWS.onReceiveDataEvent(async (place, score)=> {
 			}
 		}
 
-		if(autoBuy) {
+		if(autoBuy && score>0) {
 			if(miner.hasMoney(autoBuyItem)) {
 				try {
 					result = await vConinWS.buyItemById(autoBuyItem);
@@ -111,9 +111,11 @@ vConinWS.onTransfer(async (id, score)=> {
 });
 vConinWS.onWaitEvent(e=> { e && con("onWaitEvent: "+e); });
 
-vConinWS.onUserLoaded((place, score, items, top, firstTime)=> {
-	con("onUserLoaded: \t" + place + "\t" + formateSCORE(score, true) /*+ "\t" + items + "\t" + top + "\t" + firstTime*/);
-	
+vConinWS.onUserLoaded((place, score, items, top, firstTime, tick)=> {
+	// con("onUserLoaded: \t" + place + "\t" + formateSCORE(score, true) /*+ "\t" + items + "\t" + top + "\t" + firstTime*/);
+	con("Данные загружены");
+	con("Текущая скорсть: "+formateSCORE(tick, true)+" кликов/сек", "yellow");
+
 	miner.setActive(items);
 	miner.updateStack(items);
 
@@ -125,12 +127,14 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime)=> {
 
 vConinWS.onBrokenEvent(_=> {
 	con("onBrokenEvent", true);
+	// vConinWS.reconnect(URLWS, true);
+	forceRestart(30e3);
 });
 
 vConinWS.onAlreadyConnected(_=> {
 	con("Открыто две вкладки", true);
-	vConinWS.reconnect(URLWS);
-	// forceRestart(30e3);
+	// vConinWS.reconnect(URLWS);
+	forceRestart(30e3);
 });
 
 vConinWS.onOffline(_=> {
@@ -165,6 +169,7 @@ function lPrices(d) {
 	});
 	return temp;
 }
+
 // Обработка командной строки
 rl.on('line', async (line) => {
 	if(!URLWS) return;
@@ -230,14 +235,16 @@ rl.on('line', async (line) => {
 				
 				if(result && result.items)
 					delete result.items;
-				console.log("Result BUY: ", result);
+				con("Теперь текущая сорость: "+formateSCORE(result.tick, true)+" кликов/сек");
+				/* { score: 42027913, place: 768672, tick: 24877, price: 30 } */
+				// console.log("Result BUY: ", result);
 			} catch(e) {
 				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств", true);
 				else con(e.message, true);
 			}			
 			break;
 
-		case 'autoBuyItem':
+		case 'autobuyitem':
 			item = await rl.questionAsync("Введи название ускорения для автопокупки [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
 			if(!item || !Entit.titles[item]) return;
 			con("Для автопокупки выбрано: "+Entit.titles[item]);
@@ -245,7 +252,7 @@ rl.on('line', async (line) => {
 			autoBuy = true;
 			break;
 
-		case 'autoBuy':
+		case 'autobuy':
 			autoBuy = !autoBuy;
 			con("Автопокупка: "+(autoBuy? "Включена": "Отключена"));
 			break;
@@ -440,7 +447,7 @@ if(!DONEURL || tforce) {
 else {
 	let GSEARCH = url.parse(DONEURL, true);
 	if(!GSEARCH.query || !GSEARCH.query.vk_user_id) {
-		con("В ссылке не нашлось vk_user_id", true);
+		con("В ссылке не не указан ID [vk_user_id]", true);
 		return process.exit();
 	}
 	USER_ID = parseInt(GSEARCH.query.vk_user_id);
@@ -453,10 +460,11 @@ function formatWSS(LINK) {
 	let GSEARCH = url.parse(LINK),
 		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/",
 		CHANNEL = /*(USER_ID%16 === 1)?*/ USER_ID%16/*: USER_ID%8*/;
-	URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&ver=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
+	// URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&ver=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
+	URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
 	
-	// URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL>7)? "bagosi-go-go.vkforms.ru": "coin.w5.vkforms.ru");
-	URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
+	URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL>7)? "bagosi-go-go.vkforms.ru": "coin.w5.vkforms.ru");
+	// URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
 	
 	flog && console.log("formatWSS: ", URLWS);
 	return URLWS;

@@ -24,10 +24,11 @@ class VCoinWS {
 		this.connecting = false;
 		this.onConnectSend = [];
 		this.tickCount = 0;
+		this.wsServer = "";
 	}
 
 	run(wsServer, cb) {
-
+		this.wsServer = wsServer || this.wsServer;
 		this.selfClose();
 
 		if(cb)
@@ -35,7 +36,7 @@ class VCoinWS {
 
 		try {
 
-			this.ws = new WebSocket(wsServer);
+			this.ws = new WebSocket(this.wsServer);
 
 			this.ws.onopen = _=> {
 				this.connected = true;
@@ -105,7 +106,7 @@ class VCoinWS {
 						this.oldPlace = place;
 
 						this.onMyDataCallback && this.onMyDataCallback(place, score);
-						this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime);
+						this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime, tick);
 						
 						this.tick = parseInt(tick, 10);
 						this.tickTtl = setInterval(_=> {
@@ -235,11 +236,11 @@ class VCoinWS {
 			this.ws.close()
 		} catch (e) { this.connected = false; }
 	}
-	reconnect(e) {
-		if(this.allowReconnect) {
+	reconnect(e, force) {
+		if(this.allowReconnect || force) {
 			clearTimeout(this.ttl);
 			this.ttl = setTimeout(_=> {
-				this.run(e);
+				this.run(e || this.wsServer);
 			}, this.retryTime);
 			this.retryTime *= 1.3
 		}
