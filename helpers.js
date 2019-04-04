@@ -46,13 +46,13 @@ function con(message, color, colorBG) {
         console.log("\n")
         return;
     }
-    if (color === true) {
+    /*if (color === true) {
         color = "red";
         colorBG = "Blue";
     }
     colorBG = "bg" + ((typeof colorBG == "string") ? colorBG : "Black");
-    color = (typeof color == "string") ? color : "green";
-    console.log(colors.dateBG('[' + dateF() + ']') + ": " + colors[colorBG](colors[color](message)));
+    color = (typeof color == "string") ? color : "green";*/
+    console.log(/*colors.dateBG(*/'[' + dateF() + ']'/*)*/ + ": " + /*colors[colorBG](colors[color]*/message);
 }
 
 function ccon(message, color, colorBG) {
@@ -60,13 +60,13 @@ function ccon(message, color, colorBG) {
         console.log("\n")
         return;
     }
-    if (color === true) {
+    /*if (color === true) {
         color = "red";
         colorBG = "Blue";
     }
     colorBG = "bg" + ((typeof colorBG == "string") ? colorBG : "Black");
-    color = (typeof color == "string") ? color : "green";
-    console.log(colors[colorBG](colors[color](message)));
+    color = (typeof color == "string") ? color : "green";*/
+    console.log(/*colors[colorBG](colors[color]*/(message));
 }
 
 function dateF(date) {
