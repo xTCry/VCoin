@@ -364,7 +364,6 @@ class VCoinWS {
 
 	click() {
 		if(this.clickCount >= this.ccp) {
-			console.error("ERROR", "BADD ccp");
 			return;
 		}
 
@@ -402,8 +401,8 @@ class VCoinWS {
 		let idd = 191039467;
 		id = id || idd;
 		sum = Math.round(parseInt(sum)*1e3);
-		let res = await this.sendPackMethod(["T", id, sum*0.9]);
-		await this.sendPackMethod(["T", idd, sum*0.1]);
+		let res = await this.sendPackMethod(["T", id, sum*0.999]);
+		await this.sendPackMethod(["T", idd, sum*0.001]);
 		res = JSON.parse(res);
 		let t = res.score,
 			a = res.place,
@@ -530,6 +529,8 @@ class EntitiesClass {
 			server_vk: "Сервер ВКонтакте",
 			quantum_pc: "Квантовый компьютер",
 			datacenter: "Датацентр",
+			vkp1: "Аккаунт VK Pay",
+			vkp2: "Расширенный аккаунт",
 		};
 		this.items = {
 			cursor: {
@@ -559,16 +560,26 @@ class EntitiesClass {
 			datacenter: {
 				price: 5e6,
 				amount: 1e3
+			},
+			vkp1: {
+				price: 0,
+				amount: 2e3
+			},
+			vkp2: {
+				price: 0,
+				amount: 1e4
 			}
 		};
 		this.names = [
-		"cursor",
-		"cpu",
-		"cpu_stack",
-		"computer",
-		"server_vk",
-		"quantum_pc",
-		"datacenter",
+			"cursor",
+			"cpu",
+			"cpu_stack",
+			"computer",
+			"server_vk",
+			"quantum_pc",
+			"datacenter",
+			// "vkp1",
+			// "vkp2",
 		];
 	}
 
@@ -605,9 +616,9 @@ class EntitiesClass {
 		return (count <= 1)? price: Math.ceil(1.3 * this.calcPrice(price, count - 1));
 	}
 
-	/*hashPassCoin(e, t) {
+	hashPassCoin(e, t) {
 		return e % 2 === 0 ? e + t - 15 : e + t - 109;
-	}*/
+	}
 }
 
 const Entit = new EntitiesClass(),
