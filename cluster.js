@@ -25,6 +25,7 @@ var down = (n, i) => {
 
 function run() {
     if (config != null && config.CLUSTER != undefined && Array.isArray(config.CLUSTER)) {
+        config.CLUSTER = config.CLUSTER.filter(v => v != null && v != "" && typeof v == "object")
         config.CLUSTER.forEach((e, i) => {
             var params = args(e)
             if (params != null) {
