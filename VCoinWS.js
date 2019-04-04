@@ -504,11 +504,11 @@ class Miner {
         this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e)));
 
         let total = 0;
-        this.stack.forEach(function(e) {
-            let n = e.value,
-                a = e.count;
-            total += Entit.items[n].amount * a;
-        });
+		this.stack.forEach(function(e) {
+			let n = e.value,
+				a = e.count;
+			total += Entit.items[n].amount * a;
+		});
 
         this.total = total;
     }
