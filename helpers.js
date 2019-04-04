@@ -14,7 +14,8 @@ let GitCUpdate = new GithubContent({
 let checkUpdateTTL = null,
 	askIn = false,
 	askInTTL = null,
-	onUpdatesCB = false;
+	onUpdatesCB = false,
+	offColors = false;
 
 // ******************
 function formateSCORE(e) {
@@ -48,26 +49,28 @@ function con(message, color, colorBG) {
 		console.log("\n")
 		return;
 	}
-	if(color === true) {
-		color = "red";
-		colorBG = "Blue";
-	}
-	colorBG = "bg"+ ((typeof colorBG == "string")?colorBG:"Black");
-	color = (typeof color == "string")?color:"green";
-	console.log(colors.dateBG( '[' +dateF()+ ']' )+": "+ colors[colorBG](colors[color](message)) );
+	let temp = (!offColors? colors.dateBG('['+dateF()+']'): dateF()) + ": "+ ccon(message, color, colorBG, 1);
+	console.log(temp);
 }
-function ccon(message, color, colorBG) {
+function ccon(message, color, colorBG, ret) {
+	let temp="";
 	if(message === undefined) {
 		console.log("\n")
 		return;
 	}
 	if(color === true) {
-		color = "red";
-		colorBG = "Blue";
+		color = "white";
+		colorBG = "Red";
+		temp = !offColors? colors.yellow.bgRed("[ОШИБКА]: "): "[ОШИБКА]: ";
 	}
 	colorBG = "bg"+ ((typeof colorBG == "string")?colorBG:"Black");
 	color = (typeof color == "string")?color:"green";
-	console.log(colors[colorBG](colors[color](message)) );
+	temp += !offColors? colors[colorBG](colors[color](message)): message;
+	!ret && console.log(temp);
+	return temp;
+}
+function setColorsM(e) {
+	offColors = !!e;
 }
 function dateF(date) {
 	if(!isNaN(date) && date < 9900000000)
@@ -103,13 +106,6 @@ rl.questionAsync = (question) => {
 };
 
 
-function hashPassCoin(e, t) {
-	return (e % 2 === 0)?
-			(e + t - 15):
-			(e + t - 109);
-}
-
-
 function checkUpdates() {
 	GitCUpdate.files([ 'package.json' ], (err, results)=> {
 		if (err) return;
@@ -119,7 +115,7 @@ function checkUpdates() {
 				let data = JSON.parse(c);
 				
 				let msg = (data.version > pJson.version)? "Доступно обновление! -> github.com/xTCry/VCoin \t["+(data.version +"/"+ pJson.version)+"]":
-							(data.version != pJson.version)? "Версии различаются! Проверить -> github.com/xTCry/VCoin \t["+(data.version +"/"+ pJson.version)+"]":
+							// (data.version != pJson.version)? "Версии различаются! Проверить -> github.com/xTCry/VCoin \t["+(data.version +"/"+ pJson.version)+"]":
 							false;
 				if(msg) {
 					if(onUpdatesCB) onUpdatesCB(msg);
@@ -130,7 +126,7 @@ function checkUpdates() {
 	});
 }
 
-checkUpdateTTL = setInterval(checkUpdates, 5e5);
+checkUpdateTTL = setInterval(checkUpdates, 1e7);
 checkUpdates();
 
 async function askDonate(vc, trsum) {
@@ -188,8 +184,8 @@ function appendFileAsync(path, data) {
 module.exports = {
 	rl,
 	con, ccon,
+	setColorsM, offColors,
 	formateSCORE,
-	hashPassCoin,
 	checkUpdates, checkUpdateTTL,
 	onUpdates: cb=> (onUpdatesCB=cb, true),
 	askDonate,
@@ -202,4 +198,3 @@ module.exports = {
 	rand,
 	now,
 }
-
