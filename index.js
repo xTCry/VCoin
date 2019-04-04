@@ -41,7 +41,7 @@ let boosterTTL = null,
     xRestart = true,
     flog = false,
     autoBuy = false,
-    autoBuyItem = "datacenter",
+    autoBuyItems = ["quantum_pc", "datacenter"],
     tforce = false,
     transferTo = false,
     transferScore = 3e4,
@@ -73,15 +73,14 @@ vConinWS.onMissClickEvent(_ => {
         con("Нажатия не засчитываются сервером, возможно, у Вас проблемы с соединением.", true);
 });
 
-vConinWS.onReceiveDataEvent(async function(place, score) {
+vConinWS.onReceiveDataEvent(async (place, score)=> {
     var n = arguments.length > 2 && void 0 !== arguments[2] && arguments[2],
         trsum = 3e6;
 
 	miner.setScore(score);	
 	
     if (place > 0 && !rl.isQst) {
-
-        if (transferTo && transferScore * 1e3 < score && !rand(0, 2) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
+        if (transferTo && transferScore * 1e3 < score && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
             try {
                 await vConinWS.transferToUser(transferTo, transferScore);
                 let template = "Автоматически переведено [" + formateSCORE(transferScore * 1e3, true) + "] коинов от vk.com/id" + USER_ID + " для vk.com/id" + transferTo;
@@ -96,20 +95,22 @@ vConinWS.onReceiveDataEvent(async function(place, score) {
         }
 
         if (autoBuy) {
-            if (miner.hasMoney(autoBuyItem)) {
-                try {
-                    result = await vConinWS.buyItemById(autoBuyItem);
-                    miner.updateStack(result.items);
-                    let template = "[AutoBuy] Был приобретен " + Entit.titles[autoBuyItem];;
-                    con(template, "black", "Green");
-                    try {
-                        await infLog(template);
-                    } catch (e) {}
-                } catch (e) {
-                    if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки", true);
-                    else con(e.message, true);
-                }
-            }
+			for (var i = 0; i < autoBuyItems.length; i++) {
+				if (miner.hasMoney(autoBuyItems[i])) {
+					try {
+						result = await vConinWS.buyItemById(autoBuyItems[i]);
+						miner.updateStack(result.items);
+						let template = "[AutoBuy] Был приобретен " + Entit.titles[autoBuyItems[i]];;
+						con(template, "black", "Green");
+						try {
+							await infLog(template);
+						} catch (e) {}
+					} catch (e) {
+						if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки", true);
+						else con(e.message, true);
+					}
+				}
+			}
         }
 
         if (updatesEv && !rand(0, 1) && (Math.floor(Date.now() / 1000) - updatesLastTime > updatesInterval)) {
@@ -251,9 +252,12 @@ rl.on('line', async (line) => {
 
         case 'autobuyitem':
             item = await rl.questionAsync("Введи название ускорения для автоматической покупки [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
-            if (!item || !Entit.titles[item]) return;
-            con("Для автоматической покупки установлено ускорение: " + Entit.titles[item]);
-            autoBuyItem = item;
+			var array = item.split(" ");
+			for (var i = 0; i < array.length; i++) {
+				if (!item || !Entit.titles[array[i]]) return;
+				con("Для автоматической покупки установлено ускорение: " + Entit.titles[array[i]]);
+			}
+			autoBuyItems = array;
             break;
 
         case 'autobuy':
@@ -276,7 +280,7 @@ rl.on('line', async (line) => {
             let id = await rl.questionAsync("ID получателя: ");
             let conf = await rl.questionAsync("Вы уверены? [yes]: ");
             id = parseInt(id.replace(/\D+/g, ""));
-            if (conf != "yes" || !id || !count) return con("Отправка неудачная, вероятно, один из параметров не был указан.", true);
+            if (conf.toLowerCase() != "yes" || !id || !count) return con("Отправка неудачная, вероятно, один из параметров не был указан.", true);
 
             try {
                 await vConinWS.transferToUser(id, count);
@@ -348,17 +352,27 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 
         if (process.argv[argn] == '-to') {
             let dTest = process.argv[argn + 1];
-            if (typeof dTest == "string" && dTest.length > 1 && dTest.length < 11) {
+            if (typeof dTest == "string" && dTest.length >= 1 && dTest.length < 11) {
                 transferTo = parseInt(dTest.replace(/\D+/g, ""));
                 con("Автоматический перевод коинов на vk.com/id" + transferTo);
                 argn++;
                 continue;
             }
         }
+		
+		if (process.argv[argn] == '-tsum') {
+			let dTest = process.argv[argn + 1];
+			if(typeof dTest == "string" && dTest.length >= 1 && dTest.length < 10) {
+				transferScore = parseInt(dTest);
+				con("Количество коинов для автматического перевода "+transferScore+"");
+				argn++;
+				continue;
+			}
+		}
 
         if (process.argv[argn] == '-ti') {
             let dTest = process.argv[argn + 1];
-            if (typeof dTest == "string" && dTest.length > 1 && dTest.length < 10) {
+            if (typeof dTest == "string" && dTest.length >= 1 && dTest.length < 10) {
                 transferInterval = parseInt(dTest);
                 con("Интервал для автоматического перевода " + transferInterval + " секунд");
                 argn++;
