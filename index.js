@@ -133,7 +133,7 @@ vConinWS.onTransfer(async (id, score) => {
 });
 
 vConinWS.onUserLoaded((place, score, items, top, firstTime) => {
-    con("Пользователь успешно загружен. \n\t\t\tПозиция в топе - " + place + " | \tКоличество коинов - " + formateSCORE(score, true));
+    con("Пользователь успешно загружен.");
 
     miner.setActive(items);
     miner.updateStack(items);
