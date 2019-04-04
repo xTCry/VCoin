@@ -111,9 +111,9 @@ class VCoinWS {
                         this.onUserLoadedCallback && this.onUserLoadedCallback(place, score, items, top, firstTime);
 
                         this.tick = parseInt(tick, 10);
-						this.tickTtl = setInterval(_=> {
-							this.onTickEvent();
-						}, 1e3);
+                        this.tickTtl = setInterval(_ => {
+                            this.onTickEvent();
+                        }, 1e3);
 
                         this.ccp = ccp || this.ccp;
 
@@ -235,7 +235,7 @@ class VCoinWS {
             this.connected = false;
         }
     }
-	
+
     reconnect(e) {
         if (this.allowReconnect) {
             clearTimeout(this.ttl);
@@ -471,140 +471,140 @@ class VCoinWS {
 
 class Miner {
 
-	constructor() {
-		this.score = 0;
-		this.total = 0;
-		this.stack = [];
-		this.active = [];
-	}
+    constructor() {
+        this.score = 0;
+        this.total = 0;
+        this.stack = [];
+        this.active = [];
+    }
 
-	setScore(q) {
-		this.score = q;
-	}
-	setActive(q) {
-		this.active = q;
-	}
+    setScore(q) {
+        this.score = q;
+    }
+    setActive(q) {
+        this.active = q;
+    }
 
-	hasMoney(e) {
-		return this.score >= this.getPriceForItem(e);
-	}
-	getPriceForItem(e) {
-		let price = Entit.items[e].price,
-			count = 0;
-			
-		this.stack.forEach(el=> {
-			if(el.value === e)
-				count = el.count;
-		});
-		return Entit.calcPrice(price, count + 1);
-	}
+    hasMoney(e) {
+        return this.score >= this.getPriceForItem(e);
+    }
+    getPriceForItem(e) {
+        let price = Entit.items[e].price,
+            count = 0;
 
-	updateStack(items) {
-		this.stack = Entit.generateStack( items.filter(e=> ("bonus" !== e)) );
+        this.stack.forEach(el => {
+            if (el.value === e)
+                count = el.count;
+        });
+        return Entit.calcPrice(price, count + 1);
+    }
 
-		let total = 0;
-		this.stack.forEach(function(e) {
-			let n = e.value,
-				a = e.count;
-			total += Entit.items[n].amount * a;
-		});
+    updateStack(items) {
+        this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e)));
 
-		this.total = total;
-	}
+        let total = 0;
+        this.stack.forEach(function(e) {
+            let n = e.value,
+                a = e.count;
+            total += Entit.items[n].amount * a;
+        });
+
+        this.total = total;
+    }
 }
 
 class EntitiesClass {
 
-	constructor() {
-		this.titles = {
-			cursor: "Курсор",
-			cpu: "Видеокарта",
-			cpu_stack: "Стойка видеокарт",
-			computer: "Суперкомпьютер",
-			server_vk: "Сервер ВКонтакте",
-			quantum_pc: "Квантовый компьютер",
-			datacenter: "Датацентр",
-		};
-		this.items = {
-			cursor: {
-				price: 30,
-				amount: 1
-			},
-			cpu: {
-				price: 100,
-				amount: 3
-			},
-			cpu_stack: {
-				price: 1e3,
-				amount: 10
-			},
-			computer: {
-				price: 1e4,
-				amount: 30
-			},
-			server_vk: {
-				price: 5e4,
-				amount: 100
-			},
-			quantum_pc: {
-				price: 2e5,
-				amount: 500
-			},
-			datacenter: {
-				price: 5e6,
-				amount: 1e3
-			}
-		};
-		this.names = [
-		"cursor",
-		"cpu",
-		"cpu_stack",
-		"computer",
-		"server_vk",
-		"quantum_pc",
-		"datacenter",
-		];
-	}
+    constructor() {
+        this.titles = {
+            cursor: "Курсор",
+            cpu: "Видеокарта",
+            cpu_stack: "Стойка видеокарт",
+            computer: "Суперкомпьютер",
+            server_vk: "Сервер ВКонтакте",
+            quantum_pc: "Квантовый компьютер",
+            datacenter: "Датацентр",
+        };
+        this.items = {
+            cursor: {
+                price: 30,
+                amount: 1
+            },
+            cpu: {
+                price: 100,
+                amount: 3
+            },
+            cpu_stack: {
+                price: 1e3,
+                amount: 10
+            },
+            computer: {
+                price: 1e4,
+                amount: 30
+            },
+            server_vk: {
+                price: 5e4,
+                amount: 100
+            },
+            quantum_pc: {
+                price: 2e5,
+                amount: 500
+            },
+            datacenter: {
+                price: 5e6,
+                amount: 1e3
+            }
+        };
+        this.names = [
+            "cursor",
+            "cpu",
+            "cpu_stack",
+            "computer",
+            "server_vk",
+            "quantum_pc",
+            "datacenter",
+        ];
+    }
 
-	generateStack(e) {
-		let t = arguments.length > 1 && void 0 !== arguments[1]? arguments[1]: (e, t)=> (e === t),
-			n = [];
+    generateStack(e) {
+        let t = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : (e, t) => (e === t),
+            n = [];
 
-		e.forEach(function(e) {
-			if (0 === n.length)
-				n.push({
-					count: 1,
-					value: e
-				});
-			else {
-				let a = false;
-				n.map(function(n) {
-					if(t(n.value, e)) {
-						n.count++;
-						a = true;
-					}
-					return n;
-				});
-				a || n.push({
-					count: 1,
-					value: e
-				});
-			}
-		});
+        e.forEach(function(e) {
+            if (0 === n.length)
+                n.push({
+                    count: 1,
+                    value: e
+                });
+            else {
+                let a = false;
+                n.map(function(n) {
+                    if (t(n.value, e)) {
+                        n.count++;
+                        a = true;
+                    }
+                    return n;
+                });
+                a || n.push({
+                    count: 1,
+                    value: e
+                });
+            }
+        });
 
-		return n;
-	}
+        return n;
+    }
 
-	calcPrice(price, count) {
-		return (count <= 1)? price: Math.ceil(1.3 * this.calcPrice(price, count - 1));
-	}
-
-	/*hashPassCoin(e, t) {
-		return e % 2 === 0 ? e + t - 15 : e + t - 109;
-	}*/
+    calcPrice(price, count) {
+        return (count <= 1) ? price : Math.ceil(1.3 * this.calcPrice(price, count - 1));
+    }
 }
 
 const Entit = new EntitiesClass(),
-	miner = new Miner();
+    miner = new Miner();
 
-module.exports = { Entit, VCoinWS, miner };
+module.exports = {
+    Entit,
+    VCoinWS,
+    miner
+};

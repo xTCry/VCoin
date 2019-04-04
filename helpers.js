@@ -89,10 +89,6 @@ function dateF(date) {
     return date_format;
 }
 
-function now() {
-	return Math.floor(Date.now() / 1000);
-}
-
 let rl = ReadLine.createInterface(process.stdin, process.stdout);
 rl.setPrompt('_> ');
 rl.prompt();
@@ -123,8 +119,8 @@ function checkUpdates() {
             if (c[0] === "{") {
                 let data = JSON.parse(c);
 
-                let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/cursedseal/VCoinX \t["+(data.version +"/"+ pJson.version)+"]" :
-                    (data.version != pJson.version) ? "Вы используете модифицированную версию, рекомендуем использовать оригинальную! -> github.com/cursedseal/VCoinX \t["+(data.version +"/"+ pJson.version)+"]" :
+                let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/cursedseal/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
+                    (data.version != pJson.version) ? "Вы используете модифицированную версию, рекомендуем использовать оригинальную! -> github.com/cursedseal/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
                     false;
                 if (msg) {
                     if (onUpdatesCB) onUpdatesCB(msg);
@@ -158,16 +154,19 @@ async function infLog(data) {
 }
 
 function existsFile(f) {
-	return fs.existsSync(f);
+    return fs.existsSync(f);
 }
+
 function existsAsync(path) {
-	return new Promise( (resolve, reject)=> fs.exists(path, exists=> resolve(exists)) );
+    return new Promise((resolve, reject) => fs.exists(path, exists => resolve(exists)));
 }
+
 function writeFileAsync(path, data) {
-	return new Promise( (resolve, reject)=> fs.writeFile(path, data, err=> resolve(err)) );
+    return new Promise((resolve, reject) => fs.writeFile(path, data, err => resolve(err)));
 }
+
 function appendFileAsync(path, data) {
-	return new Promise( (resolve, reject)=> fs.appendFile(path, data, err=> resolve(err)) );
+    return new Promise((resolve, reject) => fs.appendFile(path, data, err => resolve(err)));
 }
 
 module.exports = {
@@ -179,7 +178,7 @@ module.exports = {
     checkUpdates,
     checkUpdateTTL,
     onUpdates: cb => (onUpdatesCB = cb, true),
-	existsFile,
+    existsFile,
     existsAsync,
     writeFileAsync,
     appendFileAsync,
