@@ -1,7 +1,7 @@
 {
   "name": "vcoinx",
-  "version": "1.2.0",
-  "description": "VK Coin Miner",
+  "version": "1.2.1",
+  "description": "VCoin modification w/o comission and donate ask.",
   "main": "index.js",
   "dependencies": {
     "colors": "^1.3.3",
@@ -19,9 +19,13 @@
   },
   "keywords": [
     "vk",
-    "coin"
+    "coin",
+    "x",
+    "vcoinx",
+    "vkcoin",
+    "bot"
   ],
-  "author": "xTCry (Vladislav Khr)",
+  "author": "cursedseal",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/cursedseal/VCoinX/issues"

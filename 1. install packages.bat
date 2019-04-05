@@ -1,4 +1,4 @@
 @echo off
 title VCoinX - Packages Install
-npm i
+npm i --loglevel=error
 pause

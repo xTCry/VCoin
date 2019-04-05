@@ -24,7 +24,7 @@ class VCoinWS {
         this.connecting = false;
         this.onConnectSend = [];
         this.tickCount = 0,
-            this.wsServer = "";
+        this.wsServer = "";
     }
 
     run(wsServer, cb) {
@@ -193,7 +193,6 @@ class VCoinWS {
                             this.onMissClickCallback(this.randomId);
                     }
                     if (0 === t.indexOf("TR")) {
-
                         let data = t.replace("TR ", "").split(" ");
                         let nscore = parseInt(data[0], 10),
                             from = parseInt(data[1]);
@@ -205,11 +204,8 @@ class VCoinWS {
                             this.onMyDataCallback(this.oldPlace, this.oldScore, true);
                     }
                 }
-
             }
-
             this.connecting = true;
-
         } catch (e) {
             console.error(e)
             this.reconnect(wsServer)
@@ -247,7 +243,6 @@ class VCoinWS {
             this.retryTime *= 1.3
         }
     }
-
 
     onTransfer(e) {
         this.onTransferCallback = e

@@ -1,3 +1,3 @@
 #! /bin/sh
-npm i
+npm i --loglevel=error
 exit 0

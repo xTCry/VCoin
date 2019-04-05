@@ -2,6 +2,7 @@ const fs = require('fs'),
     colors = require('colors/safe'),
     ReadLine = require('readline'),
     GithubContent = require('github-content');
+
 const pJson = require('./package.json');
 
 let GitCUpdate = new GithubContent({
@@ -89,7 +90,7 @@ function dateF(date) {
 }
 
 let rl = ReadLine.createInterface(process.stdin, process.stdout);
-rl.setPrompt('_> ');
+rl.setPrompt('> ');
 rl.prompt();
 rl.isQst = false;
 rl.questionAsync = (question) => {
@@ -102,13 +103,11 @@ rl.questionAsync = (question) => {
     });
 };
 
-
 function hashPassCoin(e, t) {
     return (e % 2 === 0) ?
         (e + t - 15) :
         (e + t - 109);
 }
-
 
 function checkUpdates() {
     GitCUpdate.files(['package.json'], (err, results) => {
