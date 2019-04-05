@@ -18,6 +18,7 @@ VK Coin Miner - недомайнер на NodeJS
 
 ### SmartBuy
 Умная покупка рассчитывает для каждого ускорителя цену для скорости 1 коин в секунду и покупает самый дешевый ускоритель.
+Умная покупка не может работать в паре с автопокупкой!
 
 ## Для начала
 > **[Node.js](https://nodejs.org/) 8.0.0 или новее**
@@ -40,8 +41,9 @@ npm i
 * `-to [ID]`        - задает ID страницы для автоперевода `score`
 * `-ti [seconds]`   - задает интервал автоперевода в секундах `[по умолчанию 3600 секунд (1 час)]`
 * `-tsum [sum]`     - сколько `score` переводить (знаки до запятой)
-* `-autobuy`        - автопокупка
+* `-autobuy`        - автопокупка ускорений
 * `-autobuyItem`    - какое покупать [ускорение](#названия-ускорений)
+* `-smartbuy`       - умная покупка ускорений
 
 
 Запуск поизводится из каталога приложения
@@ -64,6 +66,11 @@ node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 Запуск через [токен](#получение-токена) и автопокупка
 ```shell
 node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -autobuy
+```
+
+Запуск через [токен](#получение-токена) и умная покупка
+```shell
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -smartbuy
 ```
 
 Запуск через ссылку
@@ -113,9 +120,11 @@ module.exports = {
 - `help` - помощь 
 - `stop` - остановить 
 - `run` - запустить 
-- `tran` - перевод 
-- `price` - выведет текущие цены 
+- `tran` - перевести коины
+- `price` - вывести текущие цены 
 - `buy` - покупка ускорения
+- `autobuy` - включить автопокупку ускорений
+- `buy` - включить умную покупку ускорений
 
 ## Названия ускорений
 - `cursor`
