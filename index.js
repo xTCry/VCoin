@@ -1,6 +1,6 @@
 const url = require('url'),
     {
-       VK
+        VK
     } = require('vk-io');
 
 const {
@@ -58,7 +58,7 @@ let boosterTTL = null,
     currentServer = 3;
 
 onUpdates(msg => {
-  if (!updatesEv && !disableUpdates)
+    if (!updatesEv && !disableUpdates)
         updatesEv = msg;
 
     con(msg, "white", "Red");
@@ -263,7 +263,7 @@ rl.on('line', async (line) => {
 
         case "hideupd":
         case "hideupdate":
-            con("Уведомления об обновлении " + (!disableUpdates ? "скрыт" : "показан") +  "ы. (*^.^*)");
+            con("Уведомления об обновлении " + (!disableUpdates ? "скрыт" : "показан") + "ы. (*^.^*)");
             disableUpdates = !disableUpdates;
             break;
 
@@ -502,50 +502,50 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 }
 
 function updateLink() {
-  if (!DONEURL || tforce) {
-    if (!VK_TOKEN) {
-      con("Отсутствует токен. Информация о его получении расположена на -> github.com/cursedseal/VCoinX", true);
-      return process.exit();
-    }
+    if (!DONEURL || tforce) {
+        if (!VK_TOKEN) {
+            con("Отсутствует токен. Информация о его получении расположена на -> github.com/cursedseal/VCoinX", true);
+            return process.exit();
+        }
 
-    (async function inVKProc(token) {
-      vk.token = token;
-      try {
-        let {
-          mobile_iframe_url
-        } = (await vk.api.apps.get({
-          app_id: 6915965
-        })).items[0];
+        (async function inVKProc(token) {
+            vk.token = token;
+            try {
+                let {
+                    mobile_iframe_url
+                } = (await vk.api.apps.get({
+                    app_id: 6915965
+                })).items[0];
 
-        if (!mobile_iframe_url)
-        throw ("Не удалось получить ссылку на приложение.\n\t\tВозможное решение: Используйте расширенный токен.");
+                if (!mobile_iframe_url)
+                    throw ("Не удалось получить ссылку на приложение.\n\t\tВозможное решение: Используйте расширенный токен.");
 
-        let id = (await vk.api.users.get())[0];
+                let id = (await vk.api.users.get())[0];
 
-        if (!id)
-        throw ("Не удалось получить ID пользователя.");
+                if (!id)
+                    throw ("Не удалось получить ID пользователя.");
 
-        USER_ID = id;
+                USER_ID = id;
 
-        formatWSS(mobile_iframe_url);
+                formatWSS(mobile_iframe_url);
+                startBooster();
+
+            } catch (error) {
+                console.error('API Error:', error);
+                process.exit();
+            }
+        })(VK_TOKEN);
+    } else {
+        let GSEARCH = url.parse(DONEURL, true);
+        if (!GSEARCH.query || !GSEARCH.query.vk_user_id) {
+            con("При анализе ссылки не был найден vk_user_id.", true);
+            return process.exit();
+        }
+        USER_ID = parseInt(GSEARCH.query.vk_user_id);
+
+        formatWSS(DONEURL);
         startBooster();
-
-      } catch (error) {
-        console.error('API Error:', error);
-        process.exit();
-      }
-    })(VK_TOKEN);
-  } else {
-    let GSEARCH = url.parse(DONEURL, true);
-    if (!GSEARCH.query || !GSEARCH.query.vk_user_id) {
-      con("При анализе ссылки не был найден vk_user_id.", true);
-      return process.exit();
     }
-    USER_ID = parseInt(GSEARCH.query.vk_user_id);
-
-    formatWSS(DONEURL);
-    startBooster();
-  }
 }
 
 updateLink();
@@ -557,12 +557,16 @@ function formatWSS(LINK) {
 
     URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
     switch (currentServer) {
+        case 1:
+            URLWS.replace("coin.vkforms.ru", "bagosi-go-go.vkforms.ru");
+        case 2:
+            URLWS.replace("coin.vkforms.ru", "coin.w5.vkforms.ru");
         case 3:
-            URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL > 7) ? "bagosi-go-go.vkforms.ru" : "coin.w5.vkforms.ru");
+            URLWS.replace("coin.vkforms.ru", (CHANNEL > 7) ? "bagosi-go-go.vkforms.ru" : "coin.w5.vkforms.ru");
             break;
 
         default:
-            URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
+            URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
             break;
     }
 
