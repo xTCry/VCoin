@@ -11,7 +11,8 @@ function args(e) {
     if (e.TOKEN) argv.push('-t', e.TOKEN)
     else if (e.URL) argv.push('-u', e.URL)
     else return null;
-    if (e.AUTOBUY) argv.push('-autobuy')
+    if (e.SMARTBUY) argv.push('-smartbuy')
+    else if (e.AUTOBUY) argv.push('-autobuy')
     if (e.TRANSFER) argv.push('-to', e.TRANSFER.TO != undefined ? e.TRANSFER.TO : 256043590, '-ti', e.TRANSFER.TIME != undefined ? e.TRANSFER.TIME : 3600, '-tsum', e.TRANSFER.SCORE ? e.TRANSFER.SCORE : 10000)
     return argv
 }
