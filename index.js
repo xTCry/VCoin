@@ -1,5 +1,7 @@
 const url = require('url'),
-    { VK } = require('vk-io');
+    {
+       VK
+    } = require('vk-io');
 
 const {
     VCoinWS,
