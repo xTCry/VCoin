@@ -167,7 +167,7 @@ vConinWS.onWaitEvent(e=> { e && con("onWaitEvent: "+e); });
 vConinWS.onUserLoaded((place, score, items, top, firstTime, tick)=> {
 	// con("onUserLoaded: \t" + place + "\t" + formateSCORE(score, true) /*+ "\t" + items + "\t" + top + "\t" + firstTime*/);
 	con("Данные загружены");
-	con("Текущая скорсть: "+formateSCORE(tick, true)+" кликов/сек", "yellow");
+	con("Текущая скорость: "+formateSCORE(tick, true)+" кликов/сек", "yellow");
 
 	miner.setActive(items);
 	miner.updateStack(items);
@@ -340,7 +340,7 @@ rl.on('line', async (line) => {
 			try {
 				await vConinWS.transferToUser(id, count);
 				con("Успешный перевод.", "black", "Green");
-				let template = "Отправили ["+formateSCORE(count*1e3*0.999, true)+"] score от vk.com/id"+USER_ID+" для vk.com/i"+id;
+				let template = "Отправили ["+formateSCORE(count*1e3*0.999, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/i"+id;
 				try { await infLog(template); } catch(e) {}
 			} catch(e) {
 				if(e.message == "BAD_ARGS") con("Где-то указан неверный аргумент", true);
@@ -362,11 +362,11 @@ rl.on('line', async (line) => {
 			ccon("buy	- покупка");
 			ccon("tran	- перевод");
 			ccon("price	- цены");
-			ccon("hideupd - скрыть уведомление");
-			ccon("autoBuy - вкл/откл автопокупки");
+			ccon("hideupd	- скрыть уведомление");
+			ccon("autoBuy	- вкл/откл автопокупки");
 			ccon("autoBuyItem - какое ускорение покупать");
-			ccon("smartBuy - вкл/откл умную покупку");
-			ccon("color - вкл/выкл режима цветной консоли");
+			ccon("smartBuy	- вкл/откл умную покупку");
+			ccon("color	- вкл/выкл режима цветной консоли");
 			break;
 	}
 });
@@ -486,9 +486,9 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 		ccon("-help		- ...");
 		ccon("-flog		- подробные логи");
 		ccon("-tforce		- токен принудительно");
-		ccon("-u [URL]	- задать ссылку");
+		ccon("-u [URL]		- задать ссылку");
 		ccon("-t [TOKEN]	- задать токен");
-		ccon("-to [ID]	- задать ID страницы для автоперевода score");
+		ccon("-to [ID]		- задать ID страницы для автоперевода score");
 		ccon("-ti [seconds]	- задать интервал автоперевода в секундах");
 		ccon("-tsum [sum]	- сколько score переводить (знаки до запятой)");
 		ccon("-autoBuy		- автопокупка");
