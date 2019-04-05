@@ -167,6 +167,17 @@ function appendFileAsync(path, data) {
     return new Promise((resolve, reject) => fs.appendFile(path, data, err => resolve(err)));
 }
 
+function getVersion() {
+    return pJson.version;
+}
+
+function setTerminalTitle(title) {
+  process.stdout.write(
+    String.fromCharCode(27) + "]0;" + title + String.fromCharCode(7)
+  );
+}
+
+
 module.exports = {
     rl,
     con,
@@ -182,6 +193,8 @@ module.exports = {
     existsAsync,
     writeFileAsync,
     appendFileAsync,
+    getVersion,
+    setTerminalTitle,
     infLog,
     rand,
 }

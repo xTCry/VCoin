@@ -18,6 +18,8 @@ const {
     existsAsync,
     writeFileAsync,
     appendFileAsync,
+    setTerminalTitle,
+    getVersion,
     infLog,
     rand,
     onUpdates,
@@ -49,7 +51,9 @@ let boosterTTL = null,
     transferScore = 3e4,
     transferInterval = 36e2,
     transferLastTime = 0,
-    currentServer = 0;
+    lastTry = 0,
+    numberOfTries = 3,
+    currentServer = 3;
 
 onUpdates(msg => {
   if (!updatesEv && !disableUpdates)
@@ -86,11 +90,18 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
 
     miner.setScore(score);
 
+    setTerminalTitle("VCoinX " + getVersion() + " > " + "top " + place + " > " + formateSCORE(score, true) + " coins.");
+
     if (place > 0 && !rl.isQst) {
-        if (transferTo && transferScore * 1e3 < score && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
+        if (transferTo && (transferScore * 1e3 < score || transferScore * 1e3 >= 9e9) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
             try {
-                await vConinWS.transferToUser(transferTo, transferScore);
-                let template = "Автоматически переведено [" + formateSCORE(transferScore * 1e3, true) + "] коинов от @id" + USER_ID + " к @id" + transferTo;
+                if (transferScore * 1e3 >= 9e9) {
+                    await vConinWS.transferToUser(transferTo, score);
+                    let template = "Автоматически переведено [" + formateSCORE(score * 1e3, true) + "] коинов от @id" + USER_ID + " к @id" + transferTo;
+                } else {
+                    await vConinWS.transferToUser(transferTo, transferScore);
+                    let template = "Автоматически переведено [" + formateSCORE(transferScore * 1e3, true) + "] коинов от @id" + USER_ID + " к @id" + transferTo;
+                }
                 con(template, "black", "Green");
                 try {
                     await infLog(template);
@@ -107,7 +118,7 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
                     try {
                         result = await vConinWS.buyItemById(autoBuyItems[i]);
                         miner.updateStack(result.items);
-                        let template = "[AutoBuy] Был приобретен " + Entit.titles[autoBuyItems[i]];;
+                        let template = "Автоматической закупкой был приобретен " + Entit.titles[autoBuyItems[i]];;
                         con(template, "black", "Green");
                         try {
                             await infLog(template);
@@ -142,6 +153,9 @@ vConinWS.onTransfer(async (id, score) => {
 vConinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
     con("Пользователь успешно загружен.");
     con("Скорость: " + formateSCORE(tick, true) + " коинов / тик.");
+
+    setTerminalTitle("VCoinX " + getVersion() + " > " + formateSCORE(tick, true) + " cps > " + "top " + place + " > " + formateSCORE(score, true) + " coins.");
+
     miner.setActive(items);
     miner.updateStack(items);
 
@@ -152,19 +166,40 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
 });
 
 vConinWS.onBrokenEvent(_ => {
-    con("onBrokenEvent", true);
+    con("Обнаружен brokenEvent, видимо сервер сломался.\n\t\tЧерез 10 секунд будет выполнен перезапуск.", true);
+    setTerminalTitle("VCoinX " + getVersion() + " > " + "BROKEN");
     xRestart = false;
-    forceRestart(10e3, true);
+
+    lastTry++;
+    if (lastTry >= numberOfTries) {
+        lastTry = 0;
+        currentServer = currentServer >= 3 ? 0 : currentServer + 1;
+        con("Достигнут лимит попыток подключиться к серверу.\n\t\t\tПроизводится смена сервера...", true);
+        updateLink();
+    }
+
+    forceRestart(1e4, true);
 });
 
 vConinWS.onAlreadyConnected(_ => {
-    con("Обнаружено открытие приложения с другого устройства.", true);
-    forceRestart(30e3, true);
+    con("Обнаружено открытие приложения с другого устройства.\n\t\tЧерез 30 секунд будет выполнен перезапуск.", true);
+    setTerminalTitle("VCoinX " + getVersion() + " > " + "ALREADY_CONNECTED");
+    forceRestart(3e4, true);
 });
 
 vConinWS.onOffline(_ => {
     if (!xRestart) return;
-    con("onOffline", true);
+    con("Пользователь отключен от сервера.\n\t\tЧерез 10 секунд будет выполнен перезапуск.", true);
+
+    lastTry++;
+    if (lastTry >= numberOfTries) {
+        lastTry = 0;
+        currentServer = currentServer >= 3 ? 0 : currentServer + 1;
+        con("Достигнут лимит попыток подключиться к серверу.\n\t\t\tПроизводится смена сервера...", true);
+        updateLink();
+    }
+
+    setTerminalTitle("VCoinX " + getVersion() + " > " + "OFFLINE");
     forceRestart(2e4, true);
 });
 
@@ -184,6 +219,7 @@ async function startBooster(tw) {
 function forceRestart(t, force) {
     vConinWS.close();
     boosterTTL && clearInterval(boosterTTL);
+    setTerminalTitle("VCoinX " + getVersion() + " > " + "RESTARTING");
     if (xRestart || force)
         startBooster(t);
 }
@@ -249,18 +285,21 @@ rl.on('line', async (line) => {
             ccon("-- Доступные ускорения и их цены --", "red");
             ccon(temp);
             item = await rl.questionAsync("Введи название ускорения [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
-            if (!item) return;
-            let result;
-            try {
-                result = await vConinWS.buyItemById(item);
-                miner.updateStack(result.items);
-                if (result && result.items)
-                    delete result.items;
-                con("Новая скорость: " + formateSCORE(result.tick, true) + " коинов / тик.");
-            } catch (e) {
-                if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств.", true);
-                else if (e.message == "ITEM NOT FOUND") con("Некорректно указано название предмета.", true);
-                else con(e.message, true);
+            var array = item.split(" ");
+            for (var i = 0, j = array.length; i < j; i++) {
+                if (!array[i]) return;
+                let result;
+                try {
+                    result = await vConinWS.buyItemById(array[i]);
+                    miner.updateStack(result.items);
+                    if (result && result.items)
+                        delete result.items;
+                    con("Новая скорость: " + formateSCORE(result.tick, true) + " коинов / тик.");
+                } catch (e) {
+                    if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств.", true);
+                    else if (e.message == "ITEM NOT FOUND") con("Некорректно указано название предмета.", true);
+                    else con(e.message, true);
+                }
             }
             break;
 
@@ -460,50 +499,54 @@ for (var argn = 2; argn < process.argv.length; argn++) {
     }
 }
 
-if (!DONEURL || tforce) {
+function updateLink() {
+  if (!DONEURL || tforce) {
     if (!VK_TOKEN) {
-        con("Отсутствует токен. Информация о его получении расположена на -> github.com/cursedseal/VCoinX", true);
-        return process.exit();
+      con("Отсутствует токен. Информация о его получении расположена на -> github.com/cursedseal/VCoinX", true);
+      return process.exit();
     }
 
     (async function inVKProc(token) {
-        vk.token = token;
-        try {
-            let {
-                mobile_iframe_url
-            } = (await vk.api.apps.get({
-                app_id: 6915965
-            })).items[0];
+      vk.token = token;
+      try {
+        let {
+          mobile_iframe_url
+        } = (await vk.api.apps.get({
+          app_id: 6915965
+        })).items[0];
 
-            if (!mobile_iframe_url)
-                throw ("Не удалось получить ссылку на приложение.\n\t\tВозможное решение: Используйте расширенный токен.");
+        if (!mobile_iframe_url)
+        throw ("Не удалось получить ссылку на приложение.\n\t\tВозможное решение: Используйте расширенный токен.");
 
-            let id = (await vk.api.users.get())[0];
+        let id = (await vk.api.users.get())[0];
 
-            if (!id)
-                throw ("Не удалось получить ID пользователя.");
+        if (!id)
+        throw ("Не удалось получить ID пользователя.");
 
-            USER_ID = id;
+        USER_ID = id;
 
-            formatWSS(mobile_iframe_url);
-            startBooster();
+        formatWSS(mobile_iframe_url);
+        startBooster();
 
-        } catch (error) {
-            console.error('API Error:', error);
-            process.exit();
-        }
+      } catch (error) {
+        console.error('API Error:', error);
+        process.exit();
+      }
     })(VK_TOKEN);
-} else {
+  } else {
     let GSEARCH = url.parse(DONEURL, true);
     if (!GSEARCH.query || !GSEARCH.query.vk_user_id) {
-        con("При анализе ссылки не был найден vk_user_id.", true);
-        return process.exit();
+      con("При анализе ссылки не был найден vk_user_id.", true);
+      return process.exit();
     }
     USER_ID = parseInt(GSEARCH.query.vk_user_id);
 
     formatWSS(DONEURL);
     startBooster();
+  }
 }
+
+updateLink();
 
 function formatWSS(LINK) {
     let GSEARCH = url.parse(LINK),
