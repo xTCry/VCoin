@@ -118,8 +118,8 @@ function checkUpdates() {
                 let data = JSON.parse(c);
 
                 let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/cursedseal/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
-                    (data.version != pJson.version) ? "Вы используете модифицированную версию, рекомендуем использовать оригинальную! -> github.com/cursedseal/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
                     false;
+
                 if (msg) {
                     if (onUpdatesCB) onUpdatesCB(msg);
                     else con(msg, "white", "Red");

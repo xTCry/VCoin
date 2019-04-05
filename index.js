@@ -1,7 +1,5 @@
 const url = require('url'),
-    {
-        VK
-    } = require('vk-io');
+    { VK } = require('vk-io');
 
 const {
     VCoinWS,
@@ -33,12 +31,12 @@ let {
 
 let USER_ID = false;
 
-
 let vk = new VK();
 let URLWS = false;
 let boosterTTL = null,
     tryStartTTL = null,
-    updatesEv = true,
+    disableUpdates = false,
+    updatesEv = false,
     updatesInterval = 60,
     updatesLastTime = 0,
     xRestart = true,
@@ -51,12 +49,12 @@ let boosterTTL = null,
     transferScore = 3e4,
     transferInterval = 36e2,
     transferLastTime = 0,
-    currentServer = 3;
+    currentServer = 0;
 
 onUpdates(msg => {
-    if (!updatesEv)
-        return;
-    updatesEv = msg;
+  if (!updatesEv && !disableUpdates)
+        updatesEv = msg;
+
     con(msg, "white", "Red");
 });
 
@@ -122,7 +120,7 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
             }
         }
 
-        if (updatesEv && !rand(0, 1) && (Math.floor(Date.now() / 1000) - updatesLastTime > updatesInterval)) {
+        if (!disableUpdates && updatesEv && !rand(0, 1) && (Math.floor(Date.now() / 1000) - updatesLastTime > updatesInterval)) {
             con(updatesEv + "\n\t\t\t Введите \'hideupd(ate)\' для скрытия уведомления.", "white", "Red");
             updatesLastTime = Math.floor(Date.now() / 1000);
         }
@@ -132,7 +130,7 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
 });
 
 vConinWS.onTransfer(async (id, score) => {
-    let template = "Пользватель с id" + USER_ID + " получил [" + formateSCORE(score, true) + "] коинов от id" + id;
+    let template = "Пользватель @id" + USER_ID + " получил [" + formateSCORE(score, true) + "] коинов от @id" + id;
     con(template, "black", "Green");
     try {
         await infLog(template);
@@ -193,7 +191,7 @@ function forceRestart(t, force) {
 function lPrices(d) {
     let temp = "";
     temp += Entit.names.map(el => {
-        return !miner.hasMoney(el) && d ? "" : "\n> [" + el + "]" + Entit.titles[el] + " - " + formateSCORE(miner.getPriceForItem(el), true);
+        return !miner.hasMoney(el) && d ? "" : "\n> [" + el + "] " + Entit.titles[el] + " - " + formateSCORE(miner.getPriceForItem(el), true);
     });
     return temp;
 }
@@ -227,8 +225,8 @@ rl.on('line', async (line) => {
 
         case "hideupd":
         case "hideupdate":
-            con("Уведомления об обновлении " + (!updatesEv ? "показаны" : "скрыты") +  ". (*^.^*)");
-            updatesEv = !updatesEv;
+            con("Уведомления об обновлении " + (!disableUpdates ? "скрыт" : "показан") +  "ы. (*^.^*)");
+            disableUpdates = !disableUpdates;
             break;
 
         case "stop":
@@ -346,6 +344,9 @@ rl.on('line', async (line) => {
             break;
     }
 });
+
+// ~ argument parsing ~ //
+
 for (var argn = 2; argn < process.argv.length; argn++) {
     let cTest = process.argv[argn],
         dTest = process.argv[argn + 1];
@@ -385,12 +386,6 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                     transferTo = parseInt(dTest.replace(/\D+/g, ""));
                     con("Включен автоматический перевод коинов на @id" + transferTo);
                 }
-                break;
-            }
-        case '-noupdates':
-            {
-                updatesEv = false;
-                con("Уведомление об обновлении скрыто.");
                 break;
             }
 
