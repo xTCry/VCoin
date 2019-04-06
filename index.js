@@ -1,3 +1,74 @@
+function mathPrice(price, count) {
+	return count <= 1 ? price : Math.ceil(1.3 * mathPrice(price, count - 1))
+}
+
+var tempDataUpdate = {
+	"canSkip": false,
+	"itemPrice": null,
+	"itemName": null,
+	"transactionInProcess": false,
+	"procentForBuy": 100,
+	"tmpPr": null,
+	"onBrokenEvent": true
+};
+
+async function smartBuyFunction(score){
+	if(tempDataUpdate["tmpPr"] == null){
+		tempDataUpdate["tmpPr"] = 100 / tempDataUpdate["procentForBuy"];
+	}
+	if(!tempDataUpdate["transactionInProcess"] && !tempDataUpdate["onBrokenEvent"]){
+		var names = ["cursor", "cpu", "cpu_stack", "computer", "server_vk", "quantum_pc", "datacenter"];
+		var count = [1000, 333, 100, 34, 10, 2, 1];
+		if(!tempDataUpdate["canSkip"]){
+			var prices = justPrices();
+			Object.keys(count).forEach(function(id){
+					prices[id] = mathPrice(prices[id], count[id]);
+					});
+			min = Math.min.apply(null, prices);
+			good = prices.indexOf(min);
+			canBuy = names[good];
+			con("Можно купить: " + canBuy, "black", "Green");
+			con("Стоимость: " + formateSCORE(min, true) + " за " + count[good] + "шт.", "black", "Green");
+		}else{
+			min = tempDataUpdate["itemPrice"];
+			canBuy = tempDataUpdate["itemName"];
+		}
+		if((score - min * tempDataUpdate["tmpPr"]) > 0){
+			tempDataUpdate["canSkip"] = false;
+			tempDataUpdate["transactionInProcess"] = true;
+			try {
+				var countBuy = count[names.indexOf(canBuy)];
+				while(countBuy){
+					try{
+						result = await vConinWS.buyItemById(canBuy);
+						miner.updateStack(result.items);
+						countBuy--;
+					}catch(e){
+						if(!e.message == "ANOTHER_TRANSACTION_IN_PROGRESS"){
+							throw e;
+							tempDataUpdate["transactionInProcess"] = false;
+							break;
+						}
+					}
+				}
+				let template = "[SmartBuy] Был куплен "+Entit.titles[canBuy]+" в количестве: "+count[names.indexOf(canBuy)];
+				tempDataUpdate["transactionInProcess"] = false;
+				con(template, "black", "Green");
+				try { await infLog(template); } catch(e) {}
+			} catch(e) {
+				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки "+Entit.titles[canBuy]+"a", true);
+				else con(e.message, true);
+			}
+		}else{
+			tempDataUpdate["canSkip"] = true;
+			tempDataUpdate["itemPrice"] = min;
+			tempDataUpdate["itemName"] = canBuy;
+			con("Недостаточно средств. Необходимо ещё: "+formateSCORE((-score + min * tempDataUpdate["tmpPr"]), true), "white", "Red");
+		}
+	}
+	tempDataUpdate["onBrokenEvent"] = false;
+}
+
 const url = require('url'),
 	{ VK } = require('vk-io');
 
@@ -96,53 +167,7 @@ vConinWS.onReceiveDataEvent(async (place, score)=> {
 		}
 
 		if(smartBuy && score > 0) {
-			var prices = justPrices();
-			prices[0] *= 1000;
-			prices[1] = Math.floor(prices[1] / 3) * 1000;
-			prices[2] *= 100;
-			prices[3] = Math.floor(prices[3] / 3) * 100;
-			prices[4] *= 10;
-			prices[5] *= 2;
-			min = Math.min.apply(null, prices);
-			good = prices.indexOf(min);
-			switch (good) {
-				case 0:
-					smartBuyItem = "cursor";
-					break;
-				case 1:
-					smartBuyItem = "cpu";
-					break;
-				case 2:
-					smartBuyItem = "cpu_stack";
-					break;
-				case 3:
-					smartBuyItem = "computer";
-					break;
-				case 4:
-					smartBuyItem = "server_vk";
-					break;
-				case 5:
-					smartBuyItem = "quantum_pc";
-					break;
-				case 6:
-					smartBuyItem = "datacenter";
-					break;
-				default:
-					smartBuyItem = "datacenter";
-			}
-
-			if(miner.hasMoney(smartBuyItem)) {
-				try {
-					result = await vConinWS.buyItemById(smartBuyItem);
-					miner.updateStack(result.items);
-					let template = "[SmartBuy] Был куплен "+Entit.titles[smartBuyItem];
-					con(template, "black", "Green");
-					try { await infLog(template); } catch(e) {}
-				} catch(e) {
-					if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки "+Entit.titles[smartBuyItem]+"a", true);
-					else con(e.message, true);
-				}
-			}
+			smartBuyFunction(score);
 		}
 
 		if(updatesEv && !rand(0, 1) && (now() - updatesLastTime > updatesInterval)) {
