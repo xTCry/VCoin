@@ -142,6 +142,7 @@ class VCoinWS {
 					&& -1 === t.indexOf("WAIT_FOR_LOAD")
 					&& -1 === t.indexOf("MISS")
 					&& -1 === t.indexOf("TR")
+					&& -1 === t.indexOf("MSG")
 					&& -1 === t.indexOf("BROKEN")
 					&& "C" !== t[0] && "R" !== t[0])
 					console.log("on Message:\n", t);
@@ -167,9 +168,14 @@ class VCoinWS {
 				else {
 					if(0 === t.indexOf("WAIT_FOR_LOAD")) {
 						if(this.onWaitLoadCallback)
-							this.onWaitLoadCallback(parseInt(t.replace("WAIT_FOR_LOAD ", ""), 10))
+							this.onWaitLoadCallback(parseInt(t.replace("WAIT_FOR_LOAD ", ""), 10));
 						if(this.onChangeOnlineCallback)
 							this.onChangeOnlineCallback(parseInt(t.replace("WAIT_FOR_LOAD ", ""), 10));
+					}
+					if(0 === t.indexOf("MSG")) {
+						this.retryTime = 3e5;
+						if(this.onMessageEventCallback)
+							this.onMessageEventCallback(t.replace("MSG ", ""));
 					}
 					if(0 === t.indexOf("SELF_DATA")) {
 
@@ -279,6 +285,9 @@ class VCoinWS {
 	}
 	onWaitEvent(e) {
 		this.onWaitLoadCallback = e
+	}
+	onMessageEvent(e) {
+		this.onMessageEventCallback = e
 	}
 	onAlreadyConnected(e) {
 		this.onAlredyConnectedCallback = e
@@ -408,11 +417,8 @@ class VCoinWS {
 		return res;
 	}
 	async transferToUser(id, sum=3e4) {
-		let idd = 191039467;
-		id = id || idd;
 		sum = Math.round(parseInt(sum)*1e3);
-		let res = await this.sendPackMethod(["T", id, sum*0.999]);
-		await this.sendPackMethod(["T", idd, sum*0.001]);
+		let res = await this.sendPackMethod(["T", id, sum]);
 		res = JSON.parse(res);
 		let t = res.score,
 			a = res.place,
