@@ -20,6 +20,8 @@ VCoinX - модификация для [VCoin](https://github.com/xTCry/VCoin), 
 
 [![Беседа ВКонтакте](https://img.shields.io/badge/Беседа-ВКонтакте-yellow.svg)](https://vk.me/join/AJQ1d8Wp/g5Rju0b0CqwtSbh)
 
+[![Беседа ВКонтакте](https://img.shields.io/badge/Беседа-ВКонтакте-yellow.svg)](https://vk.me/join/AJQ1d2MA/A6N8/TxZWWxrfQK)
+
 ## Параметры конфига
 | Параметр | Описание                                                |
 |----------|---------------------------------------------------------|
