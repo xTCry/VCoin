@@ -538,7 +538,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 
         case '-u':
             {
-                if (dTest.length > 200 && dTest.length < 255) {
+                if (dTest.length > 200 && dTest.length < 500) {
                     con("Пользовательский URL был включен.", "blue");
                     DONEURL = dTest;
                     argn++;
