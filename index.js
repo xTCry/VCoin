@@ -193,13 +193,13 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
             updatesLastTime = Math.floor(Date.now() / 1000);
         }
 
-        con("Позиция в топе: " + place + "\tКоличество коинов: " + formateSCORE(score, true), "yellow");
+        con("Позиция: " + place + "\tКоинов: " + formateSCORE(score, true), "yellow");
     }
 });
 
 vConinWS.onTransfer(async (id, score) => {
     let template = "Пользватель @id" + USER_ID + " получил [" + formateSCORE(score, true) + "] коинов от @id" + id;
-    con(template, "black", "Green");
+    con(template, "green", "Black");
     try {
         await infLog(template);
     } catch (e) {

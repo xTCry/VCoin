@@ -33,7 +33,7 @@ function formateSCORE(e) {
 }
 
 colors.setTheme({
-    dateBG: 'bgMagenta',
+    dateBG: 'white',
     dataC: 'yellow',
     warnBG: 'bgBlack',
     warn: 'yellow',
