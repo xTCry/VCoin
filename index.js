@@ -549,8 +549,8 @@ function formatWSS(LINK) {
 	// URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&ver=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
 	URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
 
-	URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL>7)? "bagosi-go-go.vkforms.ru": "coin.w5.vkforms.ru");
-	// URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
+	// URLWS = URLWS.replace("coin.vkforms.ru", (CHANNEL>7)? "bagosi-go-go.vkforms.ru": "coin.w5.vkforms.ru");
+	URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
 
 	flog && console.log("formatWSS: ", URLWS);
 	return URLWS;

@@ -71,8 +71,6 @@ class VCoinWS {
 				this.connected = false;
 				this.connecting = false;
 
-				this.reconnect(wsServer);
-
 				clearInterval(this.tickTtl);
 				this.tickTtl = null;
 
@@ -80,6 +78,8 @@ class VCoinWS {
 					this.onOfflineCallback();
 
 				this.ws = null;
+
+				this.reconnect(wsServer);
 			};
 
 			this.ws.onmessage = ({ data })=> {
@@ -241,7 +241,7 @@ class VCoinWS {
 			clearTimeout(this.ttl);
 			this.ttl = setTimeout(_=> {
 				this.run(e || this.wsServer);
-			}, this.retryTime);
+			}, this.retryTime + Math.round(7e3 * Math.random()) );
 			this.retryTime *= 1.3
 		}
 	}
