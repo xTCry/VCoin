@@ -101,11 +101,9 @@ rl.questionAsync = (question) => {
     });
 };
 
-function hashPassCoin(e, t) {
-    return (e % 2 === 0) ?
-        (e + t - 15) :
-        (e + t - 109);
-}
+// function hashPassCoin(e, t) {
+//     return e + t - 1;
+// }
 
 function checkUpdates() {
     GitCUpdate.files(['package.json'], (err, results) => {
@@ -187,7 +185,7 @@ module.exports = {
     setColorsM,
     offColors,
     formateSCORE,
-    hashPassCoin,
+    // hashPassCoin,
     checkUpdates,
     checkUpdateTTL,
     onUpdates: cb => (onUpdatesCB = cb, true),

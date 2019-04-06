@@ -168,9 +168,14 @@ class VCoinWS {
                 } else {
                     if (0 === t.indexOf("WAIT_FOR_LOAD")) {
                         if (this.onWaitLoadCallback)
-                            this.onWaitLoadCallback(parseInt(t.replace("WAIT_FOR_LOAD ", ""), 10))
+                            this.onWaitLoadCallback(parseInt(t.replace("WAIT_FOR_LOAD ", ""), 10));
                         if (this.onChangeOnlineCallback)
                             this.onChangeOnlineCallback(parseInt(t.replace("WAIT_FOR_LOAD ", ""), 10));
+                        if(0 === t.indexOf("MSG")) {
+                            this.retryTime = 3e5;
+                            if(this.onMessageEventCallback)
+                              this.onMessageEventCallback(t.replace("MSG ", ""));
+}
                     }
                     if (0 === t.indexOf("SELF_DATA")) {
 
@@ -278,6 +283,9 @@ class VCoinWS {
     onWaitEvent(e) {
         this.onWaitLoadCallback = e
     }
+    onMessageEvent(e) {
+  		this.onMessageEventCallback = e
+  	}
     onAlreadyConnected(e) {
         this.onAlredyConnectedCallback = e
     }
@@ -617,7 +625,7 @@ class EntitiesClass {
     }
 
     hashPassCoin(e, t) {
-        return e % 2 === 0 ? e + t - 15 : e + t - 109;
+        return e + t - 1;
     }
 }
 
