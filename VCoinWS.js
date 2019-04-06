@@ -633,7 +633,7 @@ class EntitiesClass {
 	}
 
 	hashPassCoin(e, t) {
-		return e % 2 === 0 ? e + t - 15 : e + t - 109;
+		return e + t - 1;
 	}
 }
 

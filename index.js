@@ -101,7 +101,7 @@ vConinWS.onReceiveDataEvent(async (place, score)=> {
 		}
 
 		!hideSpam && con("В ТОПе: " + place + "\tСЧЕТ: "+ formateSCORE(score, true), "yellow");
-		hideSpam && process.stdout.write("В ТОПе: " + place + "\tСЧЕТ: "+(score/1000)+"\r");
+		hideSpam && (false) && process.stdout.write("В ТОПе: " + place + "\tСЧЕТ: "+(score/1000)+"\r");
 
 		let trsum = 3e5;
 		if(!transferScore && score > 3e6*3 || transferScore < trsum / (1e3 * 0.999) && (trsum=transferScore * 0.9)) boosterTTL && await askDonate(vConinWS, trsum);
@@ -205,11 +205,6 @@ vConinWS.onTransfer(async (id, score)=> {
 });
 vConinWS.onWaitEvent(e=> {
 	e && con("onWaitEvent: "+e);
-
-	boosterTTL && clearInterval(boosterTTL);
-	boosterTTL = setInterval(_=> {
-		rand(0, 5)>3 && vConinWS.click();
-	}, e || 5e2);
 });
 
 vConinWS.onUserLoaded((place, score, items, top, firstTime, tick)=> {
@@ -219,6 +214,11 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime, tick)=> {
 
 	miner.setActive(items);
 	miner.updateStack(items);
+
+	boosterTTL && clearInterval(boosterTTL);
+	boosterTTL = setInterval(_=> {
+		rand(0, 5)>3 && vConinWS.click();
+	}, 5e2);
 });
 
 vConinWS.onBrokenEvent(_=> {
@@ -661,7 +661,7 @@ else {
 function formatWSS(LINK) {
 	let GSEARCH = url.parse(LINK),
 		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/",
-		CHANNEL = USER_ID%16;
+		CHANNEL = USER_ID%32;
 	URLWS = NADDRWS + CHANNEL+ "/" + GSEARCH.search + "&ver=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
 	URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
 
