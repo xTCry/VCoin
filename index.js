@@ -48,6 +48,8 @@ let boosterTTL = null,
     offColors = false,
     autoBuy = false,
     autoBuyItems = ["datacenter"],
+    smartBuyItem = "",
+    smartBuy = false,
     tforce = false,
     transferTo = false,
     transferScore = 3e4,
@@ -55,7 +57,7 @@ let boosterTTL = null,
     transferLastTime = 0,
     lastTry = 0,
     numberOfTries = 3,
-    currentServer = 3;
+    currentServer = 0;
 
 onUpdates(msg => {
     if (!updatesEv && !disableUpdates)
@@ -122,6 +124,7 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
                         miner.updateStack(result.items);
                         let template = "Автоматической закупкой был приобретен " + Entit.titles[autoBuyItems[i]];;
                         con(template, "black", "Green");
+                        con("Новая скорость: " + formateSCORE(result.tick, true) + " коинов / тик.");
                         try {
                             await infLog(template);
                         } catch (e) {}
@@ -129,6 +132,58 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
                         if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки", true);
                         else con(e.message, true);
                     }
+                }
+            }
+        }
+
+        if (smartBuy && score > 0) {
+            var prices = justPrices();
+            prices[0] *= 1000;
+            prices[1] = Math.floor(prices[1] / 3) * 1000;
+            prices[2] *= 100;
+            prices[3] = Math.floor(prices[3] / 3) * 100;
+            prices[4] *= 10;
+            prices[5] *= 2;
+            min = Math.min.apply(null, prices);
+            good = prices.indexOf(min);
+            switch (good) {
+                case 0:
+                    smartBuyItem = "cursor";
+                    break;
+                case 1:
+                    smartBuyItem = "cpu";
+                    break;
+                case 2:
+                    smartBuyItem = "cpu_stack";
+                    break;
+                case 3:
+                    smartBuyItem = "computer";
+                    break;
+                case 4:
+                    smartBuyItem = "server_vk";
+                    break;
+                case 5:
+                    smartBuyItem = "quantum_pc";
+                    break;
+                case 6:
+                    smartBuyItem = "datacenter";
+                    break;
+                default:
+                    smartBuyItem = "datacenter";
+            }
+
+            if (miner.hasMoney(smartBuyItem)) {
+                try {
+                    result = await vConinWS.buyItemById(smartBuyItem);
+                    miner.updateStack(result.items);
+                    let template = "[SmartBuy] Был куплен " + Entit.titles[smartBuyItem];
+                    con(template, "black", "Green");
+                    try {
+                        await infLog(template);
+                    } catch (e) {}
+                } catch (e) {
+                    if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки " + Entit.titles[smartBuyItem] + "a", true);
+                    else con(e.message, true);
                 }
             }
         }
@@ -234,6 +289,13 @@ function lPrices(d) {
     return temp;
 }
 
+function justPrices(d) {
+    temp = Entit.names.map(el => {
+        return !miner.hasMoney(el) && d ? "" : miner.getPriceForItem(el);
+    });
+    return temp;
+}
+
 rl.on('line', async (line) => {
     if (!URLWS) return;
 
@@ -250,6 +312,7 @@ rl.on('line', async (line) => {
             console.log("updatesLastTime", updatesLastTime);
             console.log("xRestart", xRestart);
             console.log("autobuy", autoBuy);
+            console.log("smartbuy", smartBuy);
             console.log("transferTo", transferTo);
             console.log("transferScore", transferScore);
             console.log("transferInterval", transferInterval);
@@ -318,7 +381,15 @@ rl.on('line', async (line) => {
         case 'autobuy':
             autoBuy = !autoBuy;
             con("Автопокупка: " + (autoBuy ? "Включена" : "Отключена"));
+            smartBuy = false;
+            con("Умная покупка: " + (smartBuy ? "Включена" : "Отключена"));
             break;
+
+        case 'smartbuy':
+            smartBuy = !smartBuy;
+            con("Умная покупка: " + (smartBuy ? "Включена" : "Отключена"));
+            autoBuy = false;
+            con("Автопокупка: " + (autoBuy ? "Включена" : "Отключена"));
 
         case 'to':
             item = await rl.questionAsync("Введите ID пользователя: ");
@@ -381,6 +452,9 @@ rl.on('line', async (line) => {
             ccon("to - указать ID и включить авто-перевод средств на него.");
             ccon("ti - указать интервал для авто-перевода (в секундах).");
             ccon("tsum - указать сумму для авто-перевода (без запятой).");
+            ccon("autobuy - изменить статус авто-покупки.");
+            ccon("autobuyitem - указать предмет(ы) для авто-покупки.");
+            ccon("smartbuy - изменить статус умной покупки.")
             ccon("color - изменить цветовую схему консоли.");
             break;
     }
@@ -433,11 +507,11 @@ for (var argn = 2; argn < process.argv.length; argn++) {
         default:
             break;
     }
-    if (["-t", "-u", "-to", "-ti", "-tsum", "-autobuyItem", "-noupdates"].includes(process.argv[argn])) {
+    if (["-t", "-u", "-to", "-ti", "-tsum", "-autoBuyItem"].includes(process.argv[argn])) {
         argn++;
     }
 
-    if (process.argv[argn] == '-autobuyitem') {
+    if (process.argv[argn] == '-autoBuyItem') {
         let dTest = process.argv[argn + 1];
         if (typeof dTest == "string" && dTest.length > 1 && dTest.length < 20) {
             if (!Entit.titles[dTest]) return;
@@ -474,7 +548,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
         }
     }
 
-    if (process.argv[argn] == '-autobuy') {
+    if (process.argv[argn] == '-autoBuy') {
         autoBuy = true;
         continue;
     }
@@ -486,16 +560,19 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 
     if (process.argv[argn] == "-h" || process.argv[argn] == "-help") {
         ccon("-- VCoinX arguments --", "red");
-        ccon("-help			- помощь.");
-        ccon("-flog			- подробные логи.");
-        ccon("-tforce		- принудительно использовать токен.");
-        ccon("-tsum [sum]	- включить функцию для авто-перевода.");
-        ccon("-to [id]		- указать ID для авто-перевода.");
+        ccon("-help			    - помощь.");
+        ccon("-flog			    - подробные логи.");
+        ccon("-tforce		    - принудительно использовать токен.");
+        ccon("-tsum [sum]	  - включить функцию для авто-перевода.");
+        ccon("-autoBuy		  - авто-покупка");
+        ccon("-autoBuyItem  - указать предмет для авто-покупки.")
+        ccon("-smartBuy		  - умная покупка");
+        ccon("-to [id]		  - указать ID для авто-перевода.");
         ccon("-ti [seconds]	- установить инетрвал для автоматического перевода.");
-        ccon("-u [URL]		- задать ссылку.");
-        ccon("-t [TOKEN]	- задать токен.");
-        ccon("-black      - отключить цвета консоли.");
-        ccon("-noupdates  - отключить сообщение об обновлениях.");
+        ccon("-u [URL]		  - задать ссылку.");
+        ccon("-t [TOKEN]	  - задать токен.");
+        ccon("-black        - отключить цвета консоли.");
+        ccon("-noupdates    - отключить сообщение об обновлениях.");
         process.exit();
         continue;
     }
@@ -520,7 +597,7 @@ function updateLink() {
                 if (!mobile_iframe_url)
                     throw ("Не удалось получить ссылку на приложение.\n\t\tВозможное решение: Используйте расширенный токен.");
 
-                let id = (await vk.api.users.get())[0];
+                let id = (await vk.api.users.get())[0]["id"];
 
                 if (!id)
                     throw ("Не удалось получить ID пользователя.");
@@ -558,15 +635,14 @@ function formatWSS(LINK) {
     URLWS = NADDRWS + CHANNEL + GSEARCH.search + "&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
     switch (currentServer) {
         case 1:
-            URLWS.replace("coin.vkforms.ru", "bagosi-go-go.vkforms.ru");
+            URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, "bagosi-go-go.vkforms.ru");
         case 2:
-            URLWS.replace("coin.vkforms.ru", "coin.w5.vkforms.ru");
+            URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, "coin.w5.vkforms.ru");
         case 3:
-            URLWS.replace("coin.vkforms.ru", (CHANNEL > 7) ? "bagosi-go-go.vkforms.ru" : "coin.w5.vkforms.ru");
+            URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, (CHANNEL > 7) ? "bagosi-go-go.vkforms.ru" : "coin.w5.vkforms.ru");
             break;
-
         default:
-            URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
+            URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, "coin-without-bugs.vkforms.ru");
             break;
     }
 

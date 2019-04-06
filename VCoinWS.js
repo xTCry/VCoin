@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const safeEval = require('safe-eval');
 
 class VCoinWS {
 
@@ -120,7 +121,16 @@ class VCoinWS {
 
                         if (pow)
                             try {
-                                let x = eval(pow),
+                                let x = safeEval(pow, {
+                                        window: {
+                                            location: {
+                                                host: 'vk.ru'
+                                            },
+                                            navigator: {
+                                                userAgent: 'Mozilla/5.0 (Windows; U; Win98; en-US; rv:0.9.2) Gecko/20010725 Netscape6/6.1'
+                                            }
+                                        }
+                                    }),
                                     str = "C1 ".concat(this.randomId, " ") + x;
 
                                 if (this.connected) this.ws.send(str);
