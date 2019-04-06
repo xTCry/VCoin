@@ -35,9 +35,9 @@ npm i
 * `-to [ID]`        - задает ID страницы для автоперевода `score`
 * `-ti [seconds]`   - задает интервал автоперевода в секундах `[по умолчанию 3600 секунд (1 час)]`
 * `-tsum [sum]`     - сколько `score` переводить (знаки до запятой)
-* `-autobuy`        - автопокупка ускорений
-* `-autobuyItem`    - какое покупать [ускорение](#названия-ускорений)
-* `-smartbuy`       - умная покупка ускорений
+* `-autoBuy`        - автопокупка ускорений
+* `-autoBuyItem`    - какое покупать [ускорение](#названия-ускорений)
+* `-smartBuy`       - умная покупка ускорений
 
 
 Запуск поизводится из каталога приложения
@@ -59,12 +59,12 @@ node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 Запуск через [токен](#получение-токена) и автопокупка
 ```shell
-node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -autobuy
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -autoBuy
 ```
 
 Запуск через [токен](#получение-токена) и умная покупка
 ```shell
-node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -smartbuy
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -smartBuy
 ```
 
 Запуск через ссылку
@@ -117,9 +117,9 @@ module.exports = {
 - `tran` - перевести коины
 - `price` - вывести текущие цены 
 - `buy` - покупка ускорения
-- `autobuy` - вкл\выкл автопокупку ускорений
+- `autoBuy` - вкл\выкл автопокупку ускорений
 - `autoBuyItem` - выбрать какое ускорение покупать
-- `smartbuy` - вкл\выкл умную покупку ускорений
+- `smartBuy` - вкл\выкл умную покупку ускорений
 - `debug` - посмотреть служебные и заданные параметры
 - `color` - вкл/выкл режима цветной консоли
 - `info` - показать место в ТОПе и кол-во коинов

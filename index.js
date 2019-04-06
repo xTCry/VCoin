@@ -397,6 +397,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 			}
 			break;
 		}
+
 		// Custom URL
 		case '-u': {
 			if(dTest.length > 200 && dTest.length < 255) {
@@ -415,86 +416,88 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 			break;
 		}
 
+		// Transfer interval
+		case '-ti': {
+			if(dTest.length > 1 && dTest.length < 10) {
+				transferInterval = parseInt(dTest);
+				con("Интервал автоперевода "+transferInterval+" секунд");
+				argn++;
+				break;
+			}
+		}
+		
+		// Transfer summ
+		case '-tsum': {
+			if(dTest.length > 1 && dTest.length < 10) {
+				transferScore = parseInt(dTest);
+				con("Сумма автоперевода "+transferScore+"");
+				argn++;
+				break;
+			}
+		}
+
+		// Set autoBuy Item
+		case '-autobuyitem': {
+			if(dTest.length > 1 && dTest.length < 20) {
+				if(!Entit.titles[dTest]) return;
+				con("Для автопокупки выбрано: "+Entit.titles[dTest]);
+				autoBuyItem = dTest;
+				argn++;
+				break;
+			}
+		}
+
+		// Force token
+		case '-tforce': {
+			con("Force token set.")
+			tforce = true;
+			break;
+		}
+
+		// Автоматическая закупка
+		case '-autobuy': {
+			autoBuy = true;
+			break;
+		}
+
+		// Автоматическая умная закупка
+		case '-smartbuy': {
+			smartBuy = true;
+			autoBuy = false;
+			continue;
+		}
+
+		// Full log mode
+		case '-flog': {
+			flog = true;
+			continue;
+		}
+
+		// Help info
+		case "-h":
+		case "-help":
+		{
+			ccon("-- VCoins arguments --", "red");
+			ccon("-help		- ...");
+			ccon("-flog		- подробные логи");
+			ccon("-tforce		- токен принудительно");
+			ccon("-u [URL]		- задать ссылку");
+			ccon("-t [TOKEN]	- задать токен");
+			ccon("-to [ID]		- задать ID страницы для автоперевода score");
+			ccon("-ti [seconds]	- задать интервал автоперевода в секундах");
+			ccon("-tsum [sum]	- сколько score переводить (знаки до запятой)");
+			ccon("-autoBuy		- автопокупка");
+			ccon("-smartBuy		- умная покупка");
+			process.exit();
+			break;
+		}
+
 		default:
 			break;
 	}
 
 	if ([ "-t", "-u", "-to", "-ti", "-tsum", "-autoBuyItem" ].includes(process.argv[argn])) {
 		argn++;
-	}
-
-
-	// Transfer interval
-	if (process.argv[argn] == '-ti') {
-		if(dTest.length > 1 && dTest.length < 10) {
-			transferInterval = parseInt(dTest);
-			con("Интервал автоперевода "+transferInterval+" секунд");
-			argn++;
-			continue;
-		}
-	}
-
-	// Transfer summ
-	if (process.argv[argn] == '-tsum') {
-		if(dTest.length > 1 && dTest.length < 10) {
-			transferScore = parseInt(dTest);
-			con("Сумма автоперевода "+transferScore+"");
-			argn++;
-			continue;
-		}
-	}
-
-	// Set autoBuy Item
-	if (process.argv[argn] == '-autoBuyItem') {
-		if(dTest.length > 1 && dTest.length < 20) {
-			if(!Entit.titles[dTest]) return;
-			con("Для автопокупки выбрано: "+Entit.titles[dTest]);
-			autoBuyItem = dTest;
-			argn++;
-			continue;
-		}
-	}
-
-	// Force token
-	if (process.argv[argn] == '-tforce') {
-		con("Force token set.")
-		tforce = true;
-		continue;
-	}
-
-	// Автоматическая закупка
-	if (process.argv[argn] == '-autoBuy') {
-		autoBuy = true;
-		continue;
-	}
-
-	if (process.argv[argn] == '-smartBuy') {
-		smartBuy = true;
-		autoBuy = false;
-		continue;
-	}
-
-	// Full log mode
-	if (process.argv[argn] == '-flog') {
-		flog = true;
-		continue;
-	}
-
-	// Help info
-	if (process.argv[argn] == "-h" || process.argv[argn] == "-help") {
-		ccon("-- VCoins arguments --", "red");
-		ccon("-help		- ...");
-		ccon("-flog		- подробные логи");
-		ccon("-tforce		- токен принудительно");
-		ccon("-u [URL]		- задать ссылку");
-		ccon("-t [TOKEN]	- задать токен");
-		ccon("-to [ID]		- задать ID страницы для автоперевода score");
-		ccon("-ti [seconds]	- задать интервал автоперевода в секундах");
-		ccon("-tsum [sum]	- сколько score переводить (знаки до запятой)");
-		ccon("-autoBuy		- автопокупка");
-		ccon("-smartBuy		- умная покупка");
-		process.exit();
-		continue;
 	}
 }
 
