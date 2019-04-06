@@ -390,6 +390,7 @@ rl.on('line', async (line) => {
             con("Умная покупка: " + (smartBuy ? "Включена" : "Отключена"));
             autoBuy = false;
             con("Автопокупка: " + (autoBuy ? "Включена" : "Отключена"));
+            break;
 
         case 'to':
             item = await rl.questionAsync("Введите ID пользователя: ");
