@@ -63,7 +63,6 @@ async function smartBuyFunction(score){
 			tempDataUpdate["canSkip"] = true;
 			tempDataUpdate["itemPrice"] = min;
 			tempDataUpdate["itemName"] = canBuy;
-			con("Недостаточно средств. Необходимо ещё: "+formateSCORE((-score + min * tempDataUpdate["tmpPr"]), true), "white", "Red");
 		}
 	}
 	tempDataUpdate["onBrokenEvent"] = false;
