@@ -171,11 +171,11 @@ class VCoinWS {
                             this.onWaitLoadCallback(parseInt(t.replace("WAIT_FOR_LOAD ", ""), 10));
                         if (this.onChangeOnlineCallback)
                             this.onChangeOnlineCallback(parseInt(t.replace("WAIT_FOR_LOAD ", ""), 10));
-                        if(0 === t.indexOf("MSG")) {
+                        if (0 === t.indexOf("MSG")) {
                             this.retryTime = 3e5;
-                            if(this.onMessageEventCallback)
-                              this.onMessageEventCallback(t.replace("MSG ", ""));
-}
+                            if (this.onMessageEventCallback)
+                                this.onMessageEventCallback(t.replace("MSG ", ""));
+                        }
                     }
                     if (0 === t.indexOf("SELF_DATA")) {
 
@@ -284,8 +284,8 @@ class VCoinWS {
         this.onWaitLoadCallback = e
     }
     onMessageEvent(e) {
-  		this.onMessageEventCallback = e
-  	}
+        this.onMessageEventCallback = e
+    }
     onAlreadyConnected(e) {
         this.onAlredyConnectedCallback = e
     }

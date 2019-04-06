@@ -15,7 +15,7 @@ let checkUpdateTTL = null,
     onUpdatesCB = false,
     offColors = false;
 
-function formateSCORE(e) {
+function formatScore(e) {
     return (arguments.length > 1 && void 0 !== arguments[1] && arguments[1]) ?
         function(e, t, n, a) {
             var r, o, c, s, i;
@@ -101,10 +101,6 @@ rl.questionAsync = (question) => {
     });
 };
 
-// function hashPassCoin(e, t) {
-//     return e + t - 1;
-// }
-
 function checkUpdates() {
     GitCUpdate.files(['package.json'], (err, results) => {
         if (err) return;
@@ -184,8 +180,7 @@ module.exports = {
     ccon,
     setColorsM,
     offColors,
-    formateSCORE,
-    // hashPassCoin,
+    formatScore,
     checkUpdates,
     checkUpdateTTL,
     onUpdates: cb => (onUpdatesCB = cb, true),
