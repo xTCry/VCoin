@@ -203,6 +203,7 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime, tick)=> {
 });
 
 vConinWS.onBrokenEvent(_=> {
+	tempDataUpdate["onBrokenEvent"] = true;
 	con("onBrokenEvent", true);
 	// vConinWS.reconnect(URLWS, true);
 	xRestart = false;
@@ -377,6 +378,16 @@ rl.on('line', async (line) => {
 			con("Цвета " + (offColors? "от": "в") + "ключены (*^.^*)", "blue");
 			break;
 
+		case 'pforsmartbuy':
+			var proc = await rl.questionAsync("Введи процентное соотношение, выделяемое под SmartBuy: ");
+			if(parseInt(proc)) if(parseInt(proc) > 0 && parseInt(proc) <= 100){
+				tempDataUpdate["procentForBuy"] = parseInt(proc);
+				tempDataUpdate["tmpPr"] = null;
+				tempDataUpdate["canSkip"] = false;
+			}
+			break;
+
+			
 		case "?":
 		case "help":
 			ccon("-- VCoins --", "red");
@@ -390,6 +401,7 @@ rl.on('line', async (line) => {
 			ccon("autoBuy	- вкл/откл автопокупки");
 			ccon("autoBuyItem - какое ускорение покупать");
 			ccon("smartBuy	- вкл/откл умную покупку");
+			ccon("pForSmartBuy - процент средств выделяемый для SmartBuy");
 			ccon("color	- вкл/выкл режима цветной консоли");
 			break;
 	}
@@ -493,6 +505,9 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 	}
 
 	if (process.argv[argn] == '-smartBuy') {
+		if(parseInt(dTest)){
+			if(parseInt(dTest) > 0 && parseInt(dTest) <= 100) tempDataUpdate["procentForBuy"] = parseInt(dTest);
+		}
 		smartBuy = true;
 		autoBuy = false;
 		continue;
@@ -516,7 +531,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 		ccon("-ti [seconds]	- задать интервал автоперевода в секундах");
 		ccon("-tsum [sum]	- сколько score переводить (знаки до запятой)");
 		ccon("-autoBuy		- автопокупка");
-		ccon("-smartBuy		- умная покупка");
+		ccon("-smartBuy [0-100] - умная покупка");
 		process.exit();
 		continue;
 	}
