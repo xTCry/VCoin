@@ -42,10 +42,8 @@ colors.setTheme({
 });
 
 function con(message, color, colorBG) {
-    if (message === undefined) {
-        console.log("\n")
-        return;
-    }
+    if (message === undefined)
+        return console.log("\n");
     let temp = (!offColors ? colors.dateBG('[' + dateF() + ']') : dateF()) + ": " + ccon(message, color, colorBG, 1);
     console.log(temp);
 }
@@ -156,15 +154,15 @@ function existsFile(f) {
 }
 
 function existsAsync(path) {
-    return new Promise((resolve, reject) => fs.exists(path, exists => resolve(exists)));
+    return new Promise(resolve => fs.exists(path, exists => resolve(exists)));
 }
 
 function writeFileAsync(path, data) {
-    return new Promise((resolve, reject) => fs.writeFile(path, data, err => resolve(err)));
+    return new Promise(resolve => fs.writeFile(path, data, err => resolve(err)));
 }
 
 function appendFileAsync(path, data) {
-    return new Promise((resolve, reject) => fs.appendFile(path, data, err => resolve(err)));
+    return new Promise(resolve => fs.appendFile(path, data, err => resolve(err)));
 }
 
 function getVersion() {
