@@ -27,7 +27,7 @@ async function smartBuyFunction(score){
 			min = Math.min.apply(null, prices);
 			good = prices.indexOf(min);
 			canBuy = names[good];
-			con("Можно купить: " + canBuy, "black", "Green");
+			con("Можно купить: " + Entit.titles[canBuy], "black", "Green");
 			con("Стоимость: " + formateSCORE(min, true) + " за " + count[good] + "шт.", "black", "Green");
 		}else{
 			min = tempDataUpdate["itemPrice"];
