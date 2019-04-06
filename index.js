@@ -25,6 +25,7 @@ const {
     infLog,
     rand,
     onUpdates,
+    beep,
 } = require('./helpers');
 
 let {
@@ -50,6 +51,7 @@ let boosterTTL = null,
     autoBuyItems = ["datacenter"],
     smartBuyItem = "",
     smartBuy = false,
+    autobeep = false,
     tforce = false,
     transferTo = false,
     transferScore = 3e4,
@@ -85,7 +87,12 @@ vConinWS.onMissClickEvent(_ => {
         forceRestart(4e3);
 
     if (++missCount > 10)
+    {
+        if (autobeep)
+            beep();
+
         con("Плохое соединение с сервером, бот был приостановлен.", true);
+    }
 });
 
 vConinWS.onReceiveDataEvent(async (place, score) => {
@@ -94,7 +101,7 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
 
     miner.setScore(score);
 
-    setTerminalTitle("VCoinX " + getVersion() + " > " + "top " + place + " > " + formateSCORE(score, true) + " coins.");
+    setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() +  ") > " + "top " + place + " > " + formateSCORE(score, true) + " coins.");
 
     if (place > 0 && !rl.isQst) {
         if (transferTo && (transferScore * 1e3 < score || transferScore * 1e3 >= 9e9) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
@@ -102,11 +109,12 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
                 if (transferScore * 1e3 >= 9e9) {
                     await vConinWS.transferToUser(transferTo, score);
                     let template = "Автоматически переведено [" + formateSCORE(score * 1e3, true) + "] коинов от @id" + USER_ID + " к @id" + transferTo;
+                    con(template, "black", "Green");
                 } else {
                     await vConinWS.transferToUser(transferTo, transferScore);
                     let template = "Автоматически переведено [" + formateSCORE(transferScore * 1e3, true) + "] коинов от @id" + USER_ID + " к @id" + transferTo;
+                    con(template, "black", "Green");
                 }
-                con(template, "black", "Green");
                 try {
                     await infLog(template);
                 } catch (e) {}
@@ -122,7 +130,7 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
                     try {
                         result = await vConinWS.buyItemById(autoBuyItems[i]);
                         miner.updateStack(result.items);
-                        let template = "Автоматической закупкой был приобретен " + Entit.titles[autoBuyItems[i]];;
+                        let template = "Автоматической покупкой был приобретен " + Entit.titles[autoBuyItems[i]];;
                         con(template, "black", "Green");
                         con("Новая скорость: " + formateSCORE(result.tick, true) + " коинов / тик.");
                         try {
@@ -176,7 +184,8 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
                 try {
                     result = await vConinWS.buyItemById(smartBuyItem);
                     miner.updateStack(result.items);
-                    let template = "[SmartBuy] Был куплен " + Entit.titles[smartBuyItem];
+                    let template = "Умной покупкой был приобретен " + Entit.titles[smartBuyItem];
+                    con("Новая скорость: " + formateSCORE(result.tick, true) + " коинов / тик.");
                     con(template, "black", "Green");
                     try {
                         await infLog(template);
@@ -199,7 +208,7 @@ vConinWS.onReceiveDataEvent(async (place, score) => {
 
 vConinWS.onTransfer(async (id, score) => {
     let template = "Пользватель @id" + USER_ID + " получил [" + formateSCORE(score, true) + "] коинов от @id" + id;
-    con(template, "black", "Green");
+    con(template, "green", "Black");
     try {
         await infLog(template);
     } catch (e) {
@@ -211,7 +220,7 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
     con("Пользователь успешно загружен.");
     con("Скорость: " + formateSCORE(tick, true) + " коинов / тик.");
 
-    setTerminalTitle("VCoinX " + getVersion() + " > " + formateSCORE(tick, true) + " cps > " + "top " + place + " > " + formateSCORE(score, true) + " coins.");
+    setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() +  ") > " + formateSCORE(tick, true) + " cps > " + "top " + place + " > " + formateSCORE(score, true) + " coins.");
 
     miner.setActive(items);
     miner.updateStack(items);
@@ -224,8 +233,11 @@ vConinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
 
 vConinWS.onBrokenEvent(_ => {
     con("Обнаружен brokenEvent, видимо сервер сломался.\n\t\tЧерез 10 секунд будет выполнен перезапуск.", true);
-    setTerminalTitle("VCoinX " + getVersion() + " > " + "BROKEN");
+    setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() +  ") > " + "BROKEN");
     xRestart = false;
+
+    if (autobeep)
+        beep();
 
     lastTry++;
     if (lastTry >= numberOfTries) {
@@ -240,13 +252,17 @@ vConinWS.onBrokenEvent(_ => {
 
 vConinWS.onAlreadyConnected(_ => {
     con("Обнаружено открытие приложения с другого устройства.\n\t\tЧерез 30 секунд будет выполнен перезапуск.", true);
-    setTerminalTitle("VCoinX " + getVersion() + " > " + "ALREADY_CONNECTED");
+    setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() +  ") > " + "ALREADY_CONNECTED");
+    if (autobeep)
+        beep();
     forceRestart(3e4, true);
 });
 
 vConinWS.onOffline(_ => {
     if (!xRestart) return;
     con("Пользователь отключен от сервера.\n\t\tЧерез 10 секунд будет выполнен перезапуск.", true);
+    if (autobeep)
+        beep();
 
     lastTry++;
     if (lastTry >= numberOfTries) {
@@ -256,7 +272,7 @@ vConinWS.onOffline(_ => {
         updateLink();
     }
 
-    setTerminalTitle("VCoinX " + getVersion() + " > " + "OFFLINE");
+    setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() +  ") > " + "OFFLINE");
     forceRestart(2e4, true);
 });
 
@@ -276,7 +292,7 @@ async function startBooster(tw) {
 function forceRestart(t, force) {
     vConinWS.close();
     boosterTTL && clearInterval(boosterTTL);
-    setTerminalTitle("VCoinX " + getVersion() + " > " + "RESTARTING");
+    setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() +  ") > " + "RESTARTING");
     if (xRestart || force)
         startBooster(t);
 }
@@ -401,13 +417,19 @@ rl.on('line', async (line) => {
         case 'ti':
             item = await rl.questionAsync("Введите интервал: ");
             transferInterval = parseInt(item);
-            con("Интервал для автоматического перевода " + transferInterval + " секунд");
+            con("Интервал для автоматического перевода " + transferInterval + " секунд.");
             break;
 
         case 'tsum':
             item = await rl.questionAsync("Введите сумму: ");
             transferScore = parseInt(item);
             con("Количество коинов для автоматического перевода " + transferScore + "");
+            break;
+
+        case 'autobeep':
+        case 'beep':
+            autobeep = !autobeep;
+            con("Автоматическое проигрывание звука при ошибках " + autobeep ? "включено" : "отключено" + ".");
             break;
 
         case 'p':
@@ -430,7 +452,7 @@ rl.on('line', async (line) => {
             try {
                 await vConinWS.transferToUser(id, count);
                 con("Перевод был выполнен успешно.", "black", "Green");
-                let template = "Произведена отпрвка [" + formateSCORE(count * 1e3, true) + "] коинов от vk.com/id" + USER_ID + " для vk.com/id" + id;
+                let template = "Произведена отпрвка [" + formateSCORE(count * 1e3, true) + "] коинов от vk.com/id" + USER_ID.toString() + " для vk.com/id" + id.toString();
                 try {
                     await infLog(template);
                 } catch (e) {}

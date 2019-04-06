@@ -33,7 +33,7 @@ function formateSCORE(e) {
 }
 
 colors.setTheme({
-    dateBG: 'bgMagenta',
+    dateBG: 'white',
     dataC: 'yellow',
     warnBG: 'bgBlack',
     warn: 'yellow',
@@ -177,6 +177,10 @@ function setTerminalTitle(title) {
     );
 }
 
+function beep() {
+    process.stdout.write('\x07');
+}
+
 
 module.exports = {
     rl,
@@ -197,4 +201,5 @@ module.exports = {
     setTerminalTitle,
     infLog,
     rand,
+    beep,
 }
