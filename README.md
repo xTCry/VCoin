@@ -1,5 +1,4 @@
 # VCoin
-> Фиксим фиксы
 
 VK Coin Miner - недомайнер на NodeJS
 
@@ -36,8 +35,9 @@ npm i
 * `-to [ID]`        - задает ID страницы для автоперевода `score`
 * `-ti [seconds]`   - задает интервал автоперевода в секундах `[по умолчанию 3600 секунд (1 час)]`
 * `-tsum [sum]`     - сколько `score` переводить (знаки до запятой)
-* `-autobuy`        - автопокупка
-* `-autobuyItem`    - какое покупать [ускорение](#названия-ускорений)
+* `-autoBuy`        - автопокупка ускорений
+* `-autoBuyItem`    - какое покупать [ускорение](#названия-ускорений)
+* `-smartBuy`       - умная покупка ускорений
 
 
 Запуск поизводится из каталога приложения
@@ -59,7 +59,12 @@ node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 Запуск через [токен](#получение-токена) и автопокупка
 ```shell
-node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -autobuy
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -autoBuy
+```
+
+Запуск через [токен](#получение-токена) и умная покупка
+```shell
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -smartBuy
 ```
 
 Запуск через ссылку
@@ -99,7 +104,7 @@ module.exports = {
 
 ### Получение токена
 
-[Разрешить доступ, например, этому приложению](https://vk.cc/9eSo1E) и скопировать полученный токен (85 символов) 
+[Разрешить доступ, например, этому приложению](https://vk.cc/9eSo1E) и скопировать полученный токен из адрессной строки (85 символов, между `#access_token=` и `&expires_in`) 
 
 ***
 
@@ -109,19 +114,31 @@ module.exports = {
 - `help` - помощь 
 - `stop` - остановить 
 - `run` - запустить 
-- `tran` - перевод 
-- `price` - выведет текущие цены 
+- `tran` - перевести коины
+- `price` - вывести текущие цены 
 - `buy` - покупка ускорения
+- `autoBuy` - вкл\выкл автопокупку ускорений
+- `autoBuyItem` - выбрать какое ускорение покупать
+- `smartBuy` - вкл\выкл умную покупку ускорений
+- `debug` - посмотреть служебные и заданные параметры
+- `color` - вкл/выкл режима цветной консоли
+- `info` - показать место в ТОПе и кол-во коинов
 
 ## Названия ускорений
-- `cursor`
-- `cpu`
-- `cpu_stack`
-- `computer`
-- `server_vk`
-- `quantum_pc`
-- `datacenter`
+- `cursor` - курсор
+- `cpu` - видеокарта
+- `cpu_stack` - стойка видеокарт
+- `computer` - суперкомпьютер
+- `server_vk` - сервер ВКонтакте
+- `quantum_pc` - квантовый компьютер
+- `datacenter` - датацентр
 - `bonus` - только один раз
+
+## Что такое SmartBuy
+
+### SmartBuy
+Умная покупка рассчитывает для каждого ускорителя цену для скорости 1 коин в секунду и покупает самый дешевый ускоритель.
+Умная покупка не может работать в паре с автопокупкой!
 
 
 ## З.Ы.
@@ -133,4 +150,3 @@ module.exports = {
 
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
-

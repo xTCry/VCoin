@@ -397,6 +397,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 			}
 			break;
 		}
+
 		// Custom URL
 		case '-u': {
 			if(dTest.length > 200 && dTest.length < 255) {
@@ -415,34 +416,49 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 			break;
 		}
 
-		default:
-			break;
-	}
+		// Transfer interval
+		case '-ti': {
+			if(dTest.length > 1 && dTest.length < 10) {
+				transferInterval = parseInt(dTest);
+				con("Интервал автоперевода "+transferInterval+" секунд");
+				argn++;
+				break;
+			}
+		}
+		
+		// Transfer summ
+		case '-tsum': {
+			if(dTest.length > 1 && dTest.length < 10) {
+				transferScore = parseInt(dTest);
+				con("Сумма автоперевода "+transferScore+"");
+				argn++;
+				break;
+			}
+		}
 
 	if ([ "-t", "-u", "-to", "-ti", "-tsum", "-autoBuyItem" ].includes(process.argv[argn])) {
 		argn++;
 	}
 
+		// Force token
+		case '-tforce': {
+			con("Force token set.")
+			tforce = true;
+			break;
+		}
 
-	// Transfer interval
-	if (process.argv[argn] == '-ti') {
-		if(dTest.length > 1 && dTest.length < 10) {
-			transferInterval = parseInt(dTest);
-			con("Интервал автоперевода "+transferInterval+" секунд");
-			argn++;
+		// Автоматическая закупка
+		case '-autobuy': {
+			autoBuy = true;
+			break;
+		}
+
+		// Автоматическая умная закупка
+		case '-smartbuy': {
+			smartBuy = true;
+			autoBuy = false;
 			continue;
 		}
-	}
-
-	// Transfer summ
-	if (process.argv[argn] == '-tsum') {
-		if(dTest.length > 1 && dTest.length < 10) {
-			transferScore = parseInt(dTest);
-			con("Сумма автоперевода "+transferScore+"");
-			argn++;
-			continue;
-		}
-	}
 
 	// Set autoBuy Item
 	if (process.argv[argn] == '-autoBuyItem') {
@@ -453,14 +469,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 			argn++;
 			continue;
 		}
-	}
 
-	// Force token
-	if (process.argv[argn] == '-tforce') {
-		con("Force token set.")
-		tforce = true;
-		continue;
-	}
 
 	// Автоматическая закупка
 	if (process.argv[argn] == '-autoBuy') {

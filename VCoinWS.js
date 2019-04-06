@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const safeEval = require('safe-eval');
 
 class VCoinWS {
 
@@ -117,7 +118,15 @@ class VCoinWS {
 
 						if (pow)
 							try {
-								let x = eval(pow),
+								let x = safeEval(pow, {
+								  window: {
+								    location: {
+								      host: 'vk.ru'
+								    },
+                    navigator: {
+                      userAgent: 'Mozilla/5.0 (Windows; U; Win98; en-US; rv:0.9.2) Gecko/20010725 Netscape6/6.1'
+                    }
+								  }}),
 									str = "C1 ".concat(this.randomId, " ") + x;
 
 								if(this.connected) this.ws.send(str);
@@ -304,7 +313,7 @@ class VCoinWS {
 
 	async onTickEvent() {
 		if (null !== this.oldScore && this.onMyDataCallback) {
-			
+
 			// if(0 !== this.tick) this.onMyDataCallback(this.oldPlace, this.oldScore, true);
 			// this.oldScore += this.tick;
 			this.tickCount++;
@@ -383,7 +392,7 @@ class VCoinWS {
 		res = await this.sendPackMethod(["B", id]);
 
 		res = JSON.parse(res);
-		
+
 		let n = res.tick,
 			r = res.score,
 			o = res.place;
@@ -421,7 +430,7 @@ class VCoinWS {
 	async getMyPlace() {
 		let res = await this.sendPackMethod(["X"]);
 		res = parseInt(res, 10);
-		
+
 		this.oldPlace = res;
 
 		return res;
@@ -434,7 +443,7 @@ class VCoinWS {
 	sendPackMethod(e) {
 		let t = this,
 			n = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : 0;
-		
+
 		return new Promise(function(n, r) {
 				let o = ++t.sendedPacks;
 				try {
@@ -442,7 +451,7 @@ class VCoinWS {
 
 					if(t.connected)
 						t.ws.send(i);
-					else 
+					else
 						t.onConnectSend.push(i);
 
 					t.setCallback(o, n, r);
@@ -497,7 +506,7 @@ class Miner {
 	getPriceForItem(e) {
 		let price = Entit.items[e].price,
 			count = 0;
-			
+
 		this.stack.forEach(el=> {
 			if(el.value === e)
 				count = el.count;
