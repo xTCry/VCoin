@@ -8,7 +8,7 @@ VK Coin Miner - недомайнер на NodeJS
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
-[![vcoin version](https://img.shields.io/badge/VCoin-1.3.2-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
+[![vcoin version](https://img.shields.io/badge/VCoin-1.3.8-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
 ***
 
@@ -35,9 +35,9 @@ npm i
 * `-to [ID]`        - задает ID страницы для автоперевода `score`
 * `-ti [seconds]`   - задает интервал автоперевода в секундах `[по умолчанию 3600 секунд (1 час)]`
 * `-tsum [sum]`     - сколько `score` переводить (знаки до запятой)
-* `-autoBuy`        - автопокупка ускорений
-* `-autoBuyItem`    - какое покупать [ускорение](#названия-ускорений)
-* `-smartBuy`       - умная покупка ускорений
+* `-autobuy`        - автопокупка ускорений
+* `-autobuyItem`    - какое покупать [ускорение](#названия-ускорений)
+* `-smartbuy`       - умная покупка ускорений
 
 
 Запуск поизводится из каталога приложения
@@ -59,12 +59,12 @@ node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 Запуск через [токен](#получение-токена) и автопокупка
 ```shell
-node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -autoBuy
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -autobuy
 ```
 
 Запуск через [токен](#получение-токена) и умная покупка
 ```shell
-node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -smartBuy
+node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -smartbuy
 ```
 
 Запуск через ссылку
@@ -117,9 +117,9 @@ module.exports = {
 - `tran` - перевести коины
 - `price` - вывести текущие цены 
 - `buy` - покупка ускорения
-- `autoBuy` - вкл\выкл автопокупку ускорений
+- `autobuy` - вкл\выкл автопокупку ускорений
 - `autoBuyItem` - выбрать какое ускорение покупать
-- `smartBuy` - вкл\выкл умную покупку ускорений
+- `smartbuy` - вкл\выкл умную покупку ускорений
 - `debug` - посмотреть служебные и заданные параметры
 - `color` - вкл/выкл режима цветной консоли
 - `info` - показать место в ТОПе и кол-во коинов
@@ -144,7 +144,7 @@ module.exports = {
 ## З.Ы.
 > Если надо зайти в сервис, но выкидывает, то можно использовать команду `stop`, а для возобновления `run`
 
-> При переводе берется незначительная комиссия в виде `0,1%` для статистики
+<!-- > При переводе берется незначительная комиссия в виде `0,1%` для статистики -->
 
 > При lineQuestion вывод лога для удобства приостанавливается
 
