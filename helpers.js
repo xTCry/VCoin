@@ -173,6 +173,13 @@ function beep() {
     process.stdout.write('\x07');
 }
 
+function removeLetters(e) {
+    return parseInt(e.replace(/\D+/g, ""));
+}
+
+function mathPrice(price, count) {
+    return count <= 1 ? price : Math.ceil(1.3 * mathPrice(price, count - 1))
+}
 
 module.exports = {
     rl,
@@ -193,4 +200,5 @@ module.exports = {
     infLog,
     rand,
     beep,
+    mathPrice,
 }
