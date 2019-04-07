@@ -434,7 +434,7 @@ rl.on('line', async (line) => {
 
         case 'setcps':
         case 'scp':
-        case 'sl';
+        case 'sl':
         case 'setlimit':
             item = await rl.questionAsync("Введите новый лимит коинов / тик для SmartBuy & AutoBuy: ");
             limitCPS = parseInt(item.replace(/,/g, ''));
