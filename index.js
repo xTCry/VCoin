@@ -357,7 +357,7 @@ rl.on('line', async (line) => {
         case 'to':
             item = await rl.questionAsync("Введите ID пользователя: ");
             transferTo = parseInt(item.replace(/\D+/g, ""));
-            con("Автоматический перевод коинов на vk.com/id" + transferTo);
+            con("Автоматический перевод коинов на @id" + transferTo);
             break;
         case 'ti':
             item = await rl.questionAsync("Введите интервал: ");
@@ -386,16 +386,22 @@ rl.on('line', async (line) => {
             ccon("-- Цены --", "red");
             ccon(temp);
             break;
+        case 'pay':
         case 'tran':
         case 'transfer':
             let count = await rl.questionAsync("Количество: ");
             let id = await rl.questionAsync("ID получателя: ");
+            let userinfo = (await vk.api.users.get({
+                user_ids: id
+            }));
+            id = userinfo[0].id;
+            console.log("Вы собираетесь перевести перевести " + formatScore(count * 1e3, true) + " коин(а)(ов) пользователю [" + userinfo[0].first_name + " " + userinfo[0].last_name + '] (@id' + userinfo[0].id + ').');
+
             let conf = await rl.questionAsync("Вы уверены? [yes]: ");
-            id = parseInt(id.replace(/\D+/g, ""));
             if (conf.toLowerCase() != "yes".replace(/[^a-zA-Z ]/g, "") || !id || !count) return con("Отправка не была произведена, вероятно, один из параметров не был указан.", true);
             try {
                 await vCoinWS.transferToUser(id, count);
-                let template = "Успешно была произведена отпрвка [" + formatScore(count * 1e3, true) + "] коинов от активного аккаунта (@id" + USER_ID.toString() + ") для @id" + id.toString();
+                let template = "Успешно была произведена отправка [" + formatScore(count * 1e3, true) + "] коинов от активного аккаунта (@id" + USER_ID.toString() + ") для @id" + id.toString();
                 con(template, "black", "Green");
                 try {
                     await infLog(template);
@@ -589,7 +595,7 @@ async function smartBuyFunction(score) {
             min = Math.min.apply(null, prices);
             good = prices.indexOf(min);
             canBuy = names[good];
-            con("Умной покупкой было проанилизировано, что выгодно будет приобрести улучшение " + Entit.titles[canBuy] + ".", "green", "Black");
+            con("Умной покупкой было проанализированно, что выгодно будет приобрести улучшение " + Entit.titles[canBuy] + ".", "green", "Black");
             con("Стоимость: " + formatScore(min, true) + " коинов за " + count[good] + " шт.", "green", "Black");
         } else {
             min = tempDataUpdate["itemPrice"];
@@ -667,7 +673,7 @@ function updateLink() {
     } else {
         let GSEARCH = url.parse(DONEURL, true);
         if (!GSEARCH.query || !GSEARCH.query.vk_user_id) {
-            con("При анализе ссылки не был найден vk_user_id.", true);
+            con("При анализе ссылки не был найден айди пользователя.", true);
             return process.exit();
         }
         USER_ID = parseInt(GSEARCH.query.vk_user_id);
