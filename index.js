@@ -108,7 +108,7 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
         if (transferPercent) {
             transferCoins = Math.floor(score / 1000 * (transferPercent / 100))
         }
-        if (transferTo && !(transferCoins * 1e3 < score || transferCoins * 1e3 >= 9e9) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
+        if (transferTo && (transferCoins * 1e3 < score || transferCoins * 1e3 >= 9e9) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
             try {
                 let template;
                 if (transferCoins * 1e3 >= 9e9) {
