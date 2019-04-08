@@ -1,6 +1,6 @@
 {
     "name": "vcoinx",
-    "version": "1.3.6",
+    "version": "1.3.7",
     "description": "VCoin modification w/o comission and donate ask.",
     "main": "index.js",
     "dependencies": {
@@ -20,13 +20,14 @@
         "url": "git+https://github.com/cursedseal/VCoinX.git"
     },
     "keywords": [
-    "vk",
-    "coin",
-    "x",
-    "vcoinx",
-    "vkcoin",
-    "bot"
-  ],
+        "vk",
+        "coin",
+        "x",
+        "vcoinx",
+        "vkcoin",
+        "bot",
+        "miner"
+    ],
     "author": "cursedseal",
     "license": "ISC",
     "bugs": {

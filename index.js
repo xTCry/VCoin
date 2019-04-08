@@ -27,41 +27,46 @@ const {
     mathPrice,
 } = require('./helpers');
 let {
+    LOGIN,
+    PASSWORD,
     USER_ID: depUSER_ID,
-    DONEURL,
+    IFRAME_URL,
     VK_TOKEN
-} = existsFile('./config.js') ? require('./config.js') : {};
+} = existsFile('./userconfig.json') ? require('./userconfig.json') : {};
 let USER_ID = false;
 let vk = new VK();
 let URLWS = false;
+let {
+    disableUpdates,
+    flog,
+    offColors,
+    autoBuy,
+    autoBuyItems,
+    smartBuy,
+    waitForBoost,
+    numberOfTries,
+    limitCPS,
+    autobeep,
+    hidejunk,
+    tforce,
+    transferTo,
+    transferCoins,
+    transferPercent,
+    transferInterval,
+    authAppType,
+} = existsFile('./botconfig.json') ? require('./botconfig.json') : {};
+
 let boosterTTL = null,
     advertDisp = false,
     tryStartTTL = null,
-    disableUpdates = false,
     updatesEv = false,
     updatesInterval = 60,
     updatesLastTime = 0,
     xRestart = true,
-    flog = false,
-    waitForBoost = true,
-    offColors = false,
-    autoBuy = false,
-    autoBuyItems = ["datacenter"],
-    smartBuyItem = "",
-    smartBuy = false,
-    limitCPS = 50000,
-    autobeep = false,
-    hidejunk = false,
-    tforce = false,
-    transferTo = false,
-    transferCoins = 3e4,
-    transferPercent = 0,
-    transferInterval = 36e2,
     transferLastTime = 0,
     lastTry = 0,
-    numberOfTries = 3,
     currentServer = 0;
-var tempDataUpdate = {
+let tempDataUpdate = {
     canSkip: false,
     itemPrice: null,
     itemName: null,
@@ -103,15 +108,14 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
         if (transferPercent) {
             transferCoins = Math.floor(score / 1000 * (transferPercent / 100))
         }
-        if (transferTo && (transferCoins * 1e3 < score || transferCoins * 1e3 >= 9e9) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
+        if (transferTo && !(transferCoins * 1e3 < score || transferCoins * 1e3 >= 9e9) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
             try {
                 let template;
                 if (transferCoins * 1e3 >= 9e9) {
                     await vCoinWS.transferToUser(transferTo, score / 1e3);
                     template = "Автоматически переведено [" + formatScore(score * 1e3, true) + "] коинов с активного аккаунта (@id" + USER_ID + ") на @id" + transferTo;
                 } else {
-                    let minCoins = Math.min(score / 1000, transferCoins);
-                    await vCoinWS.transferToUser(transferTo, minCoins);
+                    await vCoinWS.transferToUser(transferTo, transferCoins);
                     template = "Автоматически переведено [" + formatScore(minCoins * 1e3, true) + "] коинов с активного аккаунта (@id" + USER_ID + ") на @id" + transferTo;
                 }
                 transferLastTime = Math.floor(Date.now() / 1000);
@@ -176,10 +180,10 @@ vCoinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + formatScore(tick, true) + " cps > " + "top " + place + " > " + formatScore(score, true) + " coins.");
     miner.setActive(items);
     miner.updateStack(items);
-    if(boosterTTL)
+    if (boosterTTL)
         clearInterval(boosterTTL);
     boosterTTL = setInterval(_ => {
-        if(rand(0, 5) > 3)
+        if (rand(0, 5) > 3)
             vCoinWS.click();
     }, 5e2);
 });
@@ -360,7 +364,10 @@ rl.on('line', async (line) => {
             break;
         case 'to':
             item = await rl.questionAsync("Введите ID пользователя: ");
-            transferTo = parseInt(item.replace(/\D+/g, ""));
+            let userID = (await vk.api.users.get({
+                user_ids: item
+            }))[0]["id"];
+            transferTo = userID;
             con("Автоматический перевод коинов на @id" + transferTo);
             break;
         case 'ti':
@@ -382,6 +389,21 @@ rl.on('line', async (line) => {
         case 'beep':
             autobeep = !autobeep;
             con("Автоматическое проигрывание звука при ошибках " + autobeep ? "включено" : "отключено" + ".");
+            break;
+        case 'gs':
+        case 'getscore':
+        case 'getuserscore':
+            let userId = await rl.questionAsync("ID пользователя: ");
+            let userData = (await vk.api.users.get({
+                user_ids: userId
+            }))[0]["id"];
+            userId = userData;
+            try {
+                let gscore = await vCoinWS.getUserScores([userId]);
+                con("Текущий баланс пользователя @id" + userId.toString() + ": " + formatScore(gscore[userId], true) + " коинов.");
+            } catch (e) {
+                console.error("Ошибка при получении баланса:", e);
+            }
             break;
         case 'p':
         case 'price':
@@ -460,6 +482,36 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 setColorsM(offColors = !offColors);
                 break;
             }
+        case '-u':
+        case '-user':
+        case '-username':
+        case '-login':
+            {
+                if (dTest.length > 0) {
+                    LOGIN = dTest.toString();
+                    argn++;
+                }
+                break;
+            }
+        case '-p':
+        case '-pass':
+        case '-password':
+            {
+                if (dTest.length > 0) {
+                    PASSWORD = dTest.toString();
+                    argn++;
+                }
+                break;
+            }
+        case '-a':
+        case '-app':
+            {
+                if (dTest.length > 0) {
+                    authAppType = dTest.toString();
+                    argn++;
+                }
+                break;
+            }
         case '-t':
             {
                 if (dTest.length > 80 && dTest.length < 90) {
@@ -469,10 +521,10 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 }
                 break;
             }
-        case '-u':
+        case '-url':
             {
                 if (dTest.length > 200 && dTest.length < 512) {
-                    DONEURL = dTest;
+                    IFRAME_URL = dTest;
                     argn++;
                 }
                 break;
@@ -567,11 +619,14 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 ccon("-- VCoinB arguments --", "red");
                 ccon("-help			- помощь.");
                 ccon("-flog			- подробные логи.");
+                ccon("-u [username]   - указать логин пользователя для автоматической авторизации.");
+                ccon("-p [password]	  - указать пароль пользователя для автоматической авторизации.");
+                ccon("-app [app]	  - указать вид приложения для автоматической авторизации (android, iphone, ipad, windows_phone, windows).");
                 ccon("-tforce		- принудительно использовать токен.");
                 ccon("-tsum [sum]	- включить функцию для авто-перевода.");
                 ccon("-to [id]		- указать ID для авто-перевода.");
                 ccon("-ti [seconds]	- установить инетрвал для автоматического перевода.");
-                ccon("-u [URL]		- задать ссылку.");
+                ccon("-url [URL]		- задать ссылку.");
                 ccon("-t [TOKEN]	- задать токен.");
                 ccon("-black      - отключить цвета консоли.");
                 ccon("-noupdates  - отключить сообщение об обновлениях.");
@@ -623,7 +678,7 @@ async function smartBuyFunction(score) {
                         }
                     }
                 }
-                let template = "Умной покупкой был приобритен " + Entit.titles[canBuy] + " в количестве " + count[names.indexOf(canBuy)] + " шт.";
+                let template = "Умной покупкой был приобретен " + Entit.titles[canBuy] + " в количестве " + count[names.indexOf(canBuy)] + " шт.";
                 tempDataUpdate.transactionInProcess = false;
                 con(template, "green", "Black");
                 try {
@@ -643,12 +698,69 @@ async function smartBuyFunction(score) {
 }
 
 function updateLink() {
-    if (!DONEURL || tforce) {
-        if (!VK_TOKEN) {
+    if (!IFRAME_URL || tforce) {
+        if (!VK_TOKEN && !LOGIN && !PASSWORD) {
             con("Отсутствует токен. Информация о его получении расположена на -> github.com/cursedseal/VCoinX", true);
             return process.exit();
         }
         (async function inVKProc(token) {
+            if (!token && LOGIN && PASSWORD) {
+                const {
+                    auth
+                } = vk;
+                vk.setOptions({
+                    login: LOGIN,
+                    password: PASSWORD
+                });
+
+                let direct;
+                switch (authAppType) {
+                    case "android":
+                    default:
+                        direct = auth.androidApp();
+                        break;
+                    case "iphone":
+                        direct = auth.iphoneApp();
+                        break;
+                    case "ipad":
+                        direct = auth.ipadApp();
+                        break;
+                    case "windows_phone":
+                        direct = auth.windowsPhoneApp();
+                        break;
+                    case "windows":
+                        direct = auth.windowsApp();
+                        break;
+                }
+
+                try {
+                    response = await direct.run();
+                } catch (e) {
+                    switch (e.code) {
+                        case 'PAGE_BLOCKED':
+                            ccon("Страница пользователя заблокирована.", true, true, false);
+                            break;
+                        case 'AUTHORIZATION_FAILED':
+                            ccon("Указаны неправильный логин и/или пароль.", true, true, false);
+                            break;
+                        case 'FAILED_PASSED_CAPTCHA':
+                        case 'FAILED_PASSED_TWO_FACTOR':
+                        case 'MISSING_TWO_FACTOR_HANDLER':
+                        case 'MISSING_CAPTCHA_HANDLER':
+                            ccon("Требуется ввод капчи, но VCoinX сам этого делать пока не умеет :(", true, true, false);
+                            break;
+                        default:
+                            console.error(e);
+                            break;
+                    }
+                    process.exit();
+                }
+                if (!response.token) {
+                    ccon("Не удалось получить токен пользователя с помощью логина и пароля! Попробуйте указать токен вручную.", true, true, false);
+                    process.exit();
+                }
+                token = response.token;
+            }
             vk.token = token;
             try {
                 let {
@@ -675,13 +787,13 @@ function updateLink() {
             }
         })(VK_TOKEN);
     } else {
-        let GSEARCH = url.parse(DONEURL, true);
+        let GSEARCH = url.parse(IFRAME_URL, true);
         if (!GSEARCH.query || !GSEARCH.query.vk_user_id) {
             con("При анализе ссылки не был найден айди пользователя.", true);
             return process.exit();
         }
         USER_ID = parseInt(GSEARCH.query.vk_user_id);
-        formatWSS(DONEURL);
+        formatWSS(IFRAME_URL);
         startBooster();
     }
 }

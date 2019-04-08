@@ -1,0 +1,19 @@
+{
+    "disableUpdates": false,
+    "flog": false,
+    "offColors": false,
+    "autoBuy": false,
+    "autoBuyItems": ["cursor"],
+    "smartBuy": false,
+    "waitForBoost": true,
+    "numberOfTries": 3,
+    "limitCPS": 50000,
+    "autobeep": false,
+    "hidejunk": false,
+    "tforce": false,
+    "transferTo": false,
+    "transferCoins": 3e4,
+    "transferPercent": 0,
+    "transferInterval": 36e2,
+    "authAppType": "android"
+}
