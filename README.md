@@ -10,6 +10,10 @@ VK Coin Miner - недомайнер на NodeJS
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
 [![vcoin version](https://img.shields.io/badge/VCoin-1.3.8-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
+[![Официальная группа](https://img.shields.io/badge/Официальная-группа-green.svg)](https://vk.cc/9ghtmS)
+[![Беседа #1](https://img.shields.io/badge/Беседа-#1-yellow.svg?style=flat-square)](https://vk.cc/9fmVAc)
+[![Беседа #2](https://img.shields.io/badge/Беседа-#2-yellow.svg?style=flat-square)](https://vk.cc/9ghKxb)
+
 > Глобальная обнова в процессе
 
 ***
