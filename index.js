@@ -43,6 +43,7 @@ let boosterTTL = null,
     updatesLastTime = 0,
     xRestart = true,
     flog = false,
+    waitForBoost = true,
     offColors = false,
     autoBuy = false,
     autoBuyItems = ["datacenter"],
@@ -61,13 +62,13 @@ let boosterTTL = null,
     numberOfTries = 3,
     currentServer = 0;
 var tempDataUpdate = {
-    "canSkip": false,
-    "itemPrice": null,
-    "itemName": null,
-    "transactionInProcess": false,
-    "percentForBuy": 100,
-    "tmpPr": null,
-    "onBrokenEvent": true,
+    canSkip: false,
+    itemPrice: null,
+    itemName: null,
+    transactionInProcesS: false,
+    percentForBuy: 100,
+    tmpPr: null,
+    onBrokenEvent: true,
 };
 onUpdates(msg => {
     if (!updatesEv && !disableUpdates)
@@ -119,7 +120,7 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
                     await infLog(template);
                 } catch (e) {}
             } catch (e) {
-                con("Автоматический перевод не удалася. Ошибка: " + e.message, true);
+                con("Автоматический перевод не удался. Ошибка: " + e.message, true);
             }
         }
         if (autoBuy && vCoinWS.tick <= limitCPS && score > 0) {
@@ -175,15 +176,17 @@ vCoinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + formatScore(tick, true) + " cps > " + "top " + place + " > " + formatScore(score, true) + " coins.");
     miner.setActive(items);
     miner.updateStack(items);
-    boosterTTL && clearInterval(boosterTTL);
+    if(boosterTTL)
+        clearInterval(boosterTTL);
     boosterTTL = setInterval(_ => {
-        rand(0, 5) > 3 && vCoinWS.click();
+        if(rand(0, 5) > 3)
+            vCoinWS.click();
     }, 5e2);
 });
 vCoinWS.onBrokenEvent(_ => {
     con("Обнаружен brokenEvent, видимо сервер сломался.\n\t\tЧерез 10 секунд будет выполнен перезапуск.", true);
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + "BROKEN");
-    tempDataUpdate["onBrokenEvent"] = true;
+    tempDataUpdate.onBrokenEvent = true;
     xRestart = false;
     if (autobeep)
         beep();
@@ -232,7 +235,8 @@ async function startBooster(tw) {
 
 function forceRestart(t, force) {
     vCoinWS.close();
-    boosterTTL && clearInterval(boosterTTL);
+    if (boosterTTL)
+        clearInterval(boosterTTL);
     setTerminalTitle("VCoinX " + getVersion() + " (id" + USER_ID.toString() + ") > " + "RESTARTING");
     if (xRestart || force)
         startBooster(t);
@@ -325,12 +329,12 @@ rl.on('line', async (line) => {
             break;
         case 'autobuyitem':
             item = await rl.questionAsync("Введи название ускорения для автоматической покупки [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
-            var array = item.split(" ");
-            for (var i = 0; i < array.length; i++) {
-                if (!item || !Entit.titles[array[i]]) return;
-                con("Для автоматической покупки установлено ускорение: " + Entit.titles[array[i]]);
+            var autobuyarray = item.split(" ");
+            for (var i = 0; i < autobuyarray.length; i++) {
+                if (!item || !Entit.titles[autobuyarray[i]]) return;
+                con("Для автоматической покупки установлено ускорение: " + Entit.titles[autobuyarray[i]]);
             }
-            autoBuyItems = array;
+            autoBuyItems = autobuyarray;
             break;
         case 'ab':
         case 'autobuy':
@@ -418,9 +422,9 @@ rl.on('line', async (line) => {
             var proc = await rl.questionAsync("Введи процентное соотношение, выделяемое под SmartBuy: ");
             if (parseInt(proc))
                 if (parseInt(proc) > 0 && parseInt(proc) <= 100) {
-                    tempDataUpdate["percentForBuy"] = parseInt(proc);
-                    tempDataUpdate["tmpPr"] = null;
-                    tempDataUpdate["canSkip"] = false;
+                    tempDataUpdate.percentForBuy = parseInt(proc);
+                    tempDataUpdate.tmpPr = null;
+                    tempDataUpdate.canSkip = false;
                 }
             break;
         case "?":
@@ -536,7 +540,7 @@ for (var argn = 2; argn < process.argv.length; argn++) {
         case '-smartbuy':
             {
                 if (parseInt(dTest)) {
-                    if (parseInt(dTest) > 0 && parseInt(dTest) <= 100) tempDataUpdate["percentForBuy"] = parseInt(dTest);
+                    if (parseInt(dTest) > 0 && parseInt(dTest) <= 100) tempDataUpdate.percentForBuy = parseInt(dTest);
                 }
                 smartBuy = true;
                 autoBuy = false;
@@ -581,13 +585,13 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 }
 
 async function smartBuyFunction(score) {
-    if (tempDataUpdate["tmpPr"] == null) {
-        tempDataUpdate["tmpPr"] = 100 / tempDataUpdate["percentForBuy"];
+    if (tempDataUpdate.tmpPr == null) {
+        tempDataUpdate.tmpPr = 100 / tempDataUpdate.percentForBuy;
     }
-    if (!tempDataUpdate["transactionInProcess"] && !tempDataUpdate["onBrokenEvent"]) {
+    if (!tempDataUpdate.transactionInProcess && !tempDataUpdate.onBrokenEvent) {
         var names = ["cursor", "cpu", "cpu_stack", "computer", "server_vk", "quantum_pc", "datacenter"];
         var count = [1000, 333, 100, 34, 10, 2, 1];
-        if (!tempDataUpdate["canSkip"]) {
+        if (!tempDataUpdate.canSkip) {
             var prices = justPrices();
             Object.keys(count).forEach(function(id) {
                 prices[id] = mathPrice(prices[id], count[id]);
@@ -598,12 +602,12 @@ async function smartBuyFunction(score) {
             con("Умной покупкой было проанализированно, что выгодно будет приобрести улучшение " + Entit.titles[canBuy] + ".", "green", "Black");
             con("Стоимость: " + formatScore(min, true) + " коинов за " + count[good] + " шт.", "green", "Black");
         } else {
-            min = tempDataUpdate["itemPrice"];
-            canBuy = tempDataUpdate["itemName"];
+            min = tempDataUpdate.itemPrice;
+            canBuy = tempDataUpdate.itemName;
         }
-        if ((score - min * tempDataUpdate["tmpPr"]) > 0) {
-            tempDataUpdate["canSkip"] = false;
-            tempDataUpdate["transactionInProcess"] = true;
+        if ((score - min) * tempDataUpdate.tmpPr > 0) {
+            tempDataUpdate.canSkip = false;
+            tempDataUpdate.transactionInProcess = true;
             try {
                 var countBuy = count[names.indexOf(canBuy)];
                 while (countBuy) {
@@ -614,13 +618,13 @@ async function smartBuyFunction(score) {
                     } catch (e) {
                         if (!e.message == "ANOTHER_TRANSACTION_IN_PROGRESS") {
                             throw e;
-                            tempDataUpdate["transactionInProcess"] = false;
+                            tempDataUpdate.transactionInProcess = false;
                             break;
                         }
                     }
                 }
                 let template = "Умной покупкой был приобритен " + Entit.titles[canBuy] + " в количестве " + count[names.indexOf(canBuy)] + " шт.";
-                tempDataUpdate["transactionInProcess"] = false;
+                tempDataUpdate.transactionInProcess = false;
                 con(template, "green", "Black");
                 try {
                     await infLog(template);
@@ -630,12 +634,12 @@ async function smartBuyFunction(score) {
                 else con(e.message, true);
             }
         } else {
-            tempDataUpdate["canSkip"] = true;
-            tempDataUpdate["itemPrice"] = min;
-            tempDataUpdate["itemName"] = canBuy;
+            tempDataUpdate.canSkip = true;
+            tempDataUpdate.itemPrice = min;
+            tempDataUpdate.itemName = canBuy;
         }
     }
-    tempDataUpdate["onBrokenEvent"] = false;
+    tempDataUpdate.onBrokenEvent = false;
 }
 
 function updateLink() {
