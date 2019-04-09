@@ -1,11 +1,12 @@
 {
     "name": "vcoinx",
-    "version": "1.3.8",
+    "version": "1.3.8.5",
     "description": "VCoin modification w/o comission and donate ask.",
     "main": "index.js",
     "dependencies": {
         "auto-updater": "^1.0.2",
         "colors": "^1.3.3",
+        "github-content": "^1.0.1",
         "open": "^6.0.0",
         "safe-eval": "^0.4.1",
         "vk-io": "^4.0.0-rc.16",
