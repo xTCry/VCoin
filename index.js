@@ -1,4 +1,5 @@
 const url = require('url'),
+    AutoUpdater = require('auto-updater'),
     open = require('open'),
     {
         VK
@@ -7,7 +8,7 @@ const {
     VCoinWS,
     miner,
     Entit
-} = require('./VCoinWS');
+} = require('./core');
 const {
     con,
     ccon,
@@ -31,7 +32,8 @@ let {
     PASSWORD,
     USER_ID: depUSER_ID,
     IFRAME_URL,
-    VK_TOKEN
+    VK_TOKEN,
+    GROUP_ID
 } = existsFile('./userconfig.json') ? require('./userconfig.json') : {};
 let USER_ID = false;
 let vk = new VK();
@@ -54,17 +56,20 @@ let {
     transferPercent,
     transferInterval,
     authAppType,
+    checkUpdates,
+    updatesInterval,
+    autoUpdate,
+    updateOnce,
 } = existsFile('./botconfig.json') ? require('./botconfig.json') : {};
 
 let boosterTTL = null,
     advertDisp = false,
     tryStartTTL = null,
-    updatesEv = false,
-    updatesInterval = 60,
-    updatesLastTime = 0,
     xRestart = true,
     transferLastTime = 0,
+    smartBuyLastTime = 0,
     lastTry = 0,
+    needRestart = false,
     currentServer = 0;
 let tempDataUpdate = {
     canSkip: false,
@@ -75,11 +80,75 @@ let tempDataUpdate = {
     tmpPr: null,
     onBrokenEvent: true,
 };
-onUpdates(msg => {
-    if (!updatesEv && !disableUpdates)
-        updatesEv = msg;
-    con(msg, "white", "Red");
+var autoupdater = new AutoUpdater({
+    checkgit: true
 });
+
+autoupdater.on('git-clone', function() {
+    con("Автоматическое обновление не работает, так как вы клонировали репозиторий! Для автоматического обновления удалите папку .git", "white", "Red");
+});
+autoupdater.on('check.up-to-date', function(v) {
+    con("У вас установлена актуальная версия: " + v, "white", "Green");
+});
+autoupdater.on('check.out-dated', function(v_old, v) {
+    con("У вас устаревшая версия: " + v_old, "white", "Red");
+    if (!autoUpdate && !updateOnce) {
+        con("Актуальная версия: " + v + ". Для ее установки введите команду update", "white", "Red");
+    } else {
+        con("Актуальная версия: " + v + ". Приступаю к обновлению...", "white", "Green");
+        autoupdater.fire('download-update');
+    }
+});
+autoupdater.on('update.downloaded', function() {
+    con("Обновление успешно загружено! Начинаю установку...", "white", "Green");
+    autoupdater.fire('extract');
+});
+autoupdater.on('update.not-installed', function() {
+    con("Обновление уже загружено! Начинаю установку...", "white", "Green");
+    autoupdater.fire('extract');
+});
+autoupdater.on('update.extracted', function() {
+    con("Обновление успешно установлено!", "white", "Green");
+    needRestart = true;
+    let depDiff = autoupdater.fire('diff-dependencies');
+    con("Для применения обновления требуется перезапуск бота!", "white", "Green");
+    if (depDiff.count > 0)
+        con("У обновленной версии были изменены зависимости.", "white", "Red");
+});
+autoupdater.on('download.start', function(name) {
+    con("Начинаю загрузку " + name, "white", "Green");
+});
+autoupdater.on('download.end', function(name) {
+    con("Завершена загрузка " + name, "white", "Green");
+});
+autoupdater.on('download.error', function(err) {
+    con("Возникла ошибка при загрузке: " + err, "white", "Red");
+});
+autoupdater.on('end', function(name, e) {
+    if (checkUpdates) {
+        setTimeout(function() {
+            autoupdater.fire('check');
+        }, updatesInterval * 60 * 1000);
+    }
+    updateOnce = false;
+});
+autoupdater.on('error', function(name, e) {
+    console.error(name, e);
+    if (checkUpdates) {
+        setTimeout(function() {
+            autoupdater.fire('check');
+        }, updatesInterval * 60 * 1000);
+    }
+});
+if (checkUpdates)
+    autoupdater.fire('check');
+
+function notifyToRestart() {
+    if (needRestart)
+        con("Для применения обновления требуется перезапуск бота!", "white", "Green");
+}
+setInterval(notifyToRestart, 5 * 60 * 1000);
+
 let vCoinWS = new VCoinWS();
 let missCount = 0,
     missTTL = null;
@@ -108,7 +177,7 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
         if (transferPercent) {
             transferCoins = Math.floor(score / 1000 * (transferPercent / 100))
         }
-        if (transferTo && (transferCoins * 1e3 < score || transferCoins * 1e3 >= 9e9) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
+        if (transferTo && transferTo !== USER_ID && (transferCoins * 1e3 < score || transferCoins * 1e3 >= 9e9) && ((Math.floor(Date.now() / 1000) - transferLastTime) > transferInterval)) {
             try {
                 let template;
                 if (transferCoins * 1e3 >= 9e9) {
@@ -116,7 +185,7 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
                     template = "Автоматически переведено [" + formatScore(score * 1e3, true) + "] коинов с активного аккаунта (@id" + USER_ID + ") на @id" + transferTo;
                 } else {
                     await vCoinWS.transferToUser(transferTo, transferCoins);
-                    template = "Автоматически переведено [" + formatScore(minCoins * 1e3, true) + "] коинов с активного аккаунта (@id" + USER_ID + ") на @id" + transferTo;
+                    template = "Автоматически переведено [" + formatScore(transferCoins * 1e3, true) + "] коинов с активного аккаунта (@id" + USER_ID + ") на @id" + transferTo;
                 }
                 transferLastTime = Math.floor(Date.now() / 1000);
                 con(template, "black", "Green");
@@ -147,12 +216,14 @@ vCoinWS.onReceiveDataEvent(async (place, score) => {
                 }
             }
         }
-        if (smartBuy && vCoinWS.tick <= limitCPS && score > 0)
-            smartBuyFunction(score);
-        if (!disableUpdates && updatesEv && (Math.floor(Date.now() / 1000) - updatesLastTime > updatesInterval)) {
-            con(updatesEv + "\n\t\t\t Введите \'hideupd(ate)\' для скрытия данного уведомления.", "white", "Red");
-            updatesLastTime = Math.floor(Date.now() / 1000);
+        if (smartBuy && vCoinWS.tick <= limitCPS && score > 0) {
+            try {
+                smartBuyFunction(score);
+            } catch (e) {
+                console.log(e);
+            }
         }
+
         if (advertDisp == 0x1)
             process.exit();
 
@@ -186,6 +257,13 @@ vCoinWS.onUserLoaded((place, score, items, top, firstTime, tick) => {
         if (rand(0, 5) > 3)
             vCoinWS.click();
     }, 5e2);
+});
+vCoinWS.onGroupLoaded((groupInfo, groupData) => {
+    if (groupData.name && groupInfo.place && groupInfo.score) {
+        con("Загружена информация о группе " + groupData.name);
+        con("Позиция топа группы: " + groupInfo.place);
+        con("Количество коинов группы: " + formatScore(groupInfo.score, true) + " коинов.");
+    }
 });
 vCoinWS.onBrokenEvent(_ => {
     con("Обнаружен brokenEvent, видимо сервер сломался.\n\t\tЧерез 10 секунд будет выполнен перезапуск.", true);
@@ -230,7 +308,7 @@ async function startBooster(tw) {
     tryStartTTL = setTimeout(() => {
         con("VCoinX загружается...");
         vCoinWS.userId = USER_ID;
-        vCoinWS.run(URLWS, _ => {
+        vCoinWS.run(URLWS, GROUP_ID, _ => {
             con("VCoinX загружен...");
             xRestart = true;
         });
@@ -289,12 +367,6 @@ rl.on('line', async (line) => {
         case 'color':
             setColorsM(offColors = !offColors);
             con("Цвета " + (offColors ? "от" : "в") + "ключены. (*^.^*)", "blue");
-            break;
-        case "hu":
-        case "hideupd":
-        case "hideupdate":
-            con("Уведомления об обновлении " + (!disableUpdates ? "скрыт" : "показан") + "ы. (*^.^*)");
-            disableUpdates = !disableUpdates;
             break;
         case "stop":
         case "pause":
@@ -363,10 +435,15 @@ rl.on('line', async (line) => {
             con("Установлен новый лимит коинов / тик для SmartBuy & AutoBuy: " + formatScore(limitCPS, true));
             break;
         case 'to':
-            item = await rl.questionAsync("Введите ID пользователя: ");
+            item = await rl.questionAsync("Введите ID пользователя (disable для выключения): ");
+            if (item == "disable") {
+                transferTo = false;
+                break;
+            }
+
             let userID = (await vk.api.users.get({
                 user_ids: item
-            }))[0]["id"];
+            }))[0]['id'];
             transferTo = userID;
             con("Автоматический перевод коинов на @id" + transferTo);
             break;
@@ -449,6 +526,25 @@ rl.on('line', async (line) => {
                     tempDataUpdate.canSkip = false;
                 }
             break;
+
+        case 'u':
+        case 'upd':
+        case 'update':
+            updateOnce = true;
+            autoupdater.fire('check');
+            break;
+        case 'au':
+        case 'autoupd':
+        case 'autoupdate':
+            autoUpdate = !autoUpdate;
+            con("Автоматическое обновление " + autoUpdate ? "включено" : "отключено" + ".");
+            break;
+        case 'cu':
+        case 'checkupd':
+        case 'checkupdates':
+            checkUpdates = !checkUpdates;
+            con("Проверка обновлений " + checkUpdates ? "включена" : "отключена" + ".");
+            break;
         case "?":
         case "help":
             ccon("-- VCoinX --", "red");
@@ -459,7 +555,9 @@ rl.on('line', async (line) => {
             ccon("(b)uy	- покупка улучшений.");
             ccon("(p)rice - отображение цен на товары.");
             ccon("tran(sfer)	- перевод игроку.");
-            ccon("hideupd(ate) - скрыть уведомление об обновлении.");
+            ccon("(u)pdate - установить обновление, если автообновление отключено.");
+            ccon("checkupd(ates) - включить/отключить автоматическую проверку обновлений.");
+            ccon("(au)toupdate - включить/отключить автоматическую установку обновлений.");
             ccon("to - указать ID и включить авто-перевод средств на него.");
             ccon("ti - указать интервал для авто-перевода (в секундах).");
             ccon("tsum - указать сумму для авто-перевода (без запятой).");
@@ -508,6 +606,16 @@ for (var argn = 2; argn < process.argv.length; argn++) {
             {
                 if (dTest.length > 0) {
                     authAppType = dTest.toString();
+                    argn++;
+                }
+                break;
+            }
+        case '-g':
+        case '-gid':
+        case '-group':
+            {
+                if (dTest.length > 0) {
+                    GROUP_ID = dTest.toString();
                     argn++;
                 }
                 break;
@@ -613,6 +721,15 @@ for (var argn = 2; argn < process.argv.length; argn++) {
                 autobeep = true;
                 break;
             }
+        case '-noupdates':
+            {
+                checkUpdates = false;
+                autoUpdate = false;
+            }
+        case '-noautoupdates':
+            {
+                autoUpdate = false;
+            }
         case '-h':
         case '-help':
             {
@@ -640,36 +757,44 @@ for (var argn = 2; argn < process.argv.length; argn++) {
 }
 
 async function smartBuyFunction(score) {
-    if (tempDataUpdate.tmpPr == null) {
+    if (tempDataUpdate.tmpPr == null)
         tempDataUpdate.tmpPr = 100 / tempDataUpdate.percentForBuy;
-    }
+
     if (!tempDataUpdate.transactionInProcess && !tempDataUpdate.onBrokenEvent) {
         var names = ["cursor", "cpu", "cpu_stack", "computer", "server_vk", "quantum_pc", "datacenter"];
         var count = [1000, 333, 100, 34, 10, 2, 1];
+        var speed = [0.001, 0.003, 0.01, 0.03, 0.1, 0.5, 1]
         if (!tempDataUpdate.canSkip) {
             var prices = justPrices();
-            Object.keys(count).forEach(function(id) {
-                prices[id] = mathPrice(prices[id], count[id]);
-            });
-            min = Math.min.apply(null, prices);
-            good = prices.indexOf(min);
+
+            var payback = [0, 0, 0, 0, 0, 0, 0];
+            for (var i = 0; i < 7; i++) {
+                var tt = (prices[i] / 1000) / speed[i]
+                payback[i] = Math.floor(tt * 10 / 60) / 10;
+            };
+
+            min_payback = Math.min.apply(null, payback);
+            good = payback.indexOf(min_payback);
             canBuy = names[good];
+            min = prices[good] / 1000;
+
             con("Умной покупкой было проанализированно, что выгодно будет приобрести улучшение " + Entit.titles[canBuy] + ".", "green", "Black");
-            con("Стоимость: " + formatScore(min, true) + " коинов за " + count[good] + " шт.", "green", "Black");
+            con("Стоимость: " + formatScore(min, true) + " коинов. Данное улучшение окупит себя примерно через " + formatScore(min_payback, true) + " минут ", "green", "Black");
         } else {
             min = tempDataUpdate.itemPrice;
             canBuy = tempDataUpdate.itemName;
         }
-        if ((score - min) * tempDataUpdate.tmpPr > 0) {
+        if ((score - min) * tempDataUpdate.tmpPr > 0 && ((Math.floor(Date.now() / 1000) - smartBuyLastTime) > 15)) {
             tempDataUpdate.canSkip = false;
             tempDataUpdate.transactionInProcess = true;
             try {
-                var countBuy = count[names.indexOf(canBuy)];
+                var countBuy = 1;
                 while (countBuy) {
                     try {
                         result = await vCoinWS.buyItemById(canBuy);
                         miner.updateStack(result.items);
                         countBuy--;
+                        smartBuyLastTime = Math.floor(Date.now() / 1000);
                     } catch (e) {
                         if (!e.message == "ANOTHER_TRANSACTION_IN_PROGRESS") {
                             throw e;
@@ -678,14 +803,14 @@ async function smartBuyFunction(score) {
                         }
                     }
                 }
-                let template = "Умной покупкой был приобретен " + Entit.titles[canBuy] + " в количестве " + count[names.indexOf(canBuy)] + " шт.";
+                let template = "Умной покупкой был приобретен " + Entit.titles[canBuy] + " в количестве 1 шт.";
                 tempDataUpdate.transactionInProcess = false;
                 con(template, "green", "Black");
                 try {
                     await infLog(template);
                 } catch (e) {}
             } catch (e) {
-                if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки " + Entit.titles[canBuy] + "a", true);
+                if (e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки улучшения " + Entit.titles[canBuy] + ".", true);
                 else con(e.message, true);
             }
         } else {
@@ -763,24 +888,35 @@ function updateLink() {
             }
             vk.token = token;
             try {
-                let {
-                    mobile_iframe_url
-                } = (await vk.api.apps.get({
-                    app_id: 6915965
-                })).items[0];
-                if (!mobile_iframe_url)
+                if (!GROUP_ID) {
+                    iframe_url = (await vk.api.apps.get({
+                        app_id: 6915965
+                    })).items[0].mobile_iframe_url;
+                } else {
+                    response = (await vk.api.call('execute.resolveScreenName', {
+                        screen_name: 'app6915965_-' + GROUP_ID,
+                        owner_id: '-' + GROUP_ID,
+                        func_v: 9
+                    })).response.embedded_uri;
+                    iframe_url = response.view_url;
+                    if (response.original_url == 'https://vk.com/coin')
+                        throw ("Указан некорректный ID группы или группа не подключила майнинг VKCoin!");
+                }
+                if (!iframe_url)
                     throw ("Не удалось получить ссылку на приложение.\n\t\tВозможное решение: Используйте расширенный токен.");
                 let id = (await vk.api.users.get())[0]["id"];
                 if (!id)
                     throw ("Не удалось получить ID пользователя.");
                 USER_ID = id;
-                formatWSS(mobile_iframe_url);
+                formatWSS(iframe_url);
                 startBooster();
             } catch (error) {
                 if (error.code && error.code == 5)
                     ccon('Указан некорректный токен пользователя! Перепроверьте токен или получите новый, как указано в данном руководстве -> github.com/cursedseal/VCoinX', true, true, false);
                 else if (error.code && (error.code == 'ECONNREFUSED' || error.code == 'ENOENT'))
                     ccon('Не удалось подключиться API! Попробуйте перезагрузить роутер или установить VPN.', true, true, false);
+                else if (error.code && error.code == 3)
+                    ccon('Указанный токен не подходит для майнинга на группу. Укажите расширенный токен или используйте автоматическое получение токена по логину и паролю, как указано в данном руководстве -> github.com/cursedseal/VCoinX', true, true, false);
                 else
                     console.error('API Error:', error);
                 process.exit();

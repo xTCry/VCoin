@@ -1,5 +1,4 @@
 {
-    "disableUpdates": false,
     "flog": false,
     "offColors": false,
     "autoBuy": false,
@@ -12,8 +11,13 @@
     "hidejunk": false,
     "tforce": false,
     "transferTo": false,
-    "transferCoins": 3e4,
+    "transferCoins": 30000,
     "transferPercent": 0,
-    "transferInterval": 36e2,
-    "authAppType": "android"
+    "transferInterval": 3600,
+    "saveIFrameURL": true,
+    "authAppType": "android",
+    "checkUpdates": true,
+    "updatesInterval": 300,
+    "autoUpdate": true,
+    "updateOnce": false
 }

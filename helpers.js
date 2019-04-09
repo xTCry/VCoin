@@ -1,19 +1,24 @@
 const fs = require('fs'),
     colors = require('colors/safe'),
-    ReadLine = require('readline'),
-    GithubContent = require('github-content');
+    ReadLine = require('readline');
 
 const pJson = require('./package.json');
 
-let GitCUpdate = new GithubContent({
-    owner: 'cursedseal',
-    repo: 'vcoinx',
-    branch: 'master'
-});
+let offColors = false;
 
-let checkUpdateTTL = null,
-    onUpdatesCB = false,
-    offColors = false;
+let rl = ReadLine.createInterface(process.stdin, process.stdout);
+rl.setPrompt('VCoinX > ');
+rl.prompt();
+rl.isQst = false;
+rl.questionAsync = (question) => {
+    return new Promise((resolve) => {
+        rl.isQst = true;
+        rl.question(question, _ => {
+            rl.isQst = false;
+            resolve(_);
+        });
+    });
+};
 
 function formatScore(e) {
     return (arguments.length > 1 && void 0 !== arguments[1] && arguments[1]) ?
@@ -76,53 +81,15 @@ function dateF(date) {
     date = date !== undefined ? new Date(date) : new Date();
 
     var dYear = date.getFullYear(),
-        dMonthF = (date.getMonth() + 1),
-        dMonth = dMonthF > 9 ? dMonthF : "0" + dMonthF,
-        dDay = date.getDate() > 9 ? date.getDate() : "0" + date.getDate(),
-        dHour = date.getHours() > 9 ? date.getHours() : "0" + date.getHours(),
-        dMinutes = date.getMinutes() > 9 ? date.getMinutes() : "0" + date.getMinutes(),
-        dSeconds = date.getSeconds() > 9 ? date.getSeconds() : "0" + date.getSeconds(),
+        dMonth = (date.getMonth() + 1).toString().padStart(2, 0),
+        dDay = date.getDate().toString().padStart(2, 0),
+        dHour = date.getHours().toString().padStart(2, 0),
+        dMinutes = date.getMinutes().toString().padStart(2, 0),
+        dSeconds = date.getSeconds().toString().padStart(2, 0),
         date_format = dDay + '.' + dMonth + '.' + dYear + ' ' + dHour + ':' + dMinutes + ':' + dSeconds;
 
     return date_format;
 }
-
-let rl = ReadLine.createInterface(process.stdin, process.stdout);
-rl.setPrompt('> ');
-rl.prompt();
-rl.isQst = false;
-rl.questionAsync = (question) => {
-    return new Promise((resolve) => {
-        rl.isQst = true;
-        rl.question(question, _ => {
-            rl.isQst = false;
-            resolve(_);
-        });
-    });
-};
-
-function checkUpdates() {
-    GitCUpdate.files(['package.json'], (err, results) => {
-        if (err) return;
-        results.forEach(file => {
-            let c = file.contents.toString();
-            if (c[0] === "{") {
-                let data = JSON.parse(c);
-
-                let msg = (data.version > pJson.version) ? "Было выпущено новое обновление! -> github.com/cursedseal/VCoinX \t[" + (data.version + "/" + pJson.version) + "]" :
-                    false;
-
-                if (msg) {
-                    if (onUpdatesCB) onUpdatesCB(msg);
-                    else con(msg, "white", "Red");
-                }
-            }
-        });
-    });
-}
-
-checkUpdateTTL = setInterval(checkUpdates, 1e7);
-checkUpdates();
 
 function rand(min, max) {
     if (max === undefined)
@@ -188,8 +155,6 @@ module.exports = {
     setColorsM,
     offColors,
     formatScore,
-    checkUpdates,
-    checkUpdateTTL,
     onUpdates: cb => (onUpdatesCB = cb, true),
     existsFile,
     existsAsync,

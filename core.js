@@ -24,13 +24,18 @@ class VCoinWS {
         this.onConnectSend = [];
         this.tickCount = 0;
         this.wsServer = "";
+        this.group_id = null;
+        this.groupInfo = [];
+        this.groupData = [];
     }
-    run(wsServer, cb) {
+    run(wsServer, group_id, callback) {
         this.wsServer = wsServer || this.wsServer;
         this.selfClose();
-        if (cb)
-            this.onOnlineCallback = cb;
+        if (callback)
+            this.onOnlineCallback = callback;
         try {
+            if (group_id)
+                this.group_id = group_id;
             this.ws = new WebSocket(this.wsServer);
             this.ws.onopen = _ => {
                 this.connected = true;
@@ -51,6 +56,8 @@ class VCoinWS {
                     }
                 };
                 this.onOpen();
+                if (this.group_id)
+                    this.loadGroup(this.group_id);
             };
             this.ws.onerror = e => {
                 console.error("На стороне сервера возникла ошибка: " + e.message);
@@ -87,6 +94,7 @@ class VCoinWS {
                         this.confirmScore = score;
                         this.oldScore = score;
                         this.oldPlace = place;
+                        this.groupInfo = data.top.groupInfo;
                         if (pow)
                             try {
                                 let x = safeEval(pow, {
@@ -227,6 +235,9 @@ class VCoinWS {
     onUserLoaded(e) {
         this.onUserLoadedCallback = e
     }
+    onGroupLoaded(e) {
+        this.onGroupLoadedCallback = e
+    }
     onReceiveDataEvent(e) {
         this.onMyDataCallback = e
     }
@@ -361,6 +372,13 @@ class VCoinWS {
         this.oldPlace = res;
         return res;
     }
+    async loadGroup(e) {
+        let res = await this.sendPackMethod(["G", e]);
+        this.groupData = JSON.parse(res);
+        if (!this.groupData)
+            return;
+        this.onGroupLoadedCallback && this.onGroupLoadedCallback(this.groupInfo, this.groupData);
+    }
     async getUserScores(e) {
         let res = await this.sendPackMethod(["GU"].concat(e));
         return JSON.parse(res);
@@ -434,7 +452,7 @@ class Miner {
         return count;
     }
     updateStack(items) {
-        this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e && "vkp1" !== e && "vkp2" !== e)));
+        this.stack = Entit.generateStack(items.filter(e => ("bonus" !== e && "vkp1" !== e && "vkp2" !== e && "music" !== e)));
         let total = 0;
         this.stack.forEach(function(e) {
             let n = e.value,
@@ -491,7 +509,11 @@ class EntitiesClass {
             vkp2: {
                 price: 0,
                 amount: 1e4
-            }
+            },
+            music: {
+                price: 0,
+                amount: 4e3
+            },
         };
         this.names = [
 			"cursor",
