@@ -8,34 +8,44 @@ const DEV_ID = /*vk.com/id*/191039467;
 const url = require('url'),
 	{ VK } = require('vk-io');
 
-const { VCoinWS, miner, Entit } = require('./VCoinWS');
+const VCoinWS = require('./lib/VCoinWS');
+const { formateWSLink } = require('./lib/hookVK');
 const {
 	con, ccon, rl,
 	rand, now,
-	formateSCORE,
+	formateScore,
 	existsFile, existsAsync,
 	writeFileAsync, appendFileAsync,
-	infLog, setColorsM, setLogName,
+	infLog, initILog,
+	IZCap, initIZCap,
+	configSet, configGet,
+	setColorsM,
 	askDonate, onUpdates,
 	onlyInt, beep, setTitle, pJson,
-  } = require('./helpers');
+	fullLog, safeToken,
+	miner, Entity, colors,
+	StateCmd, stateCmd,
+  } = require('./lib/helpers');
 
-let { USER_ID: depUSER_ID, DONEURL, VK_TOKEN } = existsFile('./.config.js')? require('./.config.js'): {};
-let USER_ID = false;
+
+// let { DONEURL, VK_TOKEN } = existsFile('./.config.js')? require('./.config.js'): {};
+let USER_ID = false, TEMP_USER_ID = false;
 
 let vk = new VK();
 let URLWS = false;
 let boosterTTL = null,
 	tryStartTTL = null,
 
-	// Очень плохой и жадный разраб, ворует у других коины и делает некачественный софт в одиночку. 
-	greedyDeveloper = false,
-	
+	showLinkAdv = false,
 	updatesEv = false,
-	updatesInterval = 60,
-	updatesLastTime = 0,
 	xRestart = true,
-	flog = false,
+	updatesLastTime = 0,
+	transferLastTime = 0;
+
+// Пользовательские настройки
+let EmbedURL, VK_TOKEN,
+	greedyDeveloper = 0,
+	updatesInterval = 60,
 	pBeep = false,
 	hideSpam = false,
 	offColors = false,
@@ -44,14 +54,14 @@ let boosterTTL = null,
 	smartBuyItem = "",
 	smartBuy = false,
 	tforce = false,
+	dateColorBG = "Magenta",
 	transferTo = false,
 	transferScore = 3e4,
-	transferInterval = 36e2,
-	transferLastTime = 0;
+	transferInterval = 36e2;
 
 onUpdates(msg=> {
 	if(!updatesEv) updatesEv = msg;
-	con(msg, "white", "Red");
+	con(colors.bold.underline(msg), "white", "Red");
 });
 
 // Инициализация главного модуля (:
@@ -77,7 +87,14 @@ vConinWS.onMissClickEvent(_=> {
 });
 
 function setUTitle(message) {
-	setTitle("VCoin [" + pJson.version + "] (@" + USER_ID +  ") -> "+message);
+	let temp = "";
+	showLinkAdv && (temp += "[GitHub.com/xTCry/VCoin/] - ");
+	temp += ("VCoin");
+	temp += (" [" + pJson.version + "]");
+	temp += (" (@" + USER_ID +  ")");
+	temp += (" -> ");
+	temp += (message);
+	setTitle(temp);
 }
 
 vConinWS.onReceiveDataEvent(async (place, score)=> {
@@ -85,7 +102,7 @@ vConinWS.onReceiveDataEvent(async (place, score)=> {
 
 	miner.setScore(score);
 
-	setUTitle("TOP: " + place + " :: Coins: " + formateSCORE(score, true));
+	setUTitle("TOP: " + formateScore(place) + " :: Speed: "+formateScore(vConinWS.tick, true) + " :: Coins: " + formateScore(score, true));
 
 	// let prices = justPrices();
 	// console.log(prices);
@@ -100,12 +117,12 @@ vConinWS.onReceiveDataEvent(async (place, score)=> {
 			updatesLastTime = now();
 		}
 
-		!hideSpam && con("В ТОПе: " + place + "\tСЧЕТ: "+ formateSCORE(score, true), "yellow");
-		hideSpam && (false) && process.stdout.write("В ТОПе: " + place + "\tСЧЕТ: "+(score/1000)+"\r");
+		!hideSpam && con("В ТОПе: " + formateScore(place) + "\tСЧЕТ: "+ formateScore(score, true), "yellow");
+		hideSpam && (false) && process.stdout.write("В ТОПе: " + formateScore(place) + "\tСЧЕТ: "+(score/1000)+"\r");
 
 		let trsum = 3e5;
 		if(!transferScore && score > 3e6*3 || transferScore < trsum / (1e3 * 0.999) && (trsum=transferScore * 0.9)) boosterTTL && await askDonate(vConinWS, trsum);
-		// process.stdout.write("В ТОПе: " + place + "\tСЧЕТ: "+(score/1000)+"\r");
+		// process.stdout.write("В ТОПе: " + formateScore(place) + "\tСЧЕТ: "+(score/1000)+"\r");
 	}
 });
 
@@ -113,7 +130,7 @@ async function transferProcess(place, score) {
 	if(transferTo && transferScore*1e3 < score && !rand(0, 2) && ((now() - transferLastTime) > transferInterval)) {
 		try {
 			await vConinWS.transferToUser(transferTo, transferScore);
-			let template = "Автоперевод ["+formateSCORE(transferScore*1e3, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/id"+transferTo;
+			let template = "Автоперевод ["+formateScore(transferScore*1e3, true)+"] коинов от @"+USER_ID+" для " + colors.underline("vk.com/id"+transferTo);
 			con(template, "black", "Green");
 			try { await infLog(template); } catch(e) {}
 			transferLastTime = now();
@@ -135,11 +152,11 @@ async function buyProcess(place, score) {
 			try {
 				result = await vConinWS.buyItemById(autoBuyItem);
 				miner.updateStack(result.items);
-				let template = "[AutoBuy] Был куплен "+Entit.titles[autoBuyItem];
+				let template = "[AutoBuy] Было куплено ускорение: "+Entity.titles[autoBuyItem];
 				con(template, "black", "Green");
 				try { await infLog(template); } catch(e) {}
 			} catch(e) {
-				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки "+Entit.titles[autoBuyItem]+"a", true);
+				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки "+Entity.titles[autoBuyItem]+"a", true);
 				else con(e.message, true);
 			}
 		}
@@ -185,11 +202,11 @@ async function buyProcess(place, score) {
 			try {
 				result = await vConinWS.buyItemById(smartBuyItem);
 				miner.updateStack(result.items);
-				let template = "[SmartBuy] Был куплен "+Entit.titles[smartBuyItem];
+				let template = "[SmartBuy] Был куплен "+Entity.titles[smartBuyItem];
 				con(template, "black", "Green");
 				try { await infLog(template); } catch(e) {}
 			} catch(e) {
-				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки "+Entit.titles[smartBuyItem]+"a", true);
+				if(e.message == "NOT_ENOUGH_COINS") con("Недостаточно средств для покупки "+Entity.titles[smartBuyItem]+"a", true);
 				else con(e.message, true);
 			}
 		}
@@ -198,7 +215,7 @@ async function buyProcess(place, score) {
 
 
 vConinWS.onTransfer(async (id, score)=> {
-	let template = "Для id" + USER_ID + " Пришло [" + formateSCORE(score, true) + "] score от vk.com/id"+id;
+	let template = "Для @id" + USER_ID + " пришло [" + formateScore(score, true) + "] коинов от " + colors.underline("vk.com/id"+id);
 	!hideSpam && !rl.isQst && con(template, "black", "Green");
 	try { await infLog(template); }
 	catch(e) { }
@@ -208,9 +225,10 @@ vConinWS.onWaitEvent(e=> {
 });
 
 vConinWS.onUserLoaded((place, score, items, top, firstTime, tick)=> {
-	// con("onUserLoaded: \t" + place + "\t" + formateSCORE(score, true) /*+ "\t" + items + "\t" + top + "\t" + firstTime*/);
+	// con("onUserLoaded: \t" + place + "\t" + formateScore(score, true) /*+ "\t" + items + "\t" + top + "\t" + firstTime*/);
 	con("Данные загружены");
-	con("Скорость майнинга: "+formateSCORE(tick, true)+" кликов/сек", "yellow");
+	con("Скорость майнинга: "+formateScore(tick, true)+" кликов/сек", "yellow");
+	setUTitle("TOP: " + formateScore(place) + " :: Speed: " + formateScore(tick, true) + " :: Coins: " + formateScore(score, true));
 
 	miner.setActive(items);
 	miner.updateStack(items);
@@ -227,7 +245,7 @@ vConinWS.onBrokenEvent(_=> {
 	pBeep&&beep(3, 6e2);
 	// vConinWS.reconnect(URLWS, true);
 	xRestart = false;
-	forceRestart(10e3, true);
+	forceRestart(5e3, true);
 });
 
 vConinWS.onAlreadyConnected(_=> {
@@ -250,11 +268,10 @@ vConinWS.onOffline(_=> {
 	forceRestart(2e4);
 });
 
-async function startBooster(tw) {
-	setLogName(USER_ID);
+async function startBooster(tw) {	
 	tryStartTTL && clearTimeout(tryStartTTL);
 	tryStartTTL = setTimeout(()=> {
-		con("Try start...");
+		con("Подключение к серверу...");
 
 		vConinWS.userId = USER_ID;
 		vConinWS.run(URLWS, _=> {
@@ -271,16 +288,16 @@ function forceRestart(t, force) {
 		startBooster(t);
 }
 
-function lPrices(d) {
+function listPrices(d) {
 	let temp="";
-	temp += Entit.names.map(el=> {
-		return !miner.hasMoney(el)&&d? "": "\n  - ["+el+"]\t" + Entit.titles[el] +": "+ formateSCORE(miner.getPriceForItem(el), true);
+	temp += Entity.names.map(el=> {
+		return !miner.hasMoney(el)&&d? "": "\n  - ["+el+"]\t" + Entity.titles[el] +": "+ formateScore(miner.getPriceForItem(el), true);
 	});
 	return temp;
 }
 
 function justPrices() {
-	return Entit.names.map(el=> {
+	return Entity.names.map(el=> {
 		return !miner.hasMoney(el)? 0: miner.getPriceForItem(el);
 	});
 }
@@ -307,6 +324,7 @@ rl.on('line', async (line) => {
 			console.log("autobuy", autoBuy);
 			console.log("autoBuyItem", autoBuyItem);
 			console.log("smartBuy", smartBuy);
+			console.log("greedyDeveloper", greedyDeveloper);
 			console.log("transferTo", transferTo);
 			console.log("transferScore", transferScore);
 			console.log("transferInterval", transferInterval);
@@ -314,13 +332,42 @@ rl.on('line', async (line) => {
 			console.log("hideSpam", hideSpam);
 			break;
 
+		case 'coins':
 		case 'gscore':
-			let ID = await rl.questionAsync("ID пользователя: ");
+			let ID = await rl.questionAsync("ID пользователя [если пусто, то коины текущией страницы]: ");
+			ID = ID || USER_ID;
 			try {
 				let gscore = await vConinWS.getUserScores([ ID ]);
-				gscore = formateSCORE(gscore[ID], true);
-				con("На счете у vk.com/id" + ID + " "+ gscore + " коинов");
+				gscore = formateScore(gscore[ID], true);
+				con("На счете у @" + ID + " ["+ gscore + "] коинов");
 			} catch(e) { console.error("Ошибка при получении", e); }
+			break;
+
+		case 'datecolorbg':
+			stateCmd(StateCmd.COLORS);
+			temp = await rl.questionAsync("Цвет фона для даты [black, red, green, yellow, blue, magenta, cyan, white]: ");
+			stateCmd(StateCmd.NONE);
+			temp = temp.toLowerCase();
+			
+			if(temp == "") break;
+			if([ "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white" ].includes(temp)) {
+				dateColorBG = temp;
+				colors.setTheme({
+					dateBG: dateColorBG+"BG"
+				});
+				await configSet("dateColorBG", dateColorBG, true);
+			} else ccon("Неверный цвет.")
+
+			/*
+				black [40, 49],
+				red [41, 49],
+				green [42, 49],
+				yellow [43, 49],
+				blue [44, 49],
+				magenta [45, 49],
+				cyan [46, 49],
+				white [47, 49],
+			*/
 			break;
 
 		case "hideupd":
@@ -344,17 +391,19 @@ rl.on('line', async (line) => {
 
 		case 'p':
 		case 'price':
-			temp = lPrices();
+			temp = listPrices();
 			ccon("-- Цены --", "red");
 			ccon(temp);
 			break;
 
 		case 'b':
 		case 'buy':
-			temp = lPrices(true);
+			temp = listPrices(true);
 			ccon("-- Доступные ускорения и их цены --", "red");
 			ccon(temp);
+			stateCmd(StateCmd.ITEMS, el=> miner.hasMoney(el));
 			item = await rl.questionAsync("Введи название ускорения [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
+			stateCmd(StateCmd.NONE);
 			if(!item) return;
 			let result;
 			try {
@@ -363,7 +412,7 @@ rl.on('line', async (line) => {
 
 				if(result && result.items)
 					delete result.items;
-				con("Скорость майнинга: "+formateSCORE(result.tick, true)+" кликов/сек");
+				con("Скорость майнинга: "+formateScore(result.tick, true)+" кликов/сек");
 				/* { score: 42027913, place: 768672, tick: 24877, price: 30 } */
 				// console.log("Result BUY: ", result);
 			} catch(e) {
@@ -373,17 +422,27 @@ rl.on('line', async (line) => {
 			break;
 
 		case 'autobuyitem':
+			stateCmd(StateCmd.ITEMS);
 			item = await rl.questionAsync("Введи название ускорения для автопокупки [cursor, cpu, cpu_stack, computer, server_vk, quantum_pc, datacenter]: ");
-			if(!item || !Entit.titles[item]) return;
-			con("Для автопокупки выбрано: " + Entit.titles[item]);
+			stateCmd(StateCmd.NONE);
+			if(!item || !Entity.titles[item]) return;
+			con("Для автопокупки выбрано: " + Entity.titles[item]);
 			autoBuyItem = item;
-			autoBuy = true;
+			if(!autoBuy) {
+				stateCmd(StateCmd.CONFIRM, _=> true);
+				temp = await rl.questionAsync("Включить autoBuy? [yes]: ");
+				stateCmd(StateCmd.NONE);
+				if(temp == "yes") autoBuy = true;
+			}
+			configSet("autoBuyItem", autoBuyItem);
+			configSet("autoBuy", autoBuy, true);
 			break;
 
 		case 'autobuy':
 			autoBuy = !autoBuy;
 			con("Автопокупка: "+(autoBuy? "Включена": "Отключена"));
 			smartBuy = false;
+			configSet("smartBuy", smartBuy, true);
 			con("Умная покупка: "+(smartBuy? "Включена": "Отключена"));
 			break;
 
@@ -391,22 +450,26 @@ rl.on('line', async (line) => {
 			smartBuy = !smartBuy;
 			con("Умная покупка: "+(smartBuy? "Включена": "Отключена"));
 			autoBuy = false;
+			configSet("autoBuy", autoBuy, true);
 			con("Автопокупка: "+(autoBuy? "Включена": "Отключена"));
 			break;
 
 		case 'tran':
 		case 'transfer':
+			ccon("Перевод коинов");
 			let count = await rl.questionAsync("Сколько коинов: ");
 			count = onlyInt(count);
 			let id = await rl.questionAsync("ID страницы для: ");
+			stateCmd(StateCmd.CONFIRM, _=> true);
 			let conf = await rl.questionAsync("Точно? [yes]: ");
+			stateCmd(StateCmd.NONE);
 			id = onlyInt(id);
 			if(conf != "yes" || !id || !count) return con("Отменено", true);
 
 			try {
 				await vConinWS.transferToUser(id, count);
 				con("Успешный перевод.", "black", "Green");
-				let template = "Отправили ["+formateSCORE(count*1e3, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/id"+id;
+				let template = "Отправили ["+formateScore(count*1e3, true)+"] коинов от @"+USER_ID+" для vk.com/id"+id;
 				try { await infLog(template); } catch(e) {}
 				if(greedyDeveloper && !rand(0, 2)) {
 					try {
@@ -421,36 +484,63 @@ rl.on('line', async (line) => {
 
 		case 'color':
 			setColorsM(offColors=!offColors);
-			con("Цвета " + (offColors? "от": "в") + "ключены (*^.^*)", "blue");
+			con("Цвета " + (offColors? "от": "в") + "ключены (*^.^*)", "blue", "White");
+			configSet("offColors", offColors, true);
 			break;
 
 		case 'tspam':
 			hideSpam = !hideSpam;
-			con("Вывод обновления коинов в консоль " + (hideSpam? "от": "в") + "ключен (*^.^*)", "blue");
+			con("Вывод обновления коинов в консоль " + (hideSpam? "от": "в") + "ключен (*^.^*)", "blue", "White");
+			configSet("hideSpam", hideSpam, true);
 			break;
 
 		case 'beep':
 			pBeep = !pBeep;
 			pBeep&&beep(2, 8e2);
-			con("Звуковое сопровождение " + (pBeep? "от": "в") + "ключено (*^.^*)", "blue");
+			con("Звуковое сопровождение " + (!pBeep? "от": "в") + "ключено (*^.^*)", "blue", "White");
+			configSet("pBeep", pBeep, true);
 			break;
 
 		case "?":
+		case "h":
 		case "help":
-			ccon("-- VCoins --", "red");
-			ccon("gscore	- сколько коинов у пользователя");
-			ccon("stop		- остановит майнер");
-			ccon("run		- запустит майнер");
-			ccon("buy		- покупка ускорений");
-			ccon("tran		- перевод коинов");
-			ccon("price		- цены на данный момент");
-			ccon("color		- вкл/выкл режима цветной консоли");
-			ccon("hideupd	- скрыть уведомление о новой версии");
-			ccon("autoBuy	- вкл/откл автопокупки");
-			ccon("autoBuyItem - какое ускорение покупать");
-			ccon("smartBuy	- вкл/откл умную покупку");
-			ccon("tspam		- вкл/откл вывод обновления коинов к консоль");
-			ccon("beep		- вкл/откл звука");
+			ccon("-- VCoins ["+pJson.version+"] --", "red");
+			temp = [
+				"coins		- сколько коинов у пользователя",
+				"stop		- остановит майнер",
+				"run		- запустит майнер",
+				"buy		- покупка ускорений",
+				"tran		- перевод коинов",
+				"price		- цены на данный момент",
+				"color		- вкл/выкл режима цветной консоли",
+				"hideupd		- скрыть уведомление о новой версии",
+				"autoBuy		- вкл/откл автопокупки",
+				"autoBuyItem 	- какое ускорение покупать",
+				"smartBuy	- вкл/откл умную покупку",
+				"tspam		- вкл/откл вывод обновления коинов к консоль",
+				"beep		- вкл/откл звука",
+            ].join('\n');
+
+            ccon(colors.italic(temp));
+			/*
+				ccon("coins	- сколько коинов у пользователя");
+				ccon("stop		- остановит майнер");
+				ccon("run		- запустит майнер");
+				ccon("buy		- покупка ускорений");
+				ccon("tran		- перевод коинов");
+				ccon("price		- цены на данный момент");
+				ccon("color		- вкл/выкл режима цветной консоли");
+				ccon("hideupd	- скрыть уведомление о новой версии");
+				ccon("autoBuy	- вкл/откл автопокупки");
+				ccon("autoBuyItem - какое ускорение покупать");
+				ccon("smartBuy	- вкл/откл умную покупку");
+				ccon("tspam		- вкл/откл вывод обновления коинов к консоль");
+				ccon("beep		- вкл/откл звука");
+			*/
+			break;
+
+		default:
+			stateCmd(StateCmd.NONE);
 			break;
 	}
 });
@@ -461,80 +551,104 @@ rl.on('line', async (line) => {
 // Parse arguments
 for (let argn = 2; argn < process.argv.length; argn++) {
 	let cTest = process.argv[argn],
-		dTest = process.argv[argn + 1];
+		dTest = process.argv[argn + 1], warn = false;
 
 	switch(cTest.trim().toLowerCase()) {
 
-		case '-black': {
-			flog && con("Цвета отключены (*^.^*)", "blue");
-			setColorsM(offColors=!offColors);
+		// User ID
+		case '-uid': {
+			if(dTest.length > 1 && dTest.length < 15) {
+				con("Установлен ID пользователя.", "blue", "White");
+				TEMP_USER_ID = onlyInt(dTest);
+			} else warn = '-uid';
 			argn++;
 			break;
 		}
 
 		// Token
 		case '-t': {
-			if(dTest.length > 80 && dTest.length < 90) {
-				con("Установлен токен.", "blue");
+			if(dTest && dTest.length > 80 && dTest.length < 90) {
+				con("Установлен токен.", "blue", "White");
 				VK_TOKEN = dTest;
-				argn++;
-			}
+			} else warn = '-t';
+			argn++;
 			break;
 		}
 
 		// Custom URL
-		case '-u': {
-			if(dTest.length > 200 && dTest.length < 380) {
-				con("Установлен кастомный URL.", "blue");
-				DONEURL = dTest;
-			}
+		case '-u':
+		case '-url': {
+			if(dTest && dTest.length > 200 && dTest.length < 380) {
+				con("Установлен кастомный URL.", "blue", "White");
+				EmbedURL = dTest;
+			} else warn = '-url';
+			argn++;
 			break;
 		}
 
 		// Transfer to ID
 		case '-to': {
-			if(dTest.length > 1 && dTest.length < 11) {
+			if(dTest && dTest.length > 1 && dTest.length < 11) {
 				transferTo = onlyInt(dTest);
-				con("Автоматический перевод на vk.com/id"+transferTo, "blue");
-			}
+				con("Автоматический перевод на vk.com/id"+transferTo, "blue", "White");
+			} else warn = '-to';
+			argn++;
 			break;
 		}
 
 		// Transfer interval
 		case '-ti': {
-			if(dTest.length > 1 && dTest.length < 10) {
+			if(dTest && dTest.length > 1 && dTest.length < 10) {
 				transferInterval = parseInt(dTest);
-				con("Интервал автоперевода "+transferInterval+" секунд", "blue");
-				argn++;
-				break;
-			}
+				con("Интервал автоперевода "+transferInterval+" секунд", "blue", "White");
+			} else warn = '-ti';
+			argn++;
+			break;
 		}
 		
 		// Transfer summ
 		case '-tsum': {
-			if(dTest.length > 1 && dTest.length < 10) {
+			if(dTest && dTest.length > 1 && dTest.length < 10) {
 				transferScore = parseInt(dTest);
-				con("Сумма автоперевода "+transferScore, "blue");
-				argn++;
-				break;
-			}
+				con("Сумма автоперевода "+transferScore, "blue", "White");
+			} else warn = '-tsum';
+			argn++;
+			break;
 		}
 
 		// Set autoBuy Item
 		case '-autobuyitem': {
-			if(dTest.length > 1 && dTest.length < 20) {
-				if(!Entit.titles[dTest]) return;
-				con("Для автопокупки выбрано: "+Entit.titles[dTest], "blue");
+			if(dTest && dTest.length > 1 && dTest.length < 20) {
+				if(!Entity.titles[dTest]) return;
+				con("Для автопокупки выбрано: "+Entity.titles[dTest], "blue", "White");
 				autoBuyItem = dTest;
-				argn++;
-				break;
-			}
+			} else warn = '-autobuyitem';
+			argn++;
+			break;
 		}
+
+		case '-donate': {
+			if(dTest && dTest.length > 1 && dTest.length < 20) {
+				let temp = onlyInt(dTest),
+					perc = (dTest.indexOf("%") !== -1 && temp > 0 && temp <= 50);
+				greedyDeveloper = perc? temp/100: temp;
+				con("Донат коинов " + (perc?"в процентах от перевода ":"") + "при переводе: ["+greedyDeveloper+"].", "blue", "White");
+			} else warn = '-donate';
+			argn++;
+			break;
+		}
+
 
 		// Force token
 		case '-tforce': {
 			con("Токен принудительно.", "blue");
 			tforce = true;
+			break;
+		}
+
+		case '-black': {
+			fullLog() && con("Цвета отключены (*^.^*)", "blue", "White");
+			setColorsM(offColors=!offColors);
 			break;
 		}
 
@@ -546,40 +660,32 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 
 		// Автоматическая умная закупка
 		case '-smartbuy': {
-			con("Умная покупка активирована.", "blue");
+			con("Умная покупка активирована.", "blue", "White");
 			smartBuy = true;
 			autoBuy = false;
-			continue;
+			break;
 		}
 
 		// Full log mode
 		case '-flog': {
-			flog = true;
-			continue;
+			fullLog(true);
+			break;
 		}
 
 		// Power beep
 		case '-beep': {
-			con("Звуковое сопровождение.", "blue");
+			con("Звуковое сопровождение.", "blue", "White");
 			pBeep = true;
 			pBeep&&beep(2, 8e2);
-			continue;
+			break;
 		}
 
 		// Hide spam
 		case '-hidespam': {
 			hideSpam = true;
-			continue;
+			break;
 		}
 
-		case '-donate': {
-			if(dTest.length > 1 && dTest.length < 20) {
-				let temp = onlyInt(dTest),
-					perc = (dTest.indexOf("%") !== -1 && dTest > 100);
-				greedyDeveloper = perc? dTest/100: dTest;
-				con("Донат коинов " + (perc?"в процентах от перевода ":"") + " припереводе: ["+greedyDeveloper+"].", "blue");
-			}
-		}
 
 		// Help info
 		case "-h":
@@ -609,64 +715,150 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 			break;
 	}
 
-	if ([ "-u", "-t", "-to", "-ti", "-tsum", "-autobuyitem", "-donate" ].includes(process.argv[argn])) {
-		argn++;
+	if(warn)
+		ccon("[ВНИМАНИЕ!] Аргумент ("+colors.bold(warn)+") указан с неверным параметром. Это может привести к неправильной работе.", true)
+
+	// if ([ "-u", "-t", "-to", "-ti", "-tsum", "-autobuyitem", "-donate" ].includes(process.argv[argn]))
+	// 	argn++;
+}
+
+
+
+async function InitApp(uid) {
+	let temp;
+
+	initILog(uid);
+	initIZCap(uid);
+
+	let g;
+	try {
+		g = await IZCap().load();
+	} catch(e) {};
+
+	if(g) ccon("Конфигурация загружена", "yellow");
+	else throw "Пользователь с таким ID не сохранен.";
+
+	{
+		EmbedURL = (temp = configGet("EmbedURL", EmbedURL))? temp: EmbedURL;
+		VK_TOKEN = (temp = configGet("VK_TOKEN", VK_TOKEN))? temp: VK_TOKEN;
+		
+		greedyDeveloper = configGet("greedyDeveloper", greedyDeveloper);
+		updatesInterval = configGet("updatesInterval", updatesInterval);
+		pBeep = configGet("pBeep", pBeep);
+		hideSpam = configGet("hideSpam", hideSpam);
+		offColors = configGet("offColors", offColors);
+		autoBuy = configGet("autoBuy", autoBuy);
+		autoBuyItem = configGet("autoBuyItem", autoBuyItem);
+		smartBuyItem = configGet("smartBuyItem", smartBuyItem);
+		smartBuy = configGet("smartBuy", smartBuy);
+		tforce = configGet("tforce", tforce);
+		dateColorBG = configGet("dateColorBG", dateColorBG);
+		transferTo = configGet("transferTo", transferTo);
+		transferScore = configGet("transferScore", transferScore);
+		transferInterval = configGet("transferInterval", transferInterval);
+	}
+
+	colors.setTheme({
+		dateBG: dateColorBG+"BG"
+	});
+
+	return true;
+}
+async function SaveApp() {
+	
+
+	try {
+		if(!TEMP_USER_ID)
+			await InitApp(USER_ID);
+	} catch(e) {
+		ccon("Ошибка инициализации конфига: "+e.message, true);
+	}
+
+	setUTitle("Saving...");
+	ccon("Сохранение конфигурации...", "yellow");
+
+	{
+		configSet("EmbedURL", EmbedURL);
+		configSet("VK_TOKEN", VK_TOKEN);
+		configSet("greedyDeveloper", greedyDeveloper);
+		configSet("updatesInterval", updatesInterval);
+		configSet("pBeep", pBeep);
+		configSet("hideSpam", hideSpam);
+		configSet("offColors", offColors);
+		configSet("autoBuy", autoBuy);
+		configSet("autoBuyItem", autoBuyItem);
+		configSet("smartBuyItem", smartBuyItem);
+		configSet("smartBuy", smartBuy);
+		configSet("dateColorBG", dateColorBG);
+		configSet("tforce", tforce);
+		configSet("transferTo", transferTo);
+		configSet("transferScore", transferScore);
+		await configSet("transferInterval", transferInterval, true); // true - Save config
+	}
+
+	if(TEMP_USER_ID != USER_ID) {
+		fullLog() && ccon("Конфигурация для @"+USER_ID+" сохранена.");
+		await rl.questionAsync("Теперь можно запускать через эту команду: "+colors.underline.bold.green("node . -uid "+USER_ID)+". [Нажми Enter]");
 	}
 }
 
-// Попытка запуска
-if(!DONEURL || tforce) {
-	if(!VK_TOKEN) {
-		con("Получить токен можно тут -> vk.cc/9eSo1E", true);
-		return process.exit();
-	}
+// Run application
+(async _=> {
+	
+	setUTitle("Loading...");
+	ccon("Загрузка конфигурации...");
 
-	(async function inVKProc(token) {
-		vk.token = token;
-		try {
-			let { mobile_iframe_url } = (await vk.api.apps.get({
-				app_id: 6915965
-			})).items[0];
+	try {
+		if(TEMP_USER_ID)
+			await InitApp(TEMP_USER_ID);
+		// USER_ID = TEMP_USER_ID;
+	} catch(e) { }
 
-			if(!mobile_iframe_url)
-				throw("Ссылка на приложение не получена");
-
-			let { id } = (await vk.api.users.get())[0];
-			if(!id)
-				throw("Не удалось получить ID пользователя");
-
-			USER_ID = id;
-
-			formatWSS(mobile_iframe_url);
-			startBooster();
-
-		} catch(error) {
-			console.error('API Error:', error);
-			process.exit();
+	if(!EmbedURL || tforce) {
+		if(!VK_TOKEN) {
+			con("Пустой токен. Получить ТОКЕН можно тут -> " + colors.underline("vk.cc/9gjvSG"), true);
+			return process.exit();
 		}
-	})(VK_TOKEN);
-}
-else {
-	let GSEARCH = url.parse(DONEURL, true);
-	if(!GSEARCH.query || !GSEARCH.query.vk_user_id) {
-		con("В ссылке не не указан ID [vk_user_id]", true);
-		return process.exit();
+
+		(async function inVKProc(token) {
+			vk.token = token;
+			try {
+				let { mobile_iframe_url } = (await vk.api.apps.get({
+					app_id: 6915965
+				})).items[0];
+
+				if(!mobile_iframe_url)
+					throw("Ссылка на приложение не получена");
+
+				let { id } = (await vk.api.users.get())[0];
+				if(!id)
+					throw("Не удалось получить ID пользователя");
+
+				USER_ID = id;
+				EmbedURL = mobile_iframe_url;
+
+				URLWS = formateWSLink(mobile_iframe_url, USER_ID);
+				await SaveApp();
+				fullLog() && ccon("Попытка подключиться через полученную ссылку...");
+				startBooster();
+
+			} catch(error) {
+				console.error('API Error:', error);
+				process.exit();
+			}
+		})(VK_TOKEN);
 	}
-	USER_ID = parseInt(GSEARCH.query.vk_user_id);
+	else {
+		let GSEARCH = url.parse(EmbedURL, true);
+		if(!GSEARCH.query || !GSEARCH.query.vk_user_id) {
+			con("В ссылке не указан аргумент [vk_user_id]", true);
+			return process.exit();
+		}
+		USER_ID = parseInt(GSEARCH.query.vk_user_id);
 
-	formatWSS(DONEURL);
-	startBooster();
-}
-
-function formatWSS(LINK) {
-	let GSEARCH = url.parse(LINK),
-		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/",
-		CHANNEL = USER_ID%32;
-	URLWS = NADDRWS + CHANNEL+ "/" + GSEARCH.search + "&ver=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
-	URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
-
-	flog && console.log("formatWSS: ", URLWS);
-	return URLWS;
-}
-
-setUTitle("Loading...");
+		URLWS = formateWSLink(EmbedURL, USER_ID);
+		await SaveApp();
+		fullLog() && ccon("Попытка подключиться через указанную ссылку...");
+		startBooster();
+	}
+})();
