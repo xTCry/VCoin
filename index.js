@@ -54,7 +54,7 @@ let EmbedURL, VK_TOKEN,
 	smartBuyItem = "",
 	smartBuy = false,
 	tforce = false,
-	dateColorBG = "Magenta",
+	dateColorBG = "magenta",
 	transferTo = false,
 	transferScore = 3e4,
 	transferInterval = 36e2;
