@@ -1,3 +1,9 @@
+function defineGlobalConst(prop, val) {
+  return Object.defineProperty(global, prop, { value: val, enumerable: false, configurable: false, writable: false, })
+}
+
+defineGlobalConst('debug', require('debug')('vcoinx:main'))
+
 const url = require('url'),
     AutoUpdater = require('auto-updater'),
     open = require('open'),

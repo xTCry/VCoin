@@ -1,0 +1,44 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      // Запускать также можно через npm run dev и производить отладку через Chrome при помощи расширения NiM: https://vee.gg/gR1kP
+      "name": "Start : Debug",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/index.js",
+      "runtimeArgs": [
+        "--nolazy",
+        "--inspect-brk=9229",
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "vcoinx:*",
+      },
+      "restart": true,
+      "stopOnEntry": true,
+      "port": 9229,
+      // "console": "integratedTerminal",
+      "skipFiles": [
+          "node_modules/**",
+          "<node_internals>/**",
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Start : Release",
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/index.js",
+      "env": {
+        "NODE_ENV": "production",
+      },
+      "restart": true,
+      "skipFiles": [
+          "node_modules/**",
+          "<node_internals>/**",
+      ],
+    },
+  ],
+}
