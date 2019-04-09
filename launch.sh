@@ -1,5 +1,5 @@
 #! /bin/sh
-if [ ! -d "./node_modules/open" ]; then
+if [ ! -d "./node_modules/auto-updater" ]; then
 	npm i --loglevel=error
 fi
 node index.js
