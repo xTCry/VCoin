@@ -8,11 +8,11 @@ VK Coin Miner - недомайнер на NodeJS
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
-[![vcoin version](https://img.shields.io/badge/VCoin-1.4.1-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
+[![vcoin version](https://img.shields.io/badge/VCoin-1.4.3-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
 [![Официальная группа](https://img.shields.io/badge/Официальная-группа-green.svg)](https://vk.cc/9ghtmS)
-[![Беседа #1](https://img.shields.io/badge/Беседа-#1-yellow.svg?style=flat-square)](https://vk.cc/9fmVAc)
-[![Беседа #2](https://img.shields.io/badge/Беседа-#2-yellow.svg?style=flat-square)](https://vk.cc/9ghKxb)
+[![Беседа #1](https://img.shields.io/badge/Беседа-%231-yellow.svg?style=flat-square)](https://vk.cc/9fmVAc)
+[![Беседа #2](https://img.shields.io/badge/Беседа-%232-yellow.svg?style=flat-square)](https://vk.cc/9ghKxb)
 
 > Глобальная обнова в процессе
 
@@ -35,7 +35,7 @@ npm i
 
 ![](https://pp.userapi.com/c847020/v847020485/1d72be/ktfWqwnMjEY.jpg)
 
-* `-tforce`         - использовать токен принудительно (если в `.config.js` задана ссылка)
+* `-tforce`         - использовать токен принудительно
 * `-u [URL]`        - задает ссылку
 * `-t [TOKEN]`      - задает токен
 * `-to [ID]`        - задает ID страницы для автоперевода `score`
@@ -51,15 +51,17 @@ npm i
 
 Запуск поизводится из каталога приложения
 
-Обычный запуск (если есть файл `.config.js`)
-```shell
-node index.js
-```
-
 Запуск через [токен](#получение-токена) и донат в виде 1% от переводимых коинов разработчику
 ```shell
 node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -donate 1%
 ```
+
+Запуск с конфигурацией уже когда-то созданного пользователя
+```shell
+node index.js -uid 191039467
+```
+
+Эта возможность появится после того, как вы первый раз удачно запустите приложение
 
 Запуск через [токен](#получение-токена) и автоперевод каждые `7200` секунды (2 часа) на аккаунт `191039467`
 ```shell
@@ -80,40 +82,14 @@ node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 ```shell
 node index.js -u "https://coin.vkforms.ru?vk_access_token_settings=friends&vk_app_id=6915965&vk_...""
 ```
-<!-- > Linux: Надо обратить внимание, что перед каждым символом `&` должен быть обратный слеш (`\&`) -->
 
 > Ссылку указать в кавычках 
 
 
-## Конфигурация из файла `.config.js`
-
-> Если используются только аргументы при запуске, то файл можно не создавать.
-
-
-| Параметр | Описание                             |
-|----------|--------------------------------------|
-| VK_TOKEN | [Поулчить токен](#получение-токена)  |
-| DONEURL  | Ссылка на приложение                 |
-
-Если указать только ```VK_TOKEN```, то `DONEURL` можно не указывать.
-
-Конфиг с токеном:
-```js
-module.exports = {
-  VK_TOKEN: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-};
-```
-
-Конфиг с ссылкой:
-```js
-module.exports = {
-  DONEURL: "https://coin.vkforms.ru?vk_access_token_settings=..."
-};
-```
 
 ### Получение токена
 
-[Разрешить доступ, например, этому приложению](https://vk.cc/9eSo1E) и скопировать полученный токен из адрессной строки (85 символов, между `#access_token=` и `&expires_in`) 
+[Получить токен на xTCoin](https://vk.cc/9gjvSG). `код длиной 85 символов`
 
 ***
 
@@ -134,6 +110,7 @@ module.exports = {
 - `info`     - показать место в ТОПе и кол-во коинов
 - `tspam`    - вкл/откл вывод обновления коинов к консоль
 - `beep`     - вкл/откл звука
+- `datecolorbg`   - задать цвет фона даты и времени
 
 ## Названия ускорений
 - `cursor` - курсор
@@ -154,8 +131,6 @@ module.exports = {
 
 ## З.Ы.
 > Если надо зайти в сервис, но выкидывает, то можно использовать команду `stop`, а для возобновления `run`
-
-<!-- > При переводе берется незначительная комиссия в виде `0,1%` для статистики -->
 
 > При lineQuestion вывод лога для удобства приостанавливается
 
