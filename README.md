@@ -4,7 +4,7 @@ VCoinX - модификация для [VCoin](https://github.com/xTCry/VCoin), 
 # Установка
 1) Для начала надо установить в систему [Node.JS версии 8 или выше](https://nodejs.org/) (установщик для **Windows** - [Node.js v10.15.3 LTS](https://nodejs.org/dist/v10.15.3/node-v10.15.3-x86.msi)), без этого бот просто не сможет работать
 
-2) После скачивания и установки Node.JS, скачиваем самого бота нажав на [эту ссылку](https://github.com/cursedseal/VCoinX/releases/download/v1.3.10/VCoinX_v1.3.10.zip)
+2) После скачивания и установки Node.JS, скачиваем самого бота нажав на [эту ссылку](https://github.com/cursedseal/VCoinX/releases/download/v1.3.11/VCoinX_v1.3.11.zip)
 
 3) Распаковываем скачанный архив с файлами бота в *любую* папку и заходим в неё
 
