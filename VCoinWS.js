@@ -125,7 +125,9 @@ class VCoinWS {
 										},
 										navigator: {
 											userAgent: 'Mozilla/5.0 (Linux; Android 5.1; A37f Build/LMY47V) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.93 Mobile Safari/537.36'
-										}
+										},
+										WebSocket: true,
+										Math, parseInt,
 									}}),
 									str = "C1 ".concat(this.randomId, " ") + x;
 
@@ -584,7 +586,11 @@ class EntitiesClass {
 			vkp2: {
 				price: 0,
 				amount: 1e4
-			}
+			},
+			music: {
+				price: 0,
+				amount: 4e3
+			},
 		};
 		this.names = [
 			"cursor",

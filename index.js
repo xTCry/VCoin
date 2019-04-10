@@ -576,6 +576,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 					perc = (dTest.indexOf("%") !== -1 && dTest > 100);
 				greedyDeveloper = perc? dTest/100: dTest;
 				con("Донат коинов " + (perc?"в процентах от перевода ":"") + " припереводе: ["+greedyDeveloper+"].", "blue");
+				continue;
 			}
 		}
 
@@ -668,4 +669,3 @@ function formatWSS(LINK) {
 }
 
 setUTitle("Loading...");
->>>>>>> parent of 6aade66... Merge pull request #82 from xTCry/Omy

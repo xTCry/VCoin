@@ -9,7 +9,7 @@ const pJson = require('./package.json');
 let GitCUpdate = new GithubContent({
 	owner: 'xtcry',
 	repo: 'vcoin',
-	branch: 'master'
+	branch: 'Bow-1.3.9'
 });
 
 let checkUpdateTTL = null,
