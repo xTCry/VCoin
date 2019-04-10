@@ -1,21 +1,22 @@
 const debug = require('debug')('vcoinx:utils')
 const os = require('os')
-const publicIp = require('public-ip')
 const Sentry = require('@sentry/node')
 
 // Отправка возникших ошибок на сервер, для улучшения дальнейшего процесса разработки
 function initErrorsHandling () {
-  Sentry.init({
-    dsn: 'https://f2a9bef46d114c15a6e56146918437eb@sentry.io/1435409',
-    // sampleRate: 0.75, // Отправляем только 75% ошибок
-    debug: true,
-  });
   (async () => {
-    const ipv4 = await publicIp.v4()
+    debug('Инициализирую Sentry')
+    // Инициализируем Sentry
+    Sentry.init({
+      dsn: 'https://f2a9bef46d114c15a6e56146918437eb@sentry.io/1435409',
+      // sampleRate: 0.75, // Отправляем только 75% ошибок
+      debug: true,
+    })
+    // Настраиваем данные о том где запущен VCoinX
     Sentry.configureScope((scope) => {
+      debug('Конфигурирую Sentry')
       const info = {
         username: os.userInfo().username + '@' + os.hostname(),
-        ip_adress: ipv4,
         os_type: os.type(),
         os_platform: os.platform(),
         os_arch: os.arch(),
@@ -25,9 +26,9 @@ function initErrorsHandling () {
       }
       debug('Информация о системе где запущен VCoinX: %O', info)
       scope.setUser(info)
-    })
-    process.on('uncaughtException', function (err) {
-      Sentry.captureException(err)
+      process.on('uncaughtException', function (err) {
+        Sentry.captureException(err)
+      })
     })
   })()
 }
