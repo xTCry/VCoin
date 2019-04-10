@@ -9,7 +9,6 @@ VK Coin Miner - недомайнер на NodeJS
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
 [![vcoin version](https://img.shields.io/badge/VCoin-Bow%201.3.9.01-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
->>>>>>> parent of 6aade66... Merge pull request #82 from xTCry/Omy
 
 [![Официальная группа](https://img.shields.io/badge/Официальная-группа-green.svg)](https://vk.cc/9ghtmS)
 [![Беседа #1](https://img.shields.io/badge/Беседа-#1-yellow.svg?style=flat-square)](https://vk.cc/9fmVAc)
