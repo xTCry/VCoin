@@ -6,9 +6,10 @@
     "cursor"
   ],
   "smartBuy": false,
+  "smartBuyInterval": 5,
   "waitForBoost": true,
   "numberOfTries": 3,
-  "limitCPS": 50000,
+  "limitCPS": 100000,
   "autobeep": false,
   "hidejunk": false,
   "tforce": false,

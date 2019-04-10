@@ -60,6 +60,7 @@ let {
   autoBuy,
   autoBuyItems,
   smartBuy,
+  smartBuyInterval,
   numberOfTries,
   limitCPS,
   autobeep,
@@ -763,7 +764,6 @@ async function smartBuyFunction (score) {
 
   if (!tempDataUpdate.transactionInProcess && !tempDataUpdate.onBrokenEvent) {
     var names = ['cursor', 'cpu', 'cpu_stack', 'computer', 'server_vk', 'quantum_pc', 'datacenter']
-    var count = [1000, 333, 100, 34, 10, 2, 1]
     var speed = [0.001, 0.003, 0.01, 0.03, 0.1, 0.5, 1]
     if (!tempDataUpdate.canSkip) {
       var prices = justPrices()
@@ -777,15 +777,15 @@ async function smartBuyFunction (score) {
       var min_payback = Math.min.apply(null, payback)
       var good = payback.indexOf(min_payback)
       var canBuy = names[good]
-      var min = prices[good] / 1000
+      var min = prices[good]
 
       con('Умной покупкой было проанализированно, что выгодно будет приобрести улучшение ' + Entit.titles[canBuy] + '.', 'green', 'Black')
-      con('Стоимость: ' + formatScore(min, true) + ' коинов. Данное улучшение окупит себя примерно через ' + formatScore(min_payback, true) + ' минут ', 'green', 'Black')
+      con('Стоимость: ' + formatScore(min, true) + ' коинов. Данное улучшение окупит себя примерно через ' + formatScore(min_payback * 1000, true) + ' минут ', 'green', 'Black')
     } else {
       min = tempDataUpdate.itemPrice
       canBuy = tempDataUpdate.itemName
     }
-    if ((score - min) * tempDataUpdate.tmpPr > 0 && ((Math.floor(Date.now() / 1000) - smartBuyLastTime) > 15)) {
+    if ((score - min) * tempDataUpdate.tmpPr > 0 && ((Math.floor(Date.now() / 1000) - smartBuyLastTime) > smartBuyInterval)) {
       tempDataUpdate.canSkip = false
       tempDataUpdate.transactionInProcess = true
       try {
@@ -951,13 +951,7 @@ function formatWSS (LINK) {
   URLWS = NADDRWS + CHANNEL + '/' + GSEARCH.search + '&ver=1&pass='.concat(Entit.hashPassCoin(USER_ID, 0))
   switch (currentServer) {
     case 1:
-      URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, 'bagosi-go-go.vkforms.ru')
-      break
-    case 2:
       URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, 'coin.w5.vkforms.ru')
-      break
-    case 3:
-      URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, (CHANNEL > 7) ? 'bagosi-go-go.vkforms.ru' : 'coin.w5.vkforms.ru')
       break
     default:
       URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, 'coin-without-bugs.vkforms.ru')
