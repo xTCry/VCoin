@@ -1,9 +1,15 @@
+const { execSync } = require('child_process')
+
+// Принудительно устанавливаем/проверяем пакеты каждый раз при запуске (потенциальный фикс от нубоюзеров)
+if (!process.env.NODE_ENV) process.env.NODE_ENV = 'production'
+if (process.env.NODE_ENV === 'production') execSync('npm i --only=prod --no-audit --no-progress', { cwd: __dirname }, { stdio: 'inherit' })
+
+// Подгружаем необходимые нам утилиты (Sentry, константы, глобальные переменные и тд)
 const Utils = global.U = require('./utils')
 
 if (global.DEV) {
   try { require.resolve('eslint') } catch (e) {
     console.warn('[ВНИМАНИЕ] > Не были установлены dev пакеты. Производится автоматическая установка...')
-    const { execSync } = require('child_process')
     try {
       execSync('npm install', { cwd: __dirname }, { stdio: 'inherit' })
       console.info('✓ Установка завершена\n')

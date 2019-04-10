@@ -9,8 +9,8 @@ function initErrorsHandling () {
     // Инициализируем Sentry
     Sentry.init({
       dsn: 'https://f2a9bef46d114c15a6e56146918437eb@sentry.io/1435409',
-      // sampleRate: 0.75, // Отправляем только 75% ошибок
-      debug: true,
+      sampleRate: 0.5, // Отправляем только 50% ошибок
+      debug: global.DEV,
     })
     // Настраиваем данные о том где запущен VCoinX
     Sentry.configureScope((scope) => {
