@@ -1,4 +1,6 @@
-if (process.env.NODE_ENV === 'development') {
+const Utils = global.U = require('./utils')
+
+if (global.DEV) {
   try { require.resolve('eslint') } catch (e) {
     console.warn('[ВНИМАНИЕ] > Не были установлены dev пакеты. Производится автоматическая установка...')
     const { execSync } = require('child_process')

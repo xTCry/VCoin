@@ -9,11 +9,13 @@
         "branch": "master"
     },
     "dependencies": {
+        "@sentry/node": "5.0.6",
         "auto-updater": "^1.0.2",
         "colors": "^1.3.3",
         "cross-env": "^5.2.0",
         "debug": "^4.1.1",
         "open": "^6.1.0",
+        "public-ip": "^3.0.0",
         "safe-eval": "^0.4.1",
         "vk-io": "^4.0.0-rc.16",
         "ws": "^6.2.1"
