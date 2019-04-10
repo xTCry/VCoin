@@ -128,7 +128,7 @@ vConinWS.onReceiveDataEvent(async (place, score)=> {
 });
 
 async function transferProcess(place, score) {
-	if(score >= 1) {
+	if(score > 999) {
 		if(transferTo && transferScore*1e3 < score && !rand(0, 2) && ((now() - transferLastTime) > transferInterval)) {
 			try {
 				await vConinWS.transferToUser(transferTo, transferScore);
