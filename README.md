@@ -2,7 +2,7 @@
 VCoinX - модификация для [VCoin](https://github.com/xTCry/VCoin), в которой вырезаны пожертвования и комиссии от платежей, и имеется несколько своих плюшек
 
 # Установка
-1) Для начала надо установить в систему [Node.JS версии 8 или выше](https://nodejs.org/) (установщик для **Windows** - [Node.js v10.15.3 LTS](https://nodejs.org/dist/v10.15.3/node-v10.15.3-x64.msi)), без этого бот просто не сможет работать
+1) Для начала надо установить в систему [Node.JS версии 8 или выше](https://nodejs.org/) (установщик для **Windows** - [Node.js v10.15.3 LTS](https://nodejs.org/dist/v10.15.3/node-v10.15.3-x86.msi)), без этого бот просто не сможет работать
 
 2) После скачивания и установки Node.JS, скачиваем самого бота нажав на [эту ссылку](https://github.com/cursedseal/VCoinX/releases/download/v1.3.10/VCoinX_v1.3.10.zip)
 
