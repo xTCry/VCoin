@@ -2,11 +2,9 @@
 node_modules/
 
 .config.js
+.htpasswd
+*.txt
 test.js
-
-log_*.txt
-
-data/*
 
 !*.keep
 !**/*.keep
