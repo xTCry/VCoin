@@ -2,6 +2,8 @@
 
 VK Coin Miner - недомайнер на NodeJS
 
+[![Bow 1.3.9 download](https://img.shields.io/badge/VCoin%20Bow%201.3.9-download-blue.svg?logo=github&style=for-the-badge)](https://github.com/xTCry/VCoin/archive/Bow-1.3.9.zip)
+
 
 ![](https://pp.userapi.com/c855028/v855028357/1734f/9kFW8iHOxHc.jpg)
 
