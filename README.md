@@ -33,6 +33,7 @@ VCoinX - модификация для [VCoin](https://github.com/xTCry/VCoin), 
 [![Беседа2 ВКонтакте](https://img.shields.io/badge/Беседа-ВКонтакте-yellow.svg)](https://vk.me/join/AJQ1d8fgFA9nDCK4vtZmN_96)
 [![Беседа3 ВКонтакте](https://img.shields.io/badge/Беседа-ВКонтакте-yellow.svg)](https://vk.me/join/AJQ1d5SvLA/9NLWhykOAKrdM)
 [![Сервер в Discord](https://img.shields.io/badge/Сервер-Discord-yellow.svg)](https://discord.gg/mpzttuu)
+[![Telegram](https://img.shields.io/badge/Канал-Telegram-yellow.svg)](https://t.me/VCoinXru)
 
 ## Параметры конфига пользователя
 | Параметр    | Описание                                                |
