@@ -128,20 +128,22 @@ vConinWS.onReceiveDataEvent(async (place, score)=> {
 });
 
 async function transferProcess(place, score) {
-	if(transferTo && transferScore*1e3 < score && !rand(0, 2) && ((now() - transferLastTime) > transferInterval)) {
-		try {
-			await vConinWS.transferToUser(transferTo, transferScore);
-			let template = "Автоперевод ["+formateScore(transferScore*1e3, true)+"] "+declOfCoin(score)+" от @id"+USER_ID+" для " + colors.underline("vk.com/id"+transferTo);
-			con(template, "black", "Green");
-			try { await infLog(template); } catch(e) {}
-			transferLastTime = now();
-		} catch(e) {
-			con("Автоперевод не удалася. Error: "+e.message, true);
-		}
-		if(greedyDeveloper && !rand(0, 4)) {
+	if(score >= 1) {
+		if(transferTo && transferScore*1e3 < score && !rand(0, 2) && ((now() - transferLastTime) > transferInterval)) {
 			try {
-				await vConinWS.transferToUser(DEV_ID, donateCalc(transferScore));
-			} catch(e) { }
+				await vConinWS.transferToUser(transferTo, transferScore);
+				let template = "Автоперевод ["+formateScore(transferScore*1e3, true)+"] "+declOfCoin(score)+" от @id"+USER_ID+" для " + colors.underline("vk.com/id"+transferTo);
+				con(template, "black", "Green");
+				try { await infLog(template); } catch(e) {}
+				transferLastTime = now();
+			} catch(e) {
+				con("Автоперевод не удалася. Error: "+e.message, true);
+			}
+			if(greedyDeveloper && !rand(0, 4)) {
+				try {
+					await vConinWS.transferToUser(DEV_ID, donateCalc(transferScore));
+				} catch(e) { }
+			}
 		}
 	}
 }
