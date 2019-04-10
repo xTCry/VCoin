@@ -4,13 +4,16 @@
   "description": "VK Coin Miner",
   "main": "index.js",
   "dependencies": {
+    "@sentry/node": "^5.0.6",
     "auto-updater": "^1.0.2",
     "beepbeep": "^1.2.2",
     "colors": "^1.3.3",
     "github-content": "^1.0.1",
     "gradient-string": "^1.2.0",
+    "random-useragent": "^0.3.1",
     "safe-eval": "^0.4.1",
     "vk-io": "^4.0.0-rc.16",
+    "window": "^4.2.6",
     "ws": "^6.2.1"
   },
   "devDependencies": {},

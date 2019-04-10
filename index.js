@@ -62,7 +62,7 @@ let EmbedURL, VK_TOKEN,
 
 onUpdates(msg=> {
 	if(!updatesEv) updatesEv = msg;
-	con(colors.bold.underline(msg), "white", "Red");
+	ccon(colors.bold.underline(msg), "white", "Red");
 });
 
 // Инициализация главного модуля (:
@@ -290,7 +290,7 @@ function forceRestart(t, force) {
 
 function justPrices() {
 	return Entity.names.map(el=> {
-		return !miner.hasMoney(el)? 0: miner.getPriceForItem(el);
+		return !miner.hasMoney(el)? "": miner.getPriceForItem(el);
 	});
 }
 
@@ -416,7 +416,7 @@ rl.on('line', async (line) => {
 
 			if(result) {
 				miner.updateStack(result.items);
-				con("Текущая скорость: " + formatScore(result.tick, true) + " коинов/сек");
+				con("Текущая скорость: " + formateScore(result.tick, true) + " коинов/сек");
 			}
 
 			break;
@@ -471,7 +471,7 @@ rl.on('line', async (line) => {
 			id = onlyInt(id);
 
 			stateCmd(StateCmd.CONFIRM, _=> true);
-			let conf = await rl.questionAsync("Перевести " + formatScore(count*1e3, true) + " "+declOfCoin(count)+" ["+ temp.first_name +" "+ temp.last_name +"] (@id"+ temp.id +")? [yes]: ");
+			let conf = await rl.questionAsync("Перевести " + formateScore(count*1e3, true) + " "+declOfCoin(count)+" ["+ temp.first_name +" "+ temp.last_name +"] (@id"+ temp.id +")? [yes]: ");
 			stateCmd(StateCmd.NONE);
 			if(conf != "yes" || !id || !count) return con("Отменено", true);
 
@@ -817,8 +817,8 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 async function createNewConfig(exit) {
 	!exit && ccon("Мастер настройки пользователя", "yellow");
 
-	stateCmd(StateCmd.CUSTOM, _=> ("token, password"));
-	let authType = await rl.questionAsync("Авторизироваться с помощью [token/password]: ");
+	stateCmd(StateCmd.CUSTOM, _=> ("token, password, url"));
+	let authType = await rl.questionAsync("Авторизироваться с помощью [token/password/url]: ");
 	stateCmd(StateCmd.NONE);
 
 	if(authType == "token") {
@@ -836,6 +836,7 @@ async function createNewConfig(exit) {
 			if(!id) throw("Не удалось получить ID пользователя.");
 			
 			VK_TOKEN = _token;
+			TEMP_USER_ID = id;
 			ccon("Токен установлен.");
 			return true;
 		} catch(e) {
@@ -858,6 +859,20 @@ async function createNewConfig(exit) {
 			return createNewConfig(true);
 		}
 		return res;
+	}
+	else if(authType == "url") {
+		ccon("Желательно указать токен. Получить его можно тут -> " + colors.underline("vk.cc/9gjvSG"));
+		let _url = await rl.questionAsync("Введите ссылку: ");
+		if(!_url) throw "Создание конфигурации отменено.";
+
+		let GSEARCH = url.parse(_ul, true);
+		if(!GSEARCH.query || !GSEARCH.query.vk_user_id) {
+			throw "В ссылке не указан аргумент [vk_user_id]";
+		}
+		EmbedURL = _url;
+		if(!USER_ID)
+			TEMP_USER_ID = parseInt(GSEARCH.query.vk_user_id);
+
 	}
 	else {
 		if(exit) throw "Авторизация отменена";
@@ -1036,28 +1051,30 @@ async function trySelectConfig(list) {
 			await InitApp(TEMP_USER_ID);
 	} catch(e) { }
 
-	if(!EmbedURL || tforce || (g_id && EmbedURL && EmbedURL.indexOf(g_id) === -1)) {
-		if(!VK_TOKEN) {
-			stateCmd(StateCmd.CONFIRM);
-			let conf = await rl.questionAsync("Создать конфигурацю для нового пользователя? [yes]: ");
-			stateCmd(StateCmd.NONE);
-			if(conf == "yes") {
-				try {
-					await createNewConfig();
-					try {
-						if(TEMP_USER_ID)
-							await InitApp(TEMP_USER_ID);
-					} catch(e) { }
-				} catch(e) {
-					ccon("Не удалось создать конфиг. "+e.message, true);
-				}
-			}
 
-			if(!VK_TOKEN) {
-				con("Токен не указан. Получить ТОКЕН можно тут -> " + colors.underline("vk.cc/9gjvSG"), true);
-				return process.exit();
+	if(!VK_TOKEN && !EmbedURL) {
+		stateCmd(StateCmd.CONFIRM);
+		let conf = await rl.questionAsync("Создать конфигурацю для нового пользователя? [yes]: ");
+		stateCmd(StateCmd.NONE);
+		if(conf == "yes") {
+			try {
+				await createNewConfig();
+				try {
+					if(TEMP_USER_ID)
+						await InitApp(TEMP_USER_ID);
+				} catch(e) { }
+			} catch(e) {
+				ccon("Не удалось создать конфиг. "+e.message, true);
 			}
 		}
+
+		if(!VK_TOKEN) {
+			con("Токен не указан. Получить ТОКЕН можно тут -> " + colors.underline("vk.cc/9gjvSG"), true);
+			return process.exit();
+		}
+	}
+
+	if(!EmbedURL || tforce || (g_id && EmbedURL && EmbedURL.indexOf(g_id) === -1)) {
 
 		(async function inVKProc(token, owner_id) {
 			vk.token = token;
@@ -1082,7 +1099,7 @@ async function trySelectConfig(list) {
 						})).response;
 
 						if(!ret.embedded_uri || !ret.embedded_uri.view_url)
-							throw "Не удалось получить ссылку. Скорее всего, токен не от Android.";
+							throw "Не удалось получить ссылку. Скорее всего, токен не от Android. #2";
 						if (ret.original_url == "https://vk.com/coin" || ret.embedded_uri.view_url.indexOf("vk_group_id") === -1)
 							throw "ID группы в ссылке не обнаружен. Скорее всего, у группы не подключено приложение VK Coin";
 						EmbedURL = ret.embedded_uri.view_url;
@@ -1107,7 +1124,11 @@ async function trySelectConfig(list) {
 				startBooster();
 
 			} catch(error) {
-				if(error.code == authErrors.AUTH_FAILURE) ccon("Токен стал "+colors.underline("недействительным")+".", true);
+				if(error.message.indexOf("Unknown method passed") !== -1) {
+					ccon("Не удалось получить ссылку. Скорее всего, токен не от Android.", true);
+					ccon("Получить рабочий токен можно тут -> " + colors.underline("vk.cc/9gjvSG"));
+				}
+				else if(error.code == authErrors.AUTH_FAILURE) ccon("Токен стал "+colors.underline("недействительным")+".", true);
 				console.error('API Error:', error);
 				process.exit();
 			}
@@ -1128,6 +1149,6 @@ async function trySelectConfig(list) {
 		startBooster();
 	}
 
-	if(!VK_TOKEN)
-		ccon("Желательно указать токен командой "+ colors.bold("token") +" . Получить его можно тут -> " + colors.underline("vk.cc/9gjvSG"), "red");
+	// if(!VK_TOKEN)
+		// ccon("Желательно указать токен командой "+ colors.bold("token") +" . Получить его можно тут -> " + colors.underline("vk.cc/9gjvSG"), "red");
 })();
