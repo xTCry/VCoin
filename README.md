@@ -1,20 +1,24 @@
 # VCoin - official VK Coin miner
 
-VK Coin Miner - недомайнер на NodeJS
+<s>VK Coin Miner - недомайнер на NodeJS</s>
 
+[![VCoin 1.4.9 download](https://img.shields.io/badge/VCoin%201.4.9-download-blue.svg?logo=github&style=for-the-badge)](https://github.com/xTCry/VCoin/archive/master.zip)
+
+> Хоть майнинг VK Coins остановлен,
+>> но это еще не всё
 
 ![](https://pp.userapi.com/c855028/v855028357/1734f/9kFW8iHOxHc.jpg)
+![](https://pp.userapi.com/c845122/v845122441/1e9fb5/7-vBaawGgh0.jpg)
 
+[![vcoin version](https://img.shields.io/badge/VCoin-1.4.9-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
-[![vcoin version](https://img.shields.io/badge/VCoin-1.4.6-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
 [![Официальная группа](https://img.shields.io/badge/Официальная-группа-green.svg)](https://vk.cc/9ghtmS)
 [![Беседа #1](https://img.shields.io/badge/Беседа-%231-yellow.svg?style=flat-square)](https://vk.cc/9fmVAc)
 [![Беседа #2](https://img.shields.io/badge/Беседа-%232-yellow.svg?style=flat-square)](https://vk.cc/9ghKxb)
 
-> Глобальная обнова в процессе
 
 ***
 
@@ -47,43 +51,24 @@ npm i
 * `-hidespam`       - отключить вывод обновления коинов в лог консоли
 * `-beep`           - звуковое сопровождение
 * `-donate [sum]`   - поддержать разработчика. `sum` сколько коинов переводить. (Если указать с символом `%` , то будет донат процентов от переводимой кому-либо суммы)
-
+* `.......`         - для полного списка в приложении вызови команду `help` или `?`
 
 Запуск поизводится из каталога приложения
 
-Запуск через [токен](#получение-токена) и донат в виде 1% от переводимых коинов разработчику
+<!-- Запуск через [токен](#получение-токена) и донат в виде 1% от переводимых коинов разработчику
 ```shell
 node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -donate 1%
-```
+``` -->
 
 Запуск с конфигурацией уже когда-то созданного пользователя
 ```shell
 node index.js -uid 191039467
 ```
 
-Эта возможность появится после того, как вы первый раз удачно запустите приложение
-
 Запуск через [токен](#получение-токена) и автоперевод каждые `7200` секунды (2 часа) на аккаунт `191039467`
 ```shell
 node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -to 191039467 -ti 7200 
 ```
-
-Запуск через [токен](#получение-токена) и автопокупка
-```shell
-node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -autobuy
-```
-
-Запуск через [токен](#получение-токена) и умная покупка
-```shell
-node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -smartbuy
-```
-
-Запуск через ссылку
-```shell
-node index.js -u "https://coin.vkforms.ru?vk_access_token_settings=friends&vk_app_id=6915965&vk_...""
-```
-
-> Ссылку указать в кавычках 
 
 
 
@@ -111,6 +96,8 @@ node index.js -u "https://coin.vkforms.ru?vk_access_token_settings=friends&vk_ap
 - `tspam`    - вкл/откл вывод обновления коинов к консоль
 - `beep`     - вкл/откл звука
 - `datecolorbg`   - задать цвет фона даты и времени
+- `token`   - установить токен
+- `.....`   - и другое...
 
 ## Названия ускорений
 - `cursor` - курсор
@@ -131,8 +118,5 @@ node index.js -u "https://coin.vkforms.ru?vk_access_token_settings=friends&vk_ap
 
 ## З.Ы.
 > Если надо зайти в сервис, но выкидывает, то можно использовать команду `stop`, а для возобновления `run`
-
-> При lineQuestion вывод лога для удобства приостанавливается
-
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
