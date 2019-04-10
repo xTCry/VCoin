@@ -13,7 +13,7 @@
         "colors": "^1.3.3",
         "cross-env": "^5.2.0",
         "debug": "^4.1.1",
-        "open": "^6.0.0",
+        "open": "^6.1.0",
         "safe-eval": "^0.4.1",
         "vk-io": "^4.0.0-rc.16",
         "ws": "^6.2.1"
@@ -33,8 +33,14 @@
         "lint": "eslint .",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
+    "husky": {
+        "hooks": {
+            "pre-commit": "npm run lint",
+            "pre-push": "npm run lint"
+        }
+    },
     "engines": {
-      "node": "^8 || ^10 || ^11"
+        "node": "^8 || ^10 || ^11"
     },
     "repository": {
         "type": "git",

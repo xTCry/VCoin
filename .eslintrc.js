@@ -7,12 +7,17 @@ module.exports = {
   'extends': 'standard',
   'globals': {
     'Atomics': 'readonly',
-    'SharedArrayBuffer': 'readonly'
+    'SharedArrayBuffer': 'readonly',
   },
   'parserOptions': {
-    'ecmaVersion': 2018
+    'ecmaVersion': 2018,
   },
   'rules': {
-    'one-var': ['error', 'always'],
-  }
+    'one-var': ['off', 'never'],
+    'camelcase': ['off'],
+    'comma-dangle': ['error', 'always-multiline'],
+    'no-return-await': ['warn'],
+    'no-unused-vars': ['warn'],
+    'brace-style': [0, '1tbs', { 'allowSingleLine': true }],
+  },
 }

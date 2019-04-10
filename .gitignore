@@ -1,6 +1,7 @@
 ## CUSTOM ##
 
 *config.json
+*.txt
 .htpasswd
 
 !*.keep
