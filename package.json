@@ -1,11 +1,12 @@
 {
   "name": "vcoin",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "VK Coin Miner",
   "main": "index.js",
   "dependencies": {
     "@sentry/node": "^5.0.6",
     "auto-updater": "^1.0.2",
+    "await-exec": "^0.1.2",
     "beepbeep": "^1.2.2",
     "colors": "^1.3.3",
     "github-content": "^1.0.1",
