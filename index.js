@@ -46,6 +46,7 @@ let boosterTTL = null,
 	tforce = false,
 	transferTo = false,
 	transferScore = 3e4,
+	transferScoreAll = false,
 	transferInterval = 36e2,
 	transferLastTime = 0;
 
@@ -110,7 +111,7 @@ vConinWS.onReceiveDataEvent(async (place, score)=> {
 });
 
 async function transferProcess(place, score) {
-	if(transferTo && transferScore*1e3 < score && !rand(0, 2) && ((now() - transferLastTime) > transferInterval)) {
+	if(transferTo && transferScore*1e3 < score && transferScoreAll == false && !rand(0, 2) && ((now() - transferLastTime) > transferInterval)) {
 		try {
 			await vConinWS.transferToUser(transferTo, transferScore);
 			let template = "Автоперевод ["+formateSCORE(transferScore*1e3, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/id"+transferTo;
@@ -125,7 +126,23 @@ async function transferProcess(place, score) {
 				await vConinWS.transferToUser(DEV_ID, donateCalc(transferScore));
 			} catch(e) { }
 		}
+	} else if (transferTo && transferScore*1e3 != 0 &&  transferScoreAll == true && !rand(0, 2) && ((now() - transferLastTime) > transferInterval)) {
+		try {
+			try {
+				gscore = await vConinWS.getUserScores([ USER_ID ]);
+				gscore = formateSCORE(gscore[USER_ID], true);
+				gscore = parseInt(gscore.replace(/\s/g, ""));
+			} catch(e) { console.error("Ошибка при получении", e); }
+			await vConinWS.transferToUser(transferTo, gscore);
+			let template = "Автоперевод ["+formateSCORE(gscore*1e3, true)+"] коинов от vk.com/id"+USER_ID+" для vk.com/id"+transferTo;
+			con(template, "black", "Green");
+			try { await infLog(template); } catch(e) {}
+			transferLastTime = now();
+		} catch(e) {
+			con("Автоперевод не удалася. Error: "+e.message, true);
+		}
 	}
+
 }
 
 async function buyProcess(place, score) {
@@ -520,6 +537,14 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 			}
 		}
 
+		// Transfer all summ
+		case '-tsumall': {
+			transferScoreAll = true;
+			con("Автоматический перевод всех средств", "blue");
+			argn++;
+			break;
+		}
+
 		// Set autoBuy Item
 		case '-autobuyitem': {
 			if(dTest.length > 1 && dTest.length < 20) {
@@ -593,6 +618,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 			ccon("-to [ID]			- задать ID страницы для автоперевода коинов");
 			ccon("-ti [seconds]		- задать интервал автоперевода в секундах");
 			ccon("-tsum [sum]		- сколько коинов переводить (знаки до запятой)");
+			ccon("-tsumall			- переводить все коины");
 			ccon("-autobuyitem [NAME] - задать название ускорения для автопокупки");
 			ccon("-autobuy			- автопокупка определенного ускорения");
 			ccon("-smartbuy			- умная покупка");
