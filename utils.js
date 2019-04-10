@@ -35,6 +35,19 @@ function initErrorsHandling () {
 // Запускаем захват и передачу на сервер информации об ошибках в процессе работы
 initErrorsHandling()
 
+// Безопасное подключение .js и .json файлов с выводом сообщения об ошибке, в случае если файл повреждён
+global.safeRequire = function safeRequire (module, terminate = false) {
+  try {
+    return require(module)
+  } catch (err) {
+    if (err.code === 'MODULE_NOT_FOUND' && ~err.message.indexOf(module)) {
+      console.error(`\n! Невозможно найти файл ${module}\n`)
+    }
+    else console.error(`\n! Возможная ошибка в файле, перепроверьте: ${module}\n`)
+    if (terminate) return process.exit(1)
+  }
+}
+
 // Глобальные конcтанты для быстрого определения в какой среде запущен VCoinX
 Object.defineProperty(this, 'DEBUG', {
   get: () => process.env.NODE_ENV === 'development',

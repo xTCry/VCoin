@@ -50,7 +50,7 @@ let {
   IFRAME_URL,
   VK_TOKEN,
   GROUP_ID,
-} = existsFile('./userconfig.json') ? require('./userconfig.json') : {}
+} = existsFile('./userconfig.json') ? global.safeRequire('./userconfig.json') : {}
 let USER_ID = false
 let vk = new VK()
 let URLWS = false
@@ -74,7 +74,7 @@ let {
   updatesInterval,
   autoUpdate,
   updateOnce,
-} = existsFile('./botconfig.json') ? require('./botconfig.json') : {}
+} = existsFile('./botconfig.json') ? global.safeRequire('./botconfig.json') : {}
 
 let boosterTTL = null,
   advertDisp = false,
