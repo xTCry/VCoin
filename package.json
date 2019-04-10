@@ -17,6 +17,7 @@
         "open": "^6.1.0",
         "safe-eval": "^0.4.1",
         "vk-io": "^4.0.0-rc.16",
+        "window": "^4.2.6",
         "ws": "^6.2.1"
     },
     "devDependencies": {

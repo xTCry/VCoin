@@ -1,5 +1,8 @@
 const WebSocket = require('ws')
 const safeEval = require('safe-eval')
+const Window = require('window')
+const window = new Window()
+
 class VCoinWS {
   constructor () {
     this.ws = null
@@ -92,14 +95,18 @@ class VCoinWS {
             this.groupInfo = data.top.groupInfo
             if (pow) {
               try {
+                // Фикс для новой защиты от ботов (POW_SIGN_NOT_RECEIVED)
                 let x = safeEval(pow, {
                   window: {
                     location: {
                       host: 'vk.com',
                     },
                     navigator: {
-                      userAgent: 'Mozilla/5.0 (Windows; U; Win98; en-US; rv:0.9.2) Gecko/20010725 Netscape6/6.1',
+                      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36',
                     },
+                    WebSocket: true,
+                    Math: Math,
+                    parseInt: parseInt,
                   },
                 })
                 let str = 'C1 '.concat(this.randomId, ' ') + x
