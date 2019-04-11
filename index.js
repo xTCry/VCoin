@@ -948,7 +948,7 @@ function formatWSS (LINK) {
   let GSEARCH = url.parse(LINK),
     NADDRWS = GSEARCH.protocol.replace('https:', 'wss:').replace('http:', 'ws:') + '//' + GSEARCH.host + '/channel/',
     CHANNEL = USER_ID % 32
-  URLWS = NADDRWS + CHANNEL + '/' + GSEARCH.search + '&ver=1&pass='.concat(Entit.hashPassCoin(USER_ID, 0))
+  URLWS = NADDRWS + CHANNEL + '/' + GSEARCH.search + '&ver=1&upd=1&pass='.concat(Entit.hashPassCoin(USER_ID, 0))
   switch (currentServer) {
     case 1:
       URLWS = URLWS.replace(/([\w-]+\.)*vkforms\.ru/, 'coin.w5.vkforms.ru')
