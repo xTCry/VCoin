@@ -661,7 +661,7 @@ function formatWSS(LINK) {
 	let GSEARCH = url.parse(LINK),
 		NADDRWS = GSEARCH.protocol.replace("https:", "wss:").replace("http:", "ws:") + "//" + GSEARCH.host + "/channel/",
 		CHANNEL = USER_ID%32;
-	URLWS = NADDRWS + CHANNEL+ "/" + GSEARCH.search + "&ver=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
+	URLWS = NADDRWS + CHANNEL+ "/" + GSEARCH.search + "&ver=1&upd=1&pass=".concat(Entit.hashPassCoin(USER_ID, 0));
 	URLWS = URLWS.replace("coin.vkforms.ru", "coin-without-bugs.vkforms.ru");
 
 	flog && console.log("formatWSS: ", URLWS);
