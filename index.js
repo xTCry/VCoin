@@ -312,13 +312,29 @@ rl.on('line', async (line) => {
 			console.log("hideSpam", hideSpam);
 			break;
 
+		case 'coins':
 		case 'gscore':
-			let ID = await rl.questionAsync("ID пользователя: ");
+			temp = await rl.questionAsync("ID пользователя [если пусто, то коины текущией страницы]: ");
 			try {
-				let gscore = await vConinWS.getUserScores([ ID ]);
-				gscore = formateSCORE(gscore[ID], true);
-				con("На счете у vk.com/id" + ID + " "+ gscore + " коинов");
-			} catch(e) { console.error("Ошибка при получении", e); }
+				let user_ids = !temp? [ USER_ID ]: temp.split(" ");
+				let usersData=[];
+				try {
+					usersData = (await vk.api.users.get({
+						user_ids, name_case: "gen"
+					}));
+				} catch(e) {
+					user_ids.forEach(id=> {
+						usersData.push({ id });
+					});
+				}
+
+				let gscore = await vConinWS.getUserScores(usersData.map(e=> e.id));
+				temp = usersData.map(e=> (e.score = gscore[e.id] || 0, e));
+				ccon("Получено ["+temp.length+"] пользователей");
+				temp.forEach(el=> {
+					ccon(" * @id"+el.id+" \t["+ formateSCORE(el.score, true) + "] коинов "+(el.first_name? " у "+el.first_name+" "+el.last_name: ""));
+				});
+			} catch(e) { ccon("Не смогли получить. "+ e.message, true); }
 			break;
 
 		case "hideupd":
@@ -430,7 +446,7 @@ rl.on('line', async (line) => {
 		case 'beep':
 			pBeep = !pBeep;
 			pBeep&&beep(2, 8e2);
-			con("Звуковое сопровождение " + (pBeep? "от": "в") + "ключено (*^.^*)", "blue");
+			con("Звуковое сопровождение " + (!pBeep? "от": "в") + "ключено (*^.^*)", "blue");
 			break;
 
 		case "?":
@@ -472,7 +488,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 
 		// Token
 		case '-t': {
-			if(dTest.length > 80 && dTest.length < 90) {
+			if(dTest && dTest.length > 80 && dTest.length < 90) {
 				con("Установлен токен.", "blue");
 				VK_TOKEN = dTest;
 				argn++;
@@ -482,7 +498,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 
 		// Custom URL
 		case '-u': {
-			if(dTest.length > 200 && dTest.length < 380) {
+			if(dTest && dTest.length > 200 && dTest.length < 380) {
 				con("Установлен кастомный URL.", "blue");
 				DONEURL = dTest;
 			}
@@ -491,7 +507,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 
 		// Transfer to ID
 		case '-to': {
-			if(dTest.length > 1 && dTest.length < 11) {
+			if(dTest && dTest.length > 1 && dTest.length < 11) {
 				transferTo = onlyInt(dTest);
 				con("Автоматический перевод на vk.com/id"+transferTo, "blue");
 			}
@@ -500,7 +516,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 
 		// Transfer interval
 		case '-ti': {
-			if(dTest.length > 1 && dTest.length < 10) {
+			if(dTest && dTest.length > 1 && dTest.length < 10) {
 				transferInterval = parseInt(dTest);
 				con("Интервал автоперевода "+transferInterval+" секунд", "blue");
 				argn++;
@@ -510,7 +526,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 		
 		// Transfer summ
 		case '-tsum': {
-			if(dTest.length > 1 && dTest.length < 10) {
+			if(dTest && dTest.length > 1 && dTest.length < 10) {
 				transferScore = parseInt(dTest);
 				con("Сумма автоперевода "+transferScore, "blue");
 				argn++;
@@ -520,7 +536,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 
 		// Set autoBuy Item
 		case '-autobuyitem': {
-			if(dTest.length > 1 && dTest.length < 20) {
+			if(dTest && dTest.length > 1 && dTest.length < 20) {
 				if(!Entit.titles[dTest]) return;
 				con("Для автопокупки выбрано: "+Entit.titles[dTest], "blue");
 				autoBuyItem = dTest;
@@ -571,7 +587,7 @@ for (let argn = 2; argn < process.argv.length; argn++) {
 		}
 
 		case '-donate': {
-			if(dTest.length > 1 && dTest.length < 20) {
+			if(dTest && dTest.length > 1 && dTest.length < 20) {
 				let temp = onlyInt(dTest),
 					perc = (dTest.indexOf("%") !== -1 && dTest > 100);
 				greedyDeveloper = perc? dTest/100: dTest;
