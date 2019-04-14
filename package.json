@@ -1,6 +1,6 @@
 {
   "name": "vcoin",
-  "version": "1.4.9",
+  "version": "1.5.01",
   "description": "VK Coin Miner",
   "main": "index.js",
   "dependencies": {
@@ -13,6 +13,7 @@
     "gradient-string": "^1.2.0",
     "random-useragent": "^0.3.1",
     "safe-eval": "^0.4.1",
+    "vcoinws": "0.0.5",
     "vk-io": "^4.0.0-rc.16",
     "window": "^4.2.6",
     "ws": "^6.2.1"
