@@ -1,16 +1,17 @@
-# VCoin - official VK Coin miner
+# VCoin - official VK Coin Bot
 
 <s>VK Coin Miner - недомайнер на NodeJS</s>
+VK Coin Bot - бот для работы с с VK Coin
 
-[![VCoin 1.4.9 download](https://img.shields.io/badge/VCoin%201.4.9-download-blue.svg?logo=github&style=for-the-badge)](https://github.com/xTCry/VCoin/archive/master.zip)
+
+[![VCoin 1.5.02 download](https://img.shields.io/badge/VCoin%201.5.02-download-blue.svg?logo=github&style=for-the-badge)](https://github.com/xTCry/VCoin/archive/master.zip)
 
 > Хоть майнинг VK Coins остановлен,
 >> но это еще не всё
 
-![](https://pp.userapi.com/c855028/v855028357/1734f/9kFW8iHOxHc.jpg)
 ![](https://pp.userapi.com/c845122/v845122441/1e9fb5/7-vBaawGgh0.jpg)
 
-[![vcoin version](https://img.shields.io/badge/VCoin-1.4.9-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
+[![vcoin version](https://img.shields.io/badge/VCoin-1.5.02-purple.svg?style=flat-square)](https://github.com/xTCry/VCoin/)
 
 [![Донат](https://img.shields.io/badge/Донат-Qiwi-orange.svg)](https://qiwi.me/xtcry)
 [![node version](https://img.shields.io/badge/node->%3D8.0-blue.svg?style=flat-square)](https://nodejs.org/)
@@ -39,19 +40,24 @@ npm i
 
 ![](https://pp.userapi.com/c847020/v847020485/1d72be/ktfWqwnMjEY.jpg)
 
-* `-tforce`         - использовать токен принудительно
-* `-u [URL]`        - задает ссылку
 * `-t [TOKEN]`      - задает токен
-* `-to [ID]`        - задает ID страницы для автоперевода `score`
-* `-ti [seconds]`   - задает интервал автоперевода в секундах `[по умолчанию 3600 секунд (1 час)]`
+* `-u [URL]`        - задает ссылку
+* `-slist`          - выведет список созданных пользовательских конфигураций
+* `-tforce`         - использовать токен принудительно
+* `-beep`           - звуковое сопровождение
+* `-proxy`          - включить прокси (если настроен TOR)
+* `.......`         - для полного списка в приложении вызови команду `help` или `?`
+
+<! --
+Устарело
 * `-tsum [sum]`     - сколько `score` переводить (знаки до запятой)
 * `-autobuy`        - автопокупка ускорений
 * `-autobuyItem`    - какое покупать [ускорение](#названия-ускорений)
 * `-smartbuy`       - умная покупка ускорений
 * `-hidespam`       - отключить вывод обновления коинов в лог консоли
-* `-beep`           - звуковое сопровождение
-* `-donate [sum]`   - поддержать разработчика. `sum` сколько коинов переводить. (Если указать с символом `%` , то будет донат процентов от переводимой кому-либо суммы)
-* `.......`         - для полного списка в приложении вызови команду `help` или `?`
+* `-to [ID]`        - задает ID страницы для автоперевода `score`
+* `-ti [seconds]`   - задает интервал автоперевода в секундах `[по умолчанию 3600 секунд (1 час)]`
+-->
 
 Запуск поизводится из каталога приложения
 
@@ -65,39 +71,44 @@ node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 node index.js -uid 191039467
 ```
 
-Запуск через [токен](#получение-токена) и автоперевод каждые `7200` секунды (2 часа) на аккаунт `191039467`
+Предложит выбрать или создать конфигурацию пользователя
 ```shell
-node index.js -t AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -to 191039467 -ti 7200 
+node index.js -slist
 ```
-
-
 
 ### Получение токена
 
-[Получить токен на xTCoin](https://vk.cc/9gjvSG). `код длиной 85 символов`
-
-***
-
+[Получить токен на xTCoin](https://xtcoin.mdewo.com). `код длиной 85 символов`
 
 ## Команды
-
+Для полного списка доступных команд используй `help`
 - `help`     - помощь 
 - `stop`     - остановить 
 - `run`      - запустить 
 - `tran`     - перевести коины
+- `coins`    - веведет информацию о балансе
+- `info`     - веведет информацию об аккаунте
+- `mkey`     - получить merchant ключ
+- `tx`       - история переводов коинов
+- `debug`    - посмотреть служебные и заданные параметры
+- `color`    - вкл/выкл режима цветной консоли
+- `beep`     - вкл/откл звука
+- `datecolorbg`   - задать цвет фона даты и времени
+- `token`   - установить токен
+- `.....`   - и другое...
+
+<! --
+Устарело
 - `price`    - вывести текущие цены 
 - `buy`      - покупка ускорения
 - `autobuy`  - вкл\выкл автопокупку ускорений
 - `autoBuyItem` - выбрать какое ускорение покупать
 - `smartbuy` - вкл\выкл умную покупку ускорений
-- `debug`    - посмотреть служебные и заданные параметры
-- `color`    - вкл/выкл режима цветной консоли
-- `info`     - показать место в ТОПе и кол-во коинов
 - `tspam`    - вкл/откл вывод обновления коинов к консоль
-- `beep`     - вкл/откл звука
-- `datecolorbg`   - задать цвет фона даты и времени
-- `token`   - установить токен
-- `.....`   - и другое...
+-->
+
+## Устарело...
+***
 
 ## Названия ускорений
 - `cursor` - курсор
